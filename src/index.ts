@@ -8,7 +8,7 @@ import {
     GLTFResource,
     Logger, MeshRenderer,
     PrimitiveMesh, Shader,
-    SkyBoxMaterial, Vector3,
+    SkyBoxMaterial, Texture2D, Vector3,
     WebGLEngine
 } from "oasis-engine";
 import {HairMaterial} from "./HairMaterial";
@@ -145,6 +145,9 @@ void main() {
 }
 `);
 
+const leftHair = new HairMaterial(engine);
+const rightHair = new HairMaterial(engine);
+
 Promise.all([
     engine.resourceManager
         .load<GLTFResource>("http://192.168.31.217:8000/hair.glb")
@@ -155,10 +158,13 @@ Promise.all([
 
             const renderers: MeshRenderer[] = [];
             entity.getComponentsIncludeChildren(MeshRenderer, renderers);
-            for (let i = 0, n = renderers.length; i < n; i++) {
-                const renderer = renderers[i];
-                renderer.setMaterial(new HairMaterial(engine));
-            }
+            renderers[0].setMaterial(leftHair);
+            renderers[1].setMaterial(leftHair);
+            renderers[2].setMaterial(leftHair);
+
+            renderers[3].setMaterial(rightHair);
+            renderers[4].setMaterial(rightHair);
+            renderers[5].setMaterial(rightHair);
         }),
     engine.resourceManager
         .load<AmbientLight>({
@@ -169,6 +175,12 @@ Promise.all([
             scene.ambientLight = ambientLight;
             skyMaterial.textureCubeMap = ambientLight.specularTexture;
             skyMaterial.textureDecodeRGBM = true;
+        }),
+    engine.resourceManager
+        .load<Texture2D>("http://192.168.31.217:8000/shift.png")
+        .then((tex) => {
+            leftHair.specularShiftTexture = tex;
+            rightHair.specularShiftTexture = tex;
         })
 ]).then(() => {
     engine.run();
