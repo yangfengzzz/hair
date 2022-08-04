@@ -8,7 +8,7 @@ import {
 	GLTFResource,
 	Logger,
 	PrimitiveMesh,
-	SkyBoxMaterial,
+	SkyBoxMaterial, Vector3,
 	WebGLEngine
 } from "oasis-engine";
 Logger.enable();
@@ -21,11 +21,9 @@ const { ambientLight, background } = scene;
 const rootEntity = scene.createRootEntity();
 
 const directLightNode = rootEntity.createChild("dir_light");
-const directLightNode2 = rootEntity.createChild("dir_light2");
 directLightNode.addComponent(DirectLight);
-directLightNode2.addComponent(DirectLight);
-directLightNode.transform.setRotation(30, 0, 0);
-directLightNode2.transform.setRotation(-30, 180, 0);
+directLightNode.transform.setPosition(10, 10, 10);
+directLightNode.transform.lookAt(new Vector3());
 
 //Create camera
 const cameraNode = rootEntity.createChild("camera_node");
@@ -45,8 +43,9 @@ Promise.all([
 	engine.resourceManager
 		.load<GLTFResource>("http://192.168.31.217:8000/hair.glb")
 		.then((gltf) => {
-			const entity = rootEntity.createChild("");
+			const entity = rootEntity.createChild("hair");
 			entity.addChild(gltf.defaultSceneRoot);
+			entity.transform.setPosition(0, -2, 0);
 		}),
 	engine.resourceManager
 		.load<AmbientLight>({
