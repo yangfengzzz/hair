@@ -72,11 +72,75 @@ void main() {
 }`,
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     `
+#include <uv_share>
+#include <normal_share>
+#include <light_frag_define>
+#include <worldpos_share>
+
+#include <normal_get>
+
+uniform vec4 u_hairTex_ST;
+uniform sampler2D u_specularShift;
+uniform vec4 u_specularShift_ST;
+    
+uniform vec4 u_diffuseColor;
+uniform vec4 u_primaryColor;
+uniform float u_primaryShift;
+uniform vec4 u_secondaryColor;
+uniform float u_secondaryShift;
+    
+uniform float u_specPower;
+uniform float u_specularWidth;
+uniform float u_specularScale;
+    
 vec3 shiftTangent(vec3 T, vec3 N, float shift) {
 	return normalize(T + shift * N);
 }
 
+float hairStrandSpecular(vec3 T, vec3 V, vec3 L, float specPower) {
+	vec3 H = normalize(V + L);
+
+	float HdotT = dot(T, H);
+	float sinTH = sqrt(1.0 - HdotT * HdotT);
+	float dirAtten = smoothstep(-u_specularWidth, 0.0, HdotT);
+	
+	return dirAtten * clamp(pow(sinTH, specPower), 0.0, 1.0) * u_specularScale;
+}
+
+vec4 getAmbientAndDiffuse(vec4 lightColor0, vec4 diffuseColor, vec3 N, vec3 L, vec2 uv) {
+	return (lightColor0 * diffuseColor * clamp(dot(N, L), 0.0, 1.0) + vec4(0.2, 0.2, 0.2, 1.0)) * u_hairTex_ST;
+}
+
+vec4 getSpecular(vec4 lightColor0, 
+				   vec4 primaryColor, float primaryShift,
+				   vec4 secondaryColor, float secondaryShift,
+				   vec3 N, vec3 T, vec3 V, vec3 L, float specPower, vec2 uv) {
+	float shiftTex = texture2D(u_specularShift, uv).r - 0.5;
+
+	vec3 t1 = shiftTangent(T, N, primaryShift + shiftTex);
+	vec3 t2 = shiftTangent(T, N, secondaryShift + shiftTex);
+
+	vec4 specular = vec4(0.0, 0.0, 0.0, 0.0);
+	specular += primaryColor * hairStrandSpecular(t1, V, L, specPower) * u_specularScale;;
+	specular += secondaryColor * hairStrandSpecular(t2, V, L, specPower) * u_specularScale;
+
+	return specular;
+}
+
 void main() {
+	mat3 tbn = getTBN();
+    vec3 N = tbn[2];
+    vec3 T = tbn[0];
+	vec3 B = tbn[1];
+	vec3 V = normalize(v_pos);
+	vec3 L = normalize(u_directLightDirection[0]);
+	vec3 H = normalize(L + V);
+	vec4 u_lightColor0 = vec4(u_directLightColor[0], 1.0);
+
+	vec4 ambientdiffuse = getAmbientAndDiffuse(u_lightColor0, u_diffuseColor, N, L, v_uv);
+	vec4 specular = getSpecular(u_lightColor0, u_primaryColor, u_primaryShift, 
+								u_secondaryColor, u_secondaryShift, N, B, V, L, u_specPower, v_uv);
+                
 	glFragColor = vec4(0.0, 1.0, 0.0, 1.0);
 }
 `);
