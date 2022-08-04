@@ -1,14 +1,14 @@
 import {OrbitControl} from "@oasis-engine-toolkit/controls";
 import {
-    AmbientLight,
-    AssetType,
-    BackgroundMode,
     Camera, Color,
     DirectLight,
     GLTFResource,
-    Logger, MeshRenderer, PBRMaterial,
-    PrimitiveMesh, Shader,
-    SkyBoxMaterial, Texture2D, Vector3,
+    Logger,
+    MeshRenderer,
+    PBRMaterial,
+    Shader,
+    Texture2D,
+    Vector3,
     WebGLEngine
 } from "oasis-engine";
 import {HairMaterial} from "./HairMaterial";
@@ -32,14 +32,6 @@ const cameraNode = rootEntity.createChild("camera_node");
 cameraNode.transform.setPosition(0, 5, 15);
 cameraNode.addComponent(Camera);
 cameraNode.addComponent(OrbitControl);
-
-// Create sky
-const sky = background.sky;
-const skyMaterial = new SkyBoxMaterial(engine);
-background.mode = BackgroundMode.Sky;
-
-sky.material = skyMaterial;
-sky.mesh = PrimitiveMesh.createCuboid(engine, 1, 1, 1);
 
 Shader.create("hair",
     `
@@ -169,16 +161,6 @@ Promise.all([
             renderers[3].setMaterial(rightHair);
             renderers[4].setMaterial(rightHair);
             renderers[5].setMaterial(rightHair);
-        }),
-    engine.resourceManager
-        .load<AmbientLight>({
-            type: AssetType.Env,
-            url: "https://gw.alipayobjects.com/os/bmw-prod/f369110c-0e33-47eb-8296-756e9c80f254.bin"
-        })
-        .then((ambientLight) => {
-            scene.ambientLight = ambientLight;
-            skyMaterial.textureCubeMap = ambientLight.specularTexture;
-            skyMaterial.textureDecodeRGBM = true;
         }),
     engine.resourceManager
         .load<Texture2D>("http://30.46.128.43:8000/shift.png")
