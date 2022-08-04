@@ -3,10 +3,10 @@ import {
     AmbientLight,
     AssetType,
     BackgroundMode,
-    Camera,
+    Camera, Color,
     DirectLight,
     GLTFResource,
-    Logger, MeshRenderer,
+    Logger, MeshRenderer, PBRMaterial,
     PrimitiveMesh, Shader,
     SkyBoxMaterial, Texture2D, Vector3,
     WebGLEngine
@@ -141,16 +141,18 @@ void main() {
 	vec4 specular = getSpecular(u_lightColor0, u_primaryColor, u_primaryShift, 
 								u_secondaryColor, u_secondaryShift, N, B, V, L, u_specPower, v_uv);
                 
-	glFragColor = vec4(0.0, 1.0, 0.0, 1.0);
+	glFragColor = ambientdiffuse + specular;
 }
 `);
 
 const leftHair = new HairMaterial(engine);
+const leftHairColor = new Color();
 const rightHair = new HairMaterial(engine);
+const rightHairColor = new Color();
 
 Promise.all([
     engine.resourceManager
-        .load<GLTFResource>("http://192.168.31.217:8000/hair.glb")
+        .load<GLTFResource>("http://30.46.128.43:8000/hair.glb")
         .then((gltf) => {
             const entity = rootEntity.createChild("hair");
             entity.addChild(gltf.defaultSceneRoot);
@@ -158,10 +160,12 @@ Promise.all([
 
             const renderers: MeshRenderer[] = [];
             entity.getComponentsIncludeChildren(MeshRenderer, renderers);
+            leftHairColor.copyFrom((<PBRMaterial>gltf.materials[0]).baseColor);
             renderers[0].setMaterial(leftHair);
             renderers[1].setMaterial(leftHair);
             renderers[2].setMaterial(leftHair);
 
+            rightHairColor.copyFrom((<PBRMaterial>gltf.materials[1]).baseColor);
             renderers[3].setMaterial(rightHair);
             renderers[4].setMaterial(rightHair);
             renderers[5].setMaterial(rightHair);
@@ -177,10 +181,15 @@ Promise.all([
             skyMaterial.textureDecodeRGBM = true;
         }),
     engine.resourceManager
-        .load<Texture2D>("http://192.168.31.217:8000/shift.png")
+        .load<Texture2D>("http://30.46.128.43:8000/shift.png")
         .then((tex) => {
             leftHair.specularShiftTexture = tex;
+            leftHair.hairColor = leftHairColor;
+            leftHair.primaryColor.set(1, 0, 0, 1);
+            leftHair.primaryShift = 1;
+
             rightHair.specularShiftTexture = tex;
+            rightHair.hairColor = rightHairColor;
         })
 ]).then(() => {
     engine.run();
