@@ -11,9 +11,11 @@ import {
     Script,
     Texture2D,
     Vector3,
-    WebGLEngine
+    WebGLEngine,
+    BackgroundMode,
+    PrimitiveMesh,
+    SkyBoxMaterial
 } from "oasis-engine";
-import {HairMaterial} from "./HairMaterial";
 
 Logger.enable();
 //-- create engine object
@@ -29,6 +31,7 @@ const rootEntity = scene.createRootEntity();
 class Rotate extends Script {
     totalTime = 0;
     target = new Vector3();
+
     onUpdate(deltaTime: number) {
         this.totalTime += deltaTime / 1000;
         this.entity.transform.setPosition(10 * Math.sin(this.totalTime), -1.5, 10 * Math.cos(this.totalTime));
@@ -48,6 +51,14 @@ cameraNode.transform.setPosition(0, 0, 1);
 cameraNode.addComponent(Camera);
 cameraNode.addComponent(OrbitControl);
 
+// Create sky
+const sky = background.sky;
+const skyMaterial = new SkyBoxMaterial(engine);
+background.mode = BackgroundMode.Sky;
+
+sky.material = skyMaterial;
+sky.mesh = PrimitiveMesh.createCuboid(engine, 1, 1, 1);
+
 let hairMaterial: PBRMaterial = null;
 
 Promise.all([
@@ -60,7 +71,7 @@ Promise.all([
             const renderer = gltf.defaultSceneRoot.findByName("Hair_16").getComponent(MeshRenderer);
             hairMaterial = <PBRMaterial>renderer.getMaterial();
 
-            const renderers:MeshRenderer[] = [];
+            const renderers: MeshRenderer[] = [];
             entity.getComponentsIncludeChildren(MeshRenderer, renderers);
             renderers[1]._onDisable(); // remove yellow cover
         }),
@@ -71,6 +82,8 @@ Promise.all([
         })
         .then((ambientLight) => {
             scene.ambientLight = ambientLight;
+            skyMaterial.textureCubeMap = ambientLight.specularTexture;
+            skyMaterial.textureDecodeRGBM = true;
         }),
     engine.resourceManager
         .load<Texture2D>("http://30.46.128.43:8000/shift.png")
@@ -81,6 +94,8 @@ Promise.all([
                     engine.resourceManager
                         .load<Texture2D>("http://30.46.128.43:8000/Hair_01N.png")
                         .then((normal) => {
+                            hairMaterial.isTransparent = true;
+                            hairMaterial.tilingOffset.set(1, 1, 0, -0.015);
                             hairMaterial.baseTexture = hair;
                             hairMaterial.normalTexture = normal;
                         })
