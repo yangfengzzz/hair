@@ -20,6 +20,7 @@ engine.canvas.resizeByClientSize();
 
 const scene = engine.sceneManager.activeScene;
 const {ambientLight, background} = scene;
+ambientLight.diffuseSolidColor.set(1, 1, 1, 1);
 const rootEntity = scene.createRootEntity();
 
 const directLightNode = rootEntity.createChild("dir_light");
@@ -95,27 +96,26 @@ float hairStrandSpecular(vec3 T, vec3 V, vec3 L, float specPower) {
 	float sinTH = sqrt(1.0 - HdotT * HdotT);
 	float dirAtten = smoothstep(-u_specularWidth, 0.0, HdotT);
 	
-	return dirAtten * clamp(pow(sinTH, specPower), 0.0, 1.0) * u_specularScale;
+	return dirAtten * pow(sinTH, specPower);
 }
 
-vec4 getAmbientAndDiffuse(vec4 lightColor0, vec4 diffuseColor, vec3 N, vec3 L, vec2 uv) {
-	return (lightColor0 * diffuseColor * clamp(dot(N, L), 0.0, 1.0) + vec4(0.2, 0.2, 0.2, 1.0)) * u_hairTex_ST;
-}
-
-vec4 getSpecular(vec4 lightColor0, 
-				   vec4 primaryColor, float primaryShift,
+vec4 getSpecular(vec4 primaryColor, float primaryShift,
 				   vec4 secondaryColor, float secondaryShift,
 				   vec3 N, vec3 T, vec3 V, vec3 L, float specPower, vec2 uv) {
 	float shiftTex = texture2D(u_specularShift, uv).r - 0.5;
 
-	vec3 t1 = shiftTangent(T, N, primaryShift + shiftTex);
-	vec3 t2 = shiftTangent(T, N, secondaryShift + shiftTex);
+	vec3 t1 = shiftTangent(T, N, primaryShift);
+	vec3 t2 = shiftTangent(T, N, secondaryShift);
 
 	vec4 specular = vec4(0.0, 0.0, 0.0, 0.0);
-	specular += primaryColor * hairStrandSpecular(t1, V, L, specPower) * u_specularScale;;
-	specular += secondaryColor * hairStrandSpecular(t2, V, L, specPower) * u_specularScale;
+	specular += primaryColor * hairStrandSpecular(t1, V, L, specPower);
+	specular += secondaryColor * hairStrandSpecular(t2, V, L, specPower);
 
 	return specular;
+}
+
+vec4 getAmbientAndDiffuse(vec4 diffuseColor, vec3 N, vec3 L) {
+	return diffuseColor * clamp(mix(0.25, 1.0, dot(N, L)), 0.0, 1.0);
 }
 
 void main() {
@@ -124,53 +124,38 @@ void main() {
     vec3 T = tbn[0];
 	vec3 B = tbn[1];
 	vec3 V = normalize(v_pos);
-	vec3 L = normalize(u_directLightDirection[0]);
+	vec3 L = normalize(vec3(1.0, 1.0, 1.0)); // todo
 	vec3 H = normalize(L + V);
 	vec4 u_lightColor0 = vec4(u_directLightColor[0], 1.0);
 
-	vec4 ambientdiffuse = getAmbientAndDiffuse(u_lightColor0, vec4(u_envMapLight.diffuse, 1.0), N, L, v_uv);
-	vec4 specular = getSpecular(u_lightColor0, u_primaryColor, u_primaryShift, 
+	vec4 ambientdiffuse = getAmbientAndDiffuse(vec4(u_envMapLight.diffuse, 1.0), N, L);
+	vec4 specular = getSpecular(u_primaryColor, u_primaryShift, 
 								u_secondaryColor, u_secondaryShift, N, B, V, L, u_specPower, v_uv);
                 
-	glFragColor = ambientdiffuse + specular;
+	glFragColor = (ambientdiffuse + specular) * u_hairTex_ST * u_lightColor0;
 }
 `);
 
-const leftHair = new HairMaterial(engine);
-const leftHairColor = new Color();
-const rightHair = new HairMaterial(engine);
-const rightHairColor = new Color();
-
 Promise.all([
     engine.resourceManager
-        .load<GLTFResource>("http://30.46.128.43:8000/hair.glb")
+        .load<GLTFResource>("https://gw.alipayobjects.com/os/OasisHub/676000145/1682/Pocolov%252520Hair%25252016.gltf")
         .then((gltf) => {
             const entity = rootEntity.createChild("hair");
             entity.addChild(gltf.defaultSceneRoot);
-            entity.transform.setPosition(0, -2, 0);
-
-            const renderers: MeshRenderer[] = [];
-            entity.getComponentsIncludeChildren(MeshRenderer, renderers);
-            leftHairColor.copyFrom((<PBRMaterial>gltf.materials[0]).baseColor);
-            renderers[0].setMaterial(leftHair);
-            renderers[1].setMaterial(leftHair);
-            renderers[2].setMaterial(leftHair);
-
-            rightHairColor.copyFrom((<PBRMaterial>gltf.materials[1]).baseColor);
-            renderers[3].setMaterial(rightHair);
-            renderers[4].setMaterial(rightHair);
-            renderers[5].setMaterial(rightHair);
         }),
     engine.resourceManager
         .load<Texture2D>("http://30.46.128.43:8000/shift.png")
         .then((tex) => {
-            leftHair.specularShiftTexture = tex;
-            leftHair.hairColor = leftHairColor;
-            leftHair.primaryColor.set(1, 0, 0, 1);
-            leftHair.primaryShift = 1;
-
-            rightHair.specularShiftTexture = tex;
-            rightHair.hairColor = rightHairColor;
+            // leftHair.specularShiftTexture = tex;
+            // leftHair.hairColor = leftHairColor;
+            // leftHair.specularWidth = 0.1;
+            // leftHair.specularScale = 1;
+            // leftHair.specularPower = 1;
+            //
+            // leftHair.primaryColor.set(1, 1, 1, 1);
+            // leftHair.primaryShift = 0.1;
+            // leftHair.secondaryColor.set(1, 1, 1, 1);
+            // leftHair.secondaryShift = -0.1;
         })
 ]).then(() => {
     engine.run();
