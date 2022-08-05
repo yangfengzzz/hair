@@ -183,7 +183,7 @@ Promise.all([
                             hairMaterial.primaryColor.set(1, 1, 1, 1);
                             hairMaterial.primaryShift = 0.2;
                             hairMaterial.secondaryColor.set(1, 1, 1, 1);
-                            hairMaterial.secondaryShift = -0.1;
+                            hairMaterial.secondaryShift = -0.2;
                         })
                 })
         })
