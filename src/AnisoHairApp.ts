@@ -43,7 +43,7 @@ directLightNode.addComponent(Rotate);
 
 //Create camera
 const cameraNode = rootEntity.createChild("camera_node");
-cameraNode.transform.setPosition(0, 0, -1);
+cameraNode.transform.setPosition(0, 0, 1);
 cameraNode.addComponent(Camera);
 cameraNode.addComponent(OrbitControl);
 
