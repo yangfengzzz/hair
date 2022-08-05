@@ -158,9 +158,9 @@ export class HairMaterial extends BaseMaterial {
 
         shaderData.enableMacro("O3_NEED_WORLDPOS");
 
-        this.shaderData.setColor(HairMaterial._hairColorProp, new Color());
-        this.shaderData.setVector4(HairMaterial._specularShiftProp, new Vector4());
-        this.shaderData.setColor(HairMaterial._primaryColorProp, new Color());
-        this.shaderData.setColor(HairMaterial._secondaryColorProp, new Color());
+        this.shaderData.setColor(HairMaterial._hairColorProp, new Color(1, 1, 1, 1));
+        this.shaderData.setVector4(HairMaterial._specularShiftProp, new Vector4(0, 0, 0, 0));
+        this.shaderData.setColor(HairMaterial._primaryColorProp, new Color(1, 1, 1, 1));
+        this.shaderData.setColor(HairMaterial._secondaryColorProp, new Color(1, 1, 1, 1));
     }
 }
