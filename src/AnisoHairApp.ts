@@ -1,15 +1,12 @@
 import {OrbitControl} from "@oasis-engine-toolkit/controls";
 import {
-    BackgroundMode,
     Camera,
     DirectLight,
     GLTFResource,
     Logger,
     MeshRenderer,
-    PrimitiveMesh,
     Script,
     Shader,
-    SkyBoxMaterial,
     Texture2D,
     Vector3,
     WebGLEngine,
@@ -32,6 +29,7 @@ const rootEntity = scene.createRootEntity();
 class Rotate extends Script {
     totalTime = 0;
     target = new Vector3();
+
     onUpdate(deltaTime: number) {
         this.totalTime += deltaTime / 1000;
         this.entity.transform.setPosition(10 * Math.sin(this.totalTime), -1.5, 10 * Math.cos(this.totalTime));
@@ -50,14 +48,6 @@ const cameraNode = rootEntity.createChild("camera_node");
 cameraNode.transform.setPosition(0, 0, 1);
 cameraNode.addComponent(Camera);
 cameraNode.addComponent(OrbitControl);
-
-// Create sky
-const sky = background.sky;
-const skyMaterial = new SkyBoxMaterial(engine);
-background.mode = BackgroundMode.Sky;
-
-sky.material = skyMaterial;
-sky.mesh = PrimitiveMesh.createCuboid(engine, 1, 1, 1);
 
 Shader.create("hair",
     `
@@ -90,16 +80,12 @@ void main() {
 }`,
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     `
-#include <common>
 #include <uv_share>
 #include <normal_share>
 #include <light_frag_define>
 #include <worldpos_share>
 #include <common_frag>
 #include <normal_get>
-#include <ibl_frag_define>
-#include <pbr_frag_define>
-
 uniform sampler2D u_hairTex;
 uniform vec4 u_hairTex_ST;
 uniform sampler2D u_specularShift;
@@ -143,26 +129,8 @@ vec4 getSpecular(vec4 primaryColor, float primaryShift,
 	return specular;
 }
 
-vec4 getAmbientAndDiffuse(mat3 tbn, vec3 N, vec3 L) {
-    #ifdef NORMALTEXTURE
-        vec3 normal = getNormalByNormalTexture(tbn, u_normalTexture, u_normalIntensity, v_uv);
-    #else
-        vec3 normal = getNormal();
-    #endif
-    
-    // IBL diffuse
-    #ifdef O3_USE_SH
-        vec3 irradiance = getLightProbeIrradiance(u_env_sh, normal);
-        #ifdef OASIS_COLORSPACE_GAMMA
-            irradiance = linearToGamma(vec4(irradiance, 1.0)).rgb;
-        #endif
-        irradiance *= u_envMapLight.diffuseIntensity;
-    #else
-       vec3 irradiance = u_envMapLight.diffuse * u_envMapLight.diffuseIntensity;
-       irradiance *= PI;
-    #endif
-
-    return clamp(mix(0.25, 1.0, dot(N, L)), 0.0, 1.0) * RECIPROCAL_PI * vec4(irradiance, 1.0);
+vec4 getAmbientAndDiffuse(vec4 lightColor0, vec4 diffuseColor, vec3 N, vec3 L) {
+    return clamp(mix(0.25, 1.0, dot(N, L)), 0.0, 1.0) * lightColor0 + diffuseColor;
 }
 
 void main() {
@@ -174,7 +142,7 @@ void main() {
 	vec3 L = normalize(u_directLightDirection[0]);
 	vec4 u_lightColor0 = vec4(u_directLightColor[0], 1.0);
 
-	vec4 ambientDiffuse = getAmbientAndDiffuse(tbn, N, L);
+	vec4 ambientDiffuse = getAmbientAndDiffuse(u_lightColor0, vec4(u_envMapLight.diffuse, 1.0), N, L);
 	vec4 specular = getSpecular(u_primaryColor, u_primaryShift, 
 								u_secondaryColor, u_secondaryShift, N, B, V, L, u_specPower);
                 
@@ -196,7 +164,7 @@ Promise.all([
             const renderer = gltf.defaultSceneRoot.findByName("Hair_16").getComponent(MeshRenderer);
             renderer.setMaterial(hairMaterial);
 
-            const renderers:MeshRenderer[] = [];
+            const renderers: MeshRenderer[] = [];
             entity.getComponentsIncludeChildren(MeshRenderer, renderers);
             renderers[1]._onDisable(); // remove yellow cover
         }),
@@ -207,8 +175,6 @@ Promise.all([
         })
         .then((ambientLight) => {
             scene.ambientLight = ambientLight;
-            skyMaterial.textureCubeMap = ambientLight.specularTexture;
-            skyMaterial.textureDecodeRGBM = true;
         }),
     engine.resourceManager
         .load<Texture2D>("http://30.46.128.43:8000/shift.png")
