@@ -4,6 +4,7 @@ import {BaseMaterial, Color, Engine, Shader, Texture2D, Vector4} from "oasis-eng
  * Hair Material
  */
 export class HairMaterial extends BaseMaterial {
+    private static _hairTextureProp = Shader.getPropertyByName("u_hairTex");
     private static _hairColorProp = Shader.getPropertyByName("u_hairTex_ST");
     private static _specularShiftTextureProp = Shader.getPropertyByName("u_specularShift");
     private static _specularShiftProp = Shader.getPropertyByName("u_specularShift_ST");
@@ -16,6 +17,17 @@ export class HairMaterial extends BaseMaterial {
     private static _specPowerProp = Shader.getPropertyByName("u_specPower");
     private static _specularWidthProp = Shader.getPropertyByName("u_specularWidth");
     private static _specularScaleProp = Shader.getPropertyByName("u_specularScale");
+
+    /**
+     * hair texture
+     */
+    get hairTexture(): Texture2D {
+        return <Texture2D>this.shaderData.getTexture(HairMaterial._hairTextureProp);
+    }
+
+    set hairTexture(value: Texture2D) {
+        this.shaderData.setTexture(HairMaterial._hairTextureProp, value);
+    }
 
     /**
      * hair color

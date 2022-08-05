@@ -30,7 +30,7 @@ directLightNode.transform.lookAt(new Vector3());
 
 //Create camera
 const cameraNode = rootEntity.createChild("camera_node");
-cameraNode.transform.setPosition(0, 5, 15);
+cameraNode.transform.setPosition(0, 0, 1);
 cameraNode.addComponent(Camera);
 cameraNode.addComponent(OrbitControl);
 
@@ -71,7 +71,7 @@ void main() {
 #include <worldpos_share>
 
 #include <normal_get>
-
+uniform sampler2D u_hairTex;
 uniform vec4 u_hairTex_ST;
 uniform sampler2D u_specularShift;
 uniform vec4 u_specularShift_ST;
@@ -132,9 +132,11 @@ void main() {
 	vec4 specular = getSpecular(u_primaryColor, u_primaryShift, 
 								u_secondaryColor, u_secondaryShift, N, B, V, L, u_specPower, v_uv);
                 
-	glFragColor = (ambientdiffuse + specular) * u_hairTex_ST * u_lightColor0;
+	glFragColor = (ambientdiffuse + specular) * texture2D(u_hairTex, v_uv) * u_lightColor0;
 }
 `);
+
+const hairMaterial = new HairMaterial(engine);
 
 Promise.all([
     engine.resourceManager
@@ -142,20 +144,27 @@ Promise.all([
         .then((gltf) => {
             const entity = rootEntity.createChild("hair");
             entity.addChild(gltf.defaultSceneRoot);
+            entity.transform.setPosition(0, -1.5, 0);
+            const renderer = gltf.defaultSceneRoot.findByName("Hair_16").getComponent(MeshRenderer);
+            renderer.setMaterial(hairMaterial);
         }),
     engine.resourceManager
         .load<Texture2D>("http://30.46.128.43:8000/shift.png")
-        .then((tex) => {
-            // leftHair.specularShiftTexture = tex;
-            // leftHair.hairColor = leftHairColor;
-            // leftHair.specularWidth = 0.1;
-            // leftHair.specularScale = 1;
-            // leftHair.specularPower = 1;
-            //
-            // leftHair.primaryColor.set(1, 1, 1, 1);
-            // leftHair.primaryShift = 0.1;
-            // leftHair.secondaryColor.set(1, 1, 1, 1);
-            // leftHair.secondaryShift = -0.1;
+        .then((shift) => {
+            engine.resourceManager
+                .load<Texture2D>("https://gw.alipayobjects.com/zos/OasisHub/676000145/7692/Hair_01_Gray.png")
+                .then((hair) => {
+                    hairMaterial.specularShiftTexture = shift;
+                    hairMaterial.hairTexture = hair;
+                    hairMaterial.specularWidth = 0.1;
+                    hairMaterial.specularScale = 1;
+                    hairMaterial.specularPower = 1;
+
+                    hairMaterial.primaryColor.set(1, 1, 1, 1);
+                    hairMaterial.primaryShift = 0.1;
+                    hairMaterial.secondaryColor.set(1, 1, 1, 1);
+                    hairMaterial.secondaryShift = -0.1;
+                })
         })
 ]).then(() => {
     engine.run();
