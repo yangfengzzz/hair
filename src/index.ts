@@ -75,7 +75,6 @@ uniform vec4 u_hairTex_ST;
 uniform sampler2D u_specularShift;
 uniform vec4 u_specularShift_ST;
     
-uniform vec4 u_diffuseColor;
 uniform vec4 u_primaryColor;
 uniform float u_primaryShift;
 uniform vec4 u_secondaryColor;
@@ -129,7 +128,7 @@ void main() {
 	vec3 H = normalize(L + V);
 	vec4 u_lightColor0 = vec4(u_directLightColor[0], 1.0);
 
-	vec4 ambientdiffuse = getAmbientAndDiffuse(u_lightColor0, u_diffuseColor, N, L, v_uv);
+	vec4 ambientdiffuse = getAmbientAndDiffuse(u_lightColor0, vec4(u_envMapLight.diffuse, 1.0), N, L, v_uv);
 	vec4 specular = getSpecular(u_lightColor0, u_primaryColor, u_primaryShift, 
 								u_secondaryColor, u_secondaryShift, N, B, V, L, u_specPower, v_uv);
                 

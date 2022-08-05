@@ -8,7 +8,6 @@ export class HairMaterial extends BaseMaterial {
     private static _specularShiftTextureProp = Shader.getPropertyByName("u_specularShift");
     private static _specularShiftProp = Shader.getPropertyByName("u_specularShift_ST");
 
-    private static _diffuseColorProp = Shader.getPropertyByName("u_diffuseColor");
     private static _primaryColorProp = Shader.getPropertyByName("u_primaryColor");
     private static _primaryShiftProp = Shader.getPropertyByName("u_primaryShift");
     private static _secondaryColorProp = Shader.getPropertyByName("u_secondaryColor");
@@ -54,20 +53,6 @@ export class HairMaterial extends BaseMaterial {
         const shift = this.shaderData.getVector4(HairMaterial._specularShiftProp);
         if (shift !== value) {
             shift.copyFrom(value);
-        }
-    }
-
-    /**
-     * diffuse color
-     */
-    get diffuseColor(): Color {
-        return this.shaderData.getColor(HairMaterial._diffuseColorProp);
-    }
-
-    set diffuseColor(value: Color) {
-        const color = this.shaderData.getColor(HairMaterial._diffuseColorProp);
-        if (color !== value) {
-            color.copyFrom(value);
         }
     }
 
@@ -163,7 +148,6 @@ export class HairMaterial extends BaseMaterial {
 
         this.shaderData.setColor(HairMaterial._hairColorProp, new Color());
         this.shaderData.setVector4(HairMaterial._specularShiftProp, new Vector4());
-        this.shaderData.setColor(HairMaterial._diffuseColorProp, new Color());
         this.shaderData.setColor(HairMaterial._primaryColorProp, new Color());
         this.shaderData.setColor(HairMaterial._secondaryColorProp, new Color());
     }
