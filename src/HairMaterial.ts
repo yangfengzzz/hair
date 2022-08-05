@@ -19,6 +19,33 @@ export class HairMaterial extends BaseMaterial {
     private static _specularScaleProp = Shader.getPropertyByName("u_specularScale");
 
     /**
+     * Normal texture.
+     */
+    get normalTexture(): Texture2D {
+        return <Texture2D>this.shaderData.getTexture(HairMaterial._normalTextureProp);
+    }
+
+    set normalTexture(value: Texture2D) {
+        this.shaderData.setTexture(HairMaterial._normalTextureProp, value);
+        if (value) {
+            this.shaderData.enableMacro(HairMaterial._normalTextureMacro);
+        } else {
+            this.shaderData.disableMacro(HairMaterial._normalTextureMacro);
+        }
+    }
+
+    /**
+     * Normal texture intensity.
+     */
+    get normalIntensity(): number {
+        return this.shaderData.getFloat(HairMaterial._normalIntensityProp);
+    }
+
+    set normalIntensity(value: number) {
+        this.shaderData.setFloat(HairMaterial._normalIntensityProp, value);
+    }
+
+    /**
      * hair texture
      */
     get hairTexture(): Texture2D {
@@ -158,9 +185,10 @@ export class HairMaterial extends BaseMaterial {
 
         shaderData.enableMacro("O3_NEED_WORLDPOS");
 
-        this.shaderData.setColor(HairMaterial._hairColorProp, new Color(1, 1, 1, 1));
-        this.shaderData.setVector4(HairMaterial._specularShiftProp, new Vector4(0, 0, 0, 0));
-        this.shaderData.setColor(HairMaterial._primaryColorProp, new Color(1, 1, 1, 1));
-        this.shaderData.setColor(HairMaterial._secondaryColorProp, new Color(1, 1, 1, 1));
+        shaderData.setColor(HairMaterial._hairColorProp, new Color(1, 1, 1, 1));
+        shaderData.setVector4(HairMaterial._specularShiftProp, new Vector4(0, 0, 0, 0));
+        shaderData.setColor(HairMaterial._primaryColorProp, new Color(1, 1, 1, 1));
+        shaderData.setColor(HairMaterial._secondaryColorProp, new Color(1, 1, 1, 1));
+        shaderData.setFloat(HairMaterial._normalIntensityProp, 1);
     }
 }

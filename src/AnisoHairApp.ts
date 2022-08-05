@@ -4,7 +4,9 @@ import {
     DirectLight,
     GLTFResource,
     Logger,
-    MeshRenderer, Script,
+    MeshRenderer,
+    RenderFace,
+    Script,
     Shader,
     Texture2D,
     Vector3,
@@ -36,6 +38,8 @@ class Rotate extends Script {
 const directLightNode = rootEntity.createChild("dir_light");
 directLightNode.addComponent(DirectLight);
 directLightNode.addComponent(Rotate);
+// directLightNode.transform.setPosition(-10, -1.5, -10);
+// directLightNode.transform.lookAt(new Vector3());
 
 //Create camera
 const cameraNode = rootEntity.createChild("camera_node");
@@ -78,7 +82,7 @@ void main() {
 #include <normal_share>
 #include <light_frag_define>
 #include <worldpos_share>
-
+#include <common_frag>
 #include <normal_get>
 uniform sampler2D u_hairTex;
 uniform vec4 u_hairTex_ST;
@@ -132,8 +136,8 @@ void main() {
     vec3 T = normalize(tbn[0]);
 	vec3 B = normalize(tbn[1]);
 	vec3 N = normalize(tbn[2]);
-	vec3 V = normalize(v_pos);
-	vec3 L = normalize(u_directLightDirection[0]); // todo
+	#include <begin_viewdir_frag>
+	vec3 L = normalize(u_directLightDirection[0]);
 	vec3 H = normalize(L + V);
 	vec4 u_lightColor0 = vec4(u_directLightColor[0], 1.0);
 
@@ -168,16 +172,22 @@ Promise.all([
             engine.resourceManager
                 .load<Texture2D>("https://gw.alipayobjects.com/zos/OasisHub/676000145/7692/Hair_01_Gray.png")
                 .then((hair) => {
-                    hairMaterial.specularShiftTexture = shift;
-                    hairMaterial.hairTexture = hair;
-                    hairMaterial.specularWidth = 1.0;
-                    hairMaterial.specularScale = 0.5;
-                    hairMaterial.specularPower = 16.0;
+                    engine.resourceManager
+                        .load<Texture2D>("http://30.46.128.43:8000/Hair_01N.png")
+                        .then((normal) => {
+                            hairMaterial.renderFace = RenderFace.Front;
+                            hairMaterial.normalTexture = normal;
+                            hairMaterial.specularShiftTexture = shift;
+                            hairMaterial.hairTexture = hair;
+                            hairMaterial.specularWidth = 1.0;
+                            hairMaterial.specularScale = 0.5;
+                            hairMaterial.specularPower = 16.0;
 
-                    hairMaterial.primaryColor.set(1, 1, 1, 1);
-                    hairMaterial.primaryShift = 0.2;
-                    hairMaterial.secondaryColor.set(1, 1, 1, 1);
-                    hairMaterial.secondaryShift = -0.1;
+                            hairMaterial.primaryColor.set(1, 1, 1, 1);
+                            hairMaterial.primaryShift = 0.2;
+                            hairMaterial.secondaryColor.set(1, 1, 1, 1);
+                            hairMaterial.secondaryShift = -0.1;
+                        })
                 })
         })
 ]).then(() => {
