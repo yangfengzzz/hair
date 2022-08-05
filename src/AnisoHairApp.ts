@@ -37,9 +37,9 @@ class Rotate extends Script {
 
 const directLightNode = rootEntity.createChild("dir_light");
 const light = directLightNode.addComponent(DirectLight);
-light.intensity = 0.3;
+light.intensity = 0.6;
 const renderer = directLightNode.addComponent(MeshRenderer);
-renderer.mesh = PrimitiveMesh.createSphere(engine, 0.05);
+renderer.mesh = PrimitiveMesh.createSphere(engine, 0.03);
 renderer.setMaterial(new UnlitMaterial(engine));
 directLightNode.addComponent(Rotate);
 // directLightNode.transform.setPosition(0.3, 0.3, 0.3);
@@ -88,6 +88,11 @@ void main() {
 #include <light_frag_define>
 #include <worldpos_share>
 #include <normal_get>
+
+#ifdef NORMALTEXTURE
+    uniform sampler2D u_normalTexture;
+#endif
+uniform float u_normalIntensity;
 
 #ifdef USE_HAIR_TEXTURE
     uniform sampler2D u_hairTex;
@@ -152,11 +157,15 @@ void main() {
 	mat3 tbn = getTBN();
     vec3 T = normalize(tbn[0]);
 	vec3 B = normalize(tbn[1]);
-	vec3 N = -normalize(tbn[2]); // todo
+#ifdef NORMALTEXTURE
+    vec3 N = getNormalByNormalTexture(tbn, u_normalTexture, u_normalIntensity, v_uv);
+#else
+    vec3 N = getNormal();
+#endif	
 	#include <begin_viewdir_frag>
 	
 	for( int i = 0; i < O3_DIRECT_LIGHT_COUNT; i++ ) {
-        vec3 lightDir = normalize(u_directLightDirection[i]);
+        vec3 lightDir = normalize(-u_directLightDirection[i]);
         vec3 lightColor = u_directLightColor[i];
         
         float diffuse = getDiffuse(N, lightDir);
