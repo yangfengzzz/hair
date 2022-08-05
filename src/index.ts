@@ -1,11 +1,10 @@
 import {OrbitControl} from "@oasis-engine-toolkit/controls";
 import {
-    Camera, Color,
+    Camera,
     DirectLight,
     GLTFResource,
     Logger,
     MeshRenderer,
-    PBRMaterial,
     Shader,
     Texture2D,
     Vector3,
@@ -104,8 +103,8 @@ vec4 getSpecular(vec4 primaryColor, float primaryShift,
 				   vec3 N, vec3 T, vec3 V, vec3 L, float specPower, vec2 uv) {
 	float shiftTex = texture2D(u_specularShift, uv).r - 0.5;
 
-	vec3 t1 = shiftTangent(T, N, primaryShift);
-	vec3 t2 = shiftTangent(T, N, secondaryShift);
+	vec3 t1 = shiftTangent(T, N, primaryShift + shiftTex);
+	vec3 t2 = shiftTangent(T, N, secondaryShift + shiftTex);
 
 	vec4 specular = vec4(0.0, 0.0, 0.0, 0.0);
 	specular += primaryColor * hairStrandSpecular(t1, V, L, specPower);
@@ -114,25 +113,25 @@ vec4 getSpecular(vec4 primaryColor, float primaryShift,
 	return specular;
 }
 
-vec4 getAmbientAndDiffuse(vec4 diffuseColor, vec3 N, vec3 L) {
-	return diffuseColor * clamp(mix(0.25, 1.0, dot(N, L)), 0.0, 1.0);
+vec4 getAmbientAndDiffuse(vec4 lightColor0, vec4 diffuseColor, vec3 N, vec3 L) {
+    return clamp(mix(0.25, 1.0, dot(N, L)), 0.0, 1.0) * lightColor0 * diffuseColor * texture2D(u_hairTex, v_uv);
 }
 
 void main() {
 	mat3 tbn = getTBN();
-    vec3 N = tbn[2];
     vec3 T = tbn[0];
 	vec3 B = tbn[1];
+	vec3 N = tbn[2];
 	vec3 V = normalize(v_pos);
 	vec3 L = normalize(vec3(1.0, 1.0, 1.0)); // todo
 	vec3 H = normalize(L + V);
 	vec4 u_lightColor0 = vec4(u_directLightColor[0], 1.0);
 
-	vec4 ambientdiffuse = getAmbientAndDiffuse(vec4(u_envMapLight.diffuse, 1.0), N, L);
+	vec4 ambientDiffuse = getAmbientAndDiffuse(u_lightColor0, vec4(u_envMapLight.diffuse, 1.0), N, L);
 	vec4 specular = getSpecular(u_primaryColor, u_primaryShift, 
 								u_secondaryColor, u_secondaryShift, N, B, V, L, u_specPower, v_uv);
                 
-	glFragColor = (ambientdiffuse + specular) * texture2D(u_hairTex, v_uv) * u_lightColor0;
+	glFragColor = ambientDiffuse;
 }
 `);
 
@@ -147,6 +146,10 @@ Promise.all([
             entity.transform.setPosition(0, -1.5, 0);
             const renderer = gltf.defaultSceneRoot.findByName("Hair_16").getComponent(MeshRenderer);
             renderer.setMaterial(hairMaterial);
+
+            const renderers:MeshRenderer[] = [];
+            entity.getComponentsIncludeChildren(MeshRenderer, renderers);
+            renderers[1]._onDisable(); // remove yellow cover
         }),
     engine.resourceManager
         .load<Texture2D>("http://30.46.128.43:8000/shift.png")
@@ -161,9 +164,9 @@ Promise.all([
                     hairMaterial.specularPower = 1;
 
                     hairMaterial.primaryColor.set(1, 1, 1, 1);
-                    hairMaterial.primaryShift = 0.1;
+                    hairMaterial.primaryShift = 1;
                     hairMaterial.secondaryColor.set(1, 1, 1, 1);
-                    hairMaterial.secondaryShift = -0.1;
+                    hairMaterial.secondaryShift = -1;
                 })
         })
 ]).then(() => {
