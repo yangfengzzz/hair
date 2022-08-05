@@ -19,6 +19,20 @@ export class HairMaterial extends BaseMaterial {
     private static _specularScaleProp = Shader.getPropertyByName("u_specularScale");
 
     /**
+     * Tiling and offset of main textures.
+     */
+    get tilingOffset(): Vector4 {
+        return this.shaderData.getVector4(HairMaterial._tilingOffsetProp);
+    }
+
+    set tilingOffset(value: Vector4) {
+        const tilingOffset = this.shaderData.getVector4(HairMaterial._tilingOffsetProp);
+        if (value !== tilingOffset) {
+            tilingOffset.copyFrom(value);
+        }
+    }
+
+    /**
      * Normal texture.
      */
     get normalTexture(): Texture2D {
@@ -184,11 +198,14 @@ export class HairMaterial extends BaseMaterial {
         const shaderData = this.shaderData;
 
         shaderData.enableMacro("O3_NEED_WORLDPOS");
+        shaderData.enableMacro("O3_NEED_TILINGOFFSET");
 
         shaderData.setColor(HairMaterial._hairColorProp, new Color(1, 1, 1, 1));
         shaderData.setVector4(HairMaterial._specularShiftProp, new Vector4(0, 0, 0, 0));
         shaderData.setColor(HairMaterial._primaryColorProp, new Color(1, 1, 1, 1));
         shaderData.setColor(HairMaterial._secondaryColorProp, new Color(1, 1, 1, 1));
+
         shaderData.setFloat(HairMaterial._normalIntensityProp, 1);
+        shaderData.setVector4(HairMaterial._tilingOffsetProp, new Vector4(1, 1, 0, 0));
     }
 }

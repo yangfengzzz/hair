@@ -144,8 +144,9 @@ void main() {
 	vec4 specular = getSpecular(u_primaryColor, u_primaryShift, 
 								u_secondaryColor, u_secondaryShift, N, B, V, L, u_specPower);
                 
-	glFragColor = (specular * u_specularScale + ambientDiffuse) * texture2D(u_hairTex, v_uv);
-	glFragColor.a = 1.0;
+    vec4 hairColor = texture2D(u_hairTex, v_uv);
+	glFragColor = (specular * u_specularScale + ambientDiffuse) * hairColor;
+	glFragColor.a = hairColor.a;
 }
 `);
 
@@ -182,6 +183,9 @@ Promise.all([
                     engine.resourceManager
                         .load<Texture2D>("http://30.46.128.43:8000/Hair_01N.png")
                         .then((normal) => {
+                            hairMaterial.tilingOffset.set(1, 1, 0, -0.015);
+                            hairMaterial.isTransparent = true;
+
                             hairMaterial.normalTexture = normal;
                             hairMaterial.specularShiftTexture = shift;
                             hairMaterial.hairTexture = hair;
