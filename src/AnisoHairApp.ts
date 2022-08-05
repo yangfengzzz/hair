@@ -140,8 +140,8 @@ vec4 getSpecular(vec4 primaryColor, float primaryShift,
 	return specular;
 }
 
-vec3 getAmbientAndDiffuse(vec3 N, vec3 L, vec3 lightColor) {
-    return clamp(mix(0.25, 1.0, dot(N, L)), 0.0, 1.0) *  + u_envMapLight.diffuseIntensity * u_envMapLight.diffuse;
+vec3 getDiffuse(vec3 N, vec3 L, vec3 lightColor) {
+    return clamp(mix(0.25, 1.0, dot(N, L)), 0.0, 1.0) * lightColor;
 }
 
 void main() {
@@ -155,12 +155,13 @@ void main() {
         vec3 lightDir = normalize(u_directLightDirection[i]);
         vec3 lightColor = u_directLightColor[i];
         
-        vec3 ambientDiffuse = getAmbientAndDiffuse(N, lightDir, lightColor);
+        vec3 diffuse = getDiffuse(N, lightDir, lightColor);
         vec4 specular = getSpecular(u_primaryColor, u_primaryShift, 
                                     u_secondaryColor, u_secondaryShift, N, B, V, lightDir, u_specPower);
                                     
-        glFragColor += specular * u_specularScale + vec4(ambientDiffuse, 1.0);
+        glFragColor += specular * u_specularScale + vec4(diffuse, 1.0);
     }
+    glFragColor.xyz += u_envMapLight.diffuseIntensity * u_envMapLight.diffuse; // add ambient light
     
 #ifdef USE_HAIR_TEXTURE
     vec4 hairColor = texture2D(u_hairTex, v_uv);
