@@ -36,12 +36,13 @@ class Rotate extends Script {
 }
 
 const directLightNode = rootEntity.createChild("dir_light");
-directLightNode.addComponent(DirectLight);
+const light = directLightNode.addComponent(DirectLight);
+light.intensity = 0.3;
 const renderer = directLightNode.addComponent(MeshRenderer);
 renderer.mesh = PrimitiveMesh.createSphere(engine, 0.05);
 renderer.setMaterial(new UnlitMaterial(engine));
 directLightNode.addComponent(Rotate);
-// directLightNode.transform.setPosition(10, 10, 10);
+// directLightNode.transform.setPosition(0.3, 0.3, 0.3);
 // directLightNode.transform.lookAt(new Vector3());
 
 //Create camera
@@ -143,8 +144,8 @@ vec4 getSpecular(vec4 primaryColor, float primaryShift,
 	return specular;
 }
 
-vec3 getDiffuse(vec3 N, vec3 L, vec3 lightColor) {
-    return clamp(mix(0.25, 1.0, dot(N, L)), 0.0, 1.0) * lightColor;
+float getDiffuse(vec3 N, vec3 L) {
+    return clamp(mix(0.25, 1.0, dot(N, L)), 0.0, 1.0);
 }
 
 void main() {
@@ -158,11 +159,11 @@ void main() {
         vec3 lightDir = normalize(u_directLightDirection[i]);
         vec3 lightColor = u_directLightColor[i];
         
-        vec3 diffuse = getDiffuse(N, lightDir, lightColor);
+        float diffuse = getDiffuse(N, lightDir);
         vec4 specular = getSpecular(u_primaryColor, u_primaryShift, 
                                     u_secondaryColor, u_secondaryShift, N, B, V, lightDir, u_specPower);
                                     
-        glFragColor += specular * u_specularScale + vec4(diffuse, 1.0);
+        glFragColor += (specular * u_specularScale + vec4(diffuse, diffuse, diffuse, 1.0)) * vec4(lightColor, 1.0);
     }
     glFragColor.xyz += u_envMapLight.diffuseIntensity * u_envMapLight.diffuse; // add ambient light
     
@@ -218,7 +219,7 @@ Promise.all([
                             hairMaterial.specularShiftTexture = shift;
                             hairMaterial.hairTexture = hair;
                             hairMaterial.specularWidth = 1.0;
-                            hairMaterial.specularScale = 0.3;
+                            hairMaterial.specularScale = 0.8;
 
                             hairMaterial.primaryColor.set(1, 1, 1, 1);
                             hairMaterial.primaryShift = 0.2;

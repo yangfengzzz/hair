@@ -45,7 +45,7 @@ const renderer = directLightNode.addComponent(MeshRenderer);
 renderer.mesh = PrimitiveMesh.createSphere(engine, 0.05);
 renderer.setMaterial(new UnlitMaterial(engine));
 directLightNode.addComponent(Rotate);
-// directLightNode.transform.setPosition(10, 10, 10);
+// directLightNode.transform.setPosition(0.3, 0.3, 0.3);
 // directLightNode.transform.lookAt(new Vector3());
 
 //Create camera
@@ -77,6 +77,8 @@ Promise.all([
         })
         .then((ambientLight) => {
             scene.ambientLight = ambientLight;
+            ambientLight.diffuseSolidColor.set(1, 1, 1, 1);
+            ambientLight.diffuseIntensity = 0.2;
         }),
     engine.resourceManager
         .load<Texture2D>("http://30.46.128.43:8000/shift.png")
