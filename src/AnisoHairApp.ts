@@ -11,7 +11,7 @@ import {
     Vector3,
     WebGLEngine,
     AmbientLight,
-    AssetType
+    AssetType, Mesh, PrimitiveMesh, UnlitMaterial
 } from "oasis-engine";
 import {HairMaterial} from "./HairMaterial";
 
@@ -30,13 +30,16 @@ class Rotate extends Script {
 
     onUpdate(deltaTime: number) {
         this.totalTime += deltaTime / 1000;
-        this.entity.transform.setPosition(10 * Math.sin(this.totalTime), -1.5, 10 * Math.cos(this.totalTime));
+        this.entity.transform.setPosition(0.3 * Math.sin(this.totalTime), 0.3, 0.3 * Math.cos(this.totalTime));
         this.entity.transform.lookAt(this.target);
     }
 }
 
 const directLightNode = rootEntity.createChild("dir_light");
 directLightNode.addComponent(DirectLight);
+const renderer = directLightNode.addComponent(MeshRenderer);
+renderer.mesh = PrimitiveMesh.createSphere(engine, 0.05);
+renderer.setMaterial(new UnlitMaterial(engine));
 directLightNode.addComponent(Rotate);
 // directLightNode.transform.setPosition(10, 10, 10);
 // directLightNode.transform.lookAt(new Vector3());
@@ -148,7 +151,7 @@ void main() {
 	mat3 tbn = getTBN();
     vec3 T = normalize(tbn[0]);
 	vec3 B = normalize(tbn[1]);
-	vec3 N = normalize(tbn[2]);
+	vec3 N = -normalize(tbn[2]); // todo
 	#include <begin_viewdir_frag>
 	
 	for( int i = 0; i < O3_DIRECT_LIGHT_COUNT; i++ ) {
@@ -197,7 +200,7 @@ Promise.all([
         .then((ambientLight) => {
             scene.ambientLight = ambientLight;
             ambientLight.diffuseSolidColor.set(1, 1, 1, 1);
-            ambientLight.diffuseIntensity = 0.3;
+            ambientLight.diffuseIntensity = 0.2;
         }),
     engine.resourceManager
         .load<Texture2D>("http://30.46.128.43:8000/shift.png")
@@ -215,7 +218,7 @@ Promise.all([
                             hairMaterial.specularShiftTexture = shift;
                             hairMaterial.hairTexture = hair;
                             hairMaterial.specularWidth = 1.0;
-                            hairMaterial.specularScale = 0.5;
+                            hairMaterial.specularScale = 0.3;
 
                             hairMaterial.primaryColor.set(1, 1, 1, 1);
                             hairMaterial.primaryShift = 0.2;

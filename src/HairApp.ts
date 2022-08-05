@@ -16,6 +16,7 @@ import {
     PrimitiveMesh,
     SkyBoxMaterial
 } from "oasis-engine";
+import {UnlitMaterial} from "_oasis-engine@0.8.0-beta.9@oasis-engine";
 
 Logger.enable();
 //-- create engine object
@@ -33,15 +34,18 @@ class Rotate extends Script {
 
     onUpdate(deltaTime: number) {
         this.totalTime += deltaTime / 1000;
-        this.entity.transform.setPosition(10 * Math.sin(this.totalTime), -1.5, 10 * Math.cos(this.totalTime));
+        this.entity.transform.setPosition(0.3 * Math.sin(this.totalTime), 0.3, 0.3 * Math.cos(this.totalTime));
         this.entity.transform.lookAt(this.target);
     }
 }
 
 const directLightNode = rootEntity.createChild("dir_light");
 directLightNode.addComponent(DirectLight);
+const renderer = directLightNode.addComponent(MeshRenderer);
+renderer.mesh = PrimitiveMesh.createSphere(engine, 0.05);
+renderer.setMaterial(new UnlitMaterial(engine));
 directLightNode.addComponent(Rotate);
-// directLightNode.transform.setPosition(-10, -1.5, -10);
+// directLightNode.transform.setPosition(10, 10, 10);
 // directLightNode.transform.lookAt(new Vector3());
 
 //Create camera
