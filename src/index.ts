@@ -20,6 +20,7 @@ engine.canvas.resizeByClientSize();
 const scene = engine.sceneManager.activeScene;
 const {ambientLight, background} = scene;
 ambientLight.diffuseSolidColor.set(1, 1, 1, 1);
+background.solidColor.set(0, 0, 0, 1);
 const rootEntity = scene.createRootEntity();
 
 const directLightNode = rootEntity.createChild("dir_light");
@@ -95,13 +96,13 @@ float hairStrandSpecular(vec3 T, vec3 V, vec3 L, float specPower) {
 	float sinTH = sqrt(1.0 - HdotT * HdotT);
 	float dirAtten = smoothstep(-u_specularWidth, 0.0, HdotT);
 	
-	return dirAtten * pow(sinTH, specPower);
+	return dirAtten * clamp(pow(sinTH, specPower), 0.0, 1.0);
 }
 
 vec4 getSpecular(vec4 primaryColor, float primaryShift,
 				   vec4 secondaryColor, float secondaryShift,
-				   vec3 N, vec3 T, vec3 V, vec3 L, float specPower, vec2 uv) {
-	float shiftTex = texture2D(u_specularShift, uv).r - 0.5;
+				   vec3 N, vec3 T, vec3 V, vec3 L, float specPower) {
+	float shiftTex = texture2D(u_specularShift, v_uv).r;
 
 	vec3 t1 = shiftTangent(T, N, primaryShift + shiftTex);
 	vec3 t2 = shiftTangent(T, N, secondaryShift + shiftTex);
@@ -114,14 +115,14 @@ vec4 getSpecular(vec4 primaryColor, float primaryShift,
 }
 
 vec4 getAmbientAndDiffuse(vec4 lightColor0, vec4 diffuseColor, vec3 N, vec3 L) {
-    return clamp(mix(0.25, 1.0, dot(N, L)), 0.0, 1.0) * lightColor0 * diffuseColor * texture2D(u_hairTex, v_uv);
+    return clamp(mix(0.25, 1.0, dot(N, L)), 0.0, 1.0) * lightColor0 * diffuseColor;
 }
 
 void main() {
 	mat3 tbn = getTBN();
-    vec3 T = tbn[0];
-	vec3 B = tbn[1];
-	vec3 N = tbn[2];
+    vec3 T = normalize(tbn[0]);
+	vec3 B = normalize(tbn[1]);
+	vec3 N = normalize(tbn[2]);
 	vec3 V = normalize(v_pos);
 	vec3 L = normalize(vec3(1.0, 1.0, 1.0)); // todo
 	vec3 H = normalize(L + V);
@@ -129,9 +130,10 @@ void main() {
 
 	vec4 ambientDiffuse = getAmbientAndDiffuse(u_lightColor0, vec4(u_envMapLight.diffuse, 1.0), N, L);
 	vec4 specular = getSpecular(u_primaryColor, u_primaryShift, 
-								u_secondaryColor, u_secondaryShift, N, B, V, L, u_specPower, v_uv);
+								u_secondaryColor, u_secondaryShift, N, B, V, L, u_specPower);
                 
-	glFragColor = ambientDiffuse;
+	glFragColor = (specular * u_specularScale + ambientDiffuse) * texture2D(u_hairTex, v_uv);
+	glFragColor.a = 1.0;
 }
 `);
 
@@ -159,14 +161,14 @@ Promise.all([
                 .then((hair) => {
                     hairMaterial.specularShiftTexture = shift;
                     hairMaterial.hairTexture = hair;
-                    hairMaterial.specularWidth = 0.1;
-                    hairMaterial.specularScale = 1;
-                    hairMaterial.specularPower = 1;
+                    hairMaterial.specularWidth = 1.0;
+                    hairMaterial.specularScale = 0.1;
+                    hairMaterial.specularPower = 16.0;
 
                     hairMaterial.primaryColor.set(1, 1, 1, 1);
-                    hairMaterial.primaryShift = 1;
+                    hairMaterial.primaryShift = 0.2;
                     hairMaterial.secondaryColor.set(1, 1, 1, 1);
-                    hairMaterial.secondaryShift = -1;
+                    hairMaterial.secondaryShift = -0.1;
                 })
         })
 ]).then(() => {
