@@ -12,6 +12,7 @@ import {
     WebGLEngine
 } from "oasis-engine";
 import {HairMaterial} from "./HairMaterial";
+import {AmbientLight, AssetType} from "_oasis-engine@0.8.0-beta.9@oasis-engine";
 
 Logger.enable();
 //-- create engine object
@@ -163,6 +164,14 @@ Promise.all([
             const renderers:MeshRenderer[] = [];
             entity.getComponentsIncludeChildren(MeshRenderer, renderers);
             renderers[1]._onDisable(); // remove yellow cover
+        }),
+    engine.resourceManager
+        .load<AmbientLight>({
+            type: AssetType.Env,
+            url: "https://gw.alipayobjects.com/os/bmw-prod/89c54544-1184-45a1-b0f5-c0b17e5c3e68.bin"
+        })
+        .then((ambientLight) => {
+            scene.ambientLight = ambientLight;
         }),
     engine.resourceManager
         .load<Texture2D>("http://30.46.128.43:8000/shift.png")

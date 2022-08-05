@@ -1,5 +1,7 @@
 import {OrbitControl} from "@oasis-engine-toolkit/controls";
 import {
+    AmbientLight,
+    AssetType,
     Camera,
     DirectLight,
     GLTFResource,
@@ -61,6 +63,14 @@ Promise.all([
             const renderers:MeshRenderer[] = [];
             entity.getComponentsIncludeChildren(MeshRenderer, renderers);
             renderers[1]._onDisable(); // remove yellow cover
+        }),
+    engine.resourceManager
+        .load<AmbientLight>({
+            type: AssetType.Env,
+            url: "https://gw.alipayobjects.com/os/bmw-prod/89c54544-1184-45a1-b0f5-c0b17e5c3e68.bin"
+        })
+        .then((ambientLight) => {
+            scene.ambientLight = ambientLight;
         }),
     engine.resourceManager
         .load<Texture2D>("http://30.46.128.43:8000/shift.png")
