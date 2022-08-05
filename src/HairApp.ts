@@ -40,9 +40,10 @@ class Rotate extends Script {
 }
 
 const directLightNode = rootEntity.createChild("dir_light");
-directLightNode.addComponent(DirectLight);
+const light = directLightNode.addComponent(DirectLight);
+light.color.set(1, 0.3, 0.3, 1);
 const renderer = directLightNode.addComponent(MeshRenderer);
-renderer.mesh = PrimitiveMesh.createSphere(engine, 0.05);
+renderer.mesh = PrimitiveMesh.createSphere(engine, 0.03);
 renderer.setMaterial(new UnlitMaterial(engine));
 directLightNode.addComponent(Rotate);
 // directLightNode.transform.setPosition(0.3, 0.3, 0.3);
@@ -78,7 +79,7 @@ Promise.all([
         .then((ambientLight) => {
             scene.ambientLight = ambientLight;
             ambientLight.diffuseSolidColor.set(1, 1, 1, 1);
-            ambientLight.diffuseIntensity = 0.2;
+            ambientLight.diffuseIntensity = 0.1;
         }),
     engine.resourceManager
         .load<Texture2D>("http://30.46.128.43:8000/shift.png")
@@ -93,6 +94,8 @@ Promise.all([
                             hairMaterial.tilingOffset.set(1, 1, 0, -0.015);
                             hairMaterial.baseTexture = hair;
                             hairMaterial.normalTexture = normal;
+                            hairMaterial.roughness = 0.5;
+                            hairMaterial.metallic = 1.0;
                         })
                 })
         })
