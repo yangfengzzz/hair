@@ -23,9 +23,8 @@ const engine = new WebGLEngine("canvas");
 engine.canvas.resizeByClientSize();
 
 const scene = engine.sceneManager.activeScene;
-const {ambientLight, background} = scene;
-ambientLight.diffuseSolidColor.set(1, 1, 1, 1);
-background.solidColor.set(0.0, 0.5, 0.5, 1);
+scene.background.solidColor.set(0.0, 0.5, 0.5, 1);
+scene.background.mode = BackgroundMode.Sky;
 const rootEntity = scene.createRootEntity();
 
 class Rotate extends Script {
@@ -51,14 +50,6 @@ cameraNode.transform.setPosition(0, 0, 1);
 cameraNode.addComponent(Camera);
 cameraNode.addComponent(OrbitControl);
 
-// Create sky
-const sky = background.sky;
-const skyMaterial = new SkyBoxMaterial(engine);
-background.mode = BackgroundMode.Sky;
-
-sky.material = skyMaterial;
-sky.mesh = PrimitiveMesh.createCuboid(engine, 1, 1, 1);
-
 let hairMaterial: PBRMaterial = null;
 
 Promise.all([
@@ -82,8 +73,6 @@ Promise.all([
         })
         .then((ambientLight) => {
             scene.ambientLight = ambientLight;
-            skyMaterial.textureCubeMap = ambientLight.specularTexture;
-            skyMaterial.textureDecodeRGBM = true;
         }),
     engine.resourceManager
         .load<Texture2D>("http://30.46.128.43:8000/shift.png")

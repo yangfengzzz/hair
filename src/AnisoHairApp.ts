@@ -21,10 +21,7 @@ const engine = new WebGLEngine("canvas");
 engine.canvas.resizeByClientSize();
 
 const scene = engine.sceneManager.activeScene;
-const {ambientLight, background} = scene;
-ambientLight.diffuseSolidColor.set(1, 0, 0, 1);
-ambientLight.diffuseIntensity = 2.0;
-background.solidColor.set(0.0, 0.5, 0.5, 1);
+scene.background.solidColor.set(0.0, 0.5, 0.5, 1);
 const rootEntity = scene.createRootEntity();
 
 class Rotate extends Script {
@@ -41,7 +38,7 @@ class Rotate extends Script {
 const directLightNode = rootEntity.createChild("dir_light");
 directLightNode.addComponent(DirectLight);
 directLightNode.addComponent(Rotate);
-// directLightNode.transform.setPosition(-10, -1.5, -10);
+// directLightNode.transform.setPosition(10, 10, 10);
 // directLightNode.transform.lookAt(new Vector3());
 
 //Create camera
@@ -175,6 +172,8 @@ Promise.all([
         })
         .then((ambientLight) => {
             scene.ambientLight = ambientLight;
+            ambientLight.diffuseSolidColor.set(1, 1, 1, 1);
+            ambientLight.diffuseIntensity = 0.3;
         }),
     engine.resourceManager
         .load<Texture2D>("http://30.46.128.43:8000/shift.png")
