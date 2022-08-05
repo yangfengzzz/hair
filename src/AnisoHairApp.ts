@@ -22,7 +22,8 @@ engine.canvas.resizeByClientSize();
 
 const scene = engine.sceneManager.activeScene;
 const {ambientLight, background} = scene;
-ambientLight.diffuseSolidColor.set(1, 1, 1, 1);
+ambientLight.diffuseSolidColor.set(1, 0, 0, 1);
+ambientLight.diffuseIntensity = 2.0;
 background.solidColor.set(0.0, 0.5, 0.5, 1);
 const rootEntity = scene.createRootEntity();
 
@@ -129,8 +130,8 @@ vec4 getSpecular(vec4 primaryColor, float primaryShift,
 	return specular;
 }
 
-vec4 getAmbientAndDiffuse(vec4 lightColor0, vec4 diffuseColor, vec3 N, vec3 L) {
-    return clamp(mix(0.25, 1.0, dot(N, L)), 0.0, 1.0) * lightColor0 + diffuseColor;
+vec3 getAmbientAndDiffuse(vec3 N, vec3 L) {
+    return clamp(mix(0.25, 1.0, dot(N, L)), 0.0, 1.0) * u_directLightColor[0] + u_envMapLight.diffuseIntensity * u_envMapLight.diffuse;
 }
 
 void main() {
@@ -140,14 +141,13 @@ void main() {
 	vec3 N = normalize(tbn[2]);
 	#include <begin_viewdir_frag>
 	vec3 L = normalize(u_directLightDirection[0]);
-	vec4 u_lightColor0 = vec4(u_directLightColor[0], 1.0);
 
-	vec4 ambientDiffuse = getAmbientAndDiffuse(u_lightColor0, vec4(u_envMapLight.diffuse, 1.0), N, L);
+	vec3 ambientDiffuse = getAmbientAndDiffuse(N, L);
 	vec4 specular = getSpecular(u_primaryColor, u_primaryShift, 
 								u_secondaryColor, u_secondaryShift, N, B, V, L, u_specPower);
                 
     vec4 hairColor = texture2D(u_hairTex, v_uv);
-	glFragColor = (specular * u_specularScale + ambientDiffuse) * hairColor;
+	glFragColor = (specular * u_specularScale + vec4(ambientDiffuse, 1.0)) * hairColor;
 	glFragColor.a = hairColor.a;
 }
 `);
