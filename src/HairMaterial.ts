@@ -4,6 +4,9 @@ import {BaseMaterial, Color, Engine, Shader, Texture2D, Vector4} from "oasis-eng
  * Hair Material
  */
 export class HairMaterial extends BaseMaterial {
+    private static _hairTextureMacro = Shader.getMacroByName("USE_HAIR_TEXTURE");
+    private static _specularShiftTextureMacro = Shader.getMacroByName("USE_SPECULAR_SHIFT_TEXTURE");
+
     private static _hairTextureProp = Shader.getPropertyByName("u_hairTex");
     private static _hairColorProp = Shader.getPropertyByName("u_hairTex_ST");
     private static _specularShiftTextureProp = Shader.getPropertyByName("u_specularShift");
@@ -67,7 +70,13 @@ export class HairMaterial extends BaseMaterial {
     }
 
     set hairTexture(value: Texture2D) {
-        this.shaderData.setTexture(HairMaterial._hairTextureProp, value);
+        const shaderData = this.shaderData;
+        shaderData.setTexture(HairMaterial._hairTextureProp, value);
+        if (value !== null) {
+            shaderData.enableMacro(HairMaterial._hairTextureMacro);
+        } else {
+            shaderData.disableMacro(HairMaterial._hairTextureMacro);
+        }
     }
 
     /**
@@ -92,21 +101,24 @@ export class HairMaterial extends BaseMaterial {
     }
 
     set specularShiftTexture(value: Texture2D) {
-        this.shaderData.setTexture(HairMaterial._specularShiftTextureProp, value);
+        const shaderData = this.shaderData;
+        shaderData.setTexture(HairMaterial._specularShiftTextureProp, value);
+        if (value !== null) {
+            shaderData.enableMacro(HairMaterial._specularShiftTextureMacro);
+        } else {
+            shaderData.disableMacro(HairMaterial._specularShiftTextureMacro);
+        }
     }
 
     /**
      * specular shift
      */
-    get specularShift(): Vector4 {
-        return this.shaderData.getVector4(HairMaterial._specularShiftProp);
+    get specularShift(): number {
+        return this.shaderData.getFloat(HairMaterial._specularShiftProp);
     }
 
-    set specularShift(value: Vector4) {
-        const shift = this.shaderData.getVector4(HairMaterial._specularShiftProp);
-        if (shift !== value) {
-            shift.copyFrom(value);
-        }
+    set specularShift(value: number) {
+        this.shaderData.setFloat(HairMaterial._specularShiftProp, value);
     }
 
     /**
@@ -201,9 +213,9 @@ export class HairMaterial extends BaseMaterial {
         shaderData.enableMacro("O3_NEED_TILINGOFFSET");
 
         shaderData.setColor(HairMaterial._hairColorProp, new Color(1, 1, 1, 1));
-        shaderData.setVector4(HairMaterial._specularShiftProp, new Vector4(0, 0, 0, 0));
         shaderData.setColor(HairMaterial._primaryColorProp, new Color(1, 1, 1, 1));
         shaderData.setColor(HairMaterial._secondaryColorProp, new Color(1, 1, 1, 1));
+        shaderData.setFloat(HairMaterial._specPowerProp, 16);
 
         shaderData.setFloat(HairMaterial._normalIntensityProp, 1);
         shaderData.setVector4(HairMaterial._tilingOffsetProp, new Vector4(1, 1, 0, 0));

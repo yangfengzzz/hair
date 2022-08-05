@@ -78,17 +78,25 @@ void main() {
 }`,
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     `
+#include <common_frag>
 #include <uv_share>
 #include <normal_share>
 #include <light_frag_define>
 #include <worldpos_share>
-#include <common_frag>
 #include <normal_get>
-uniform sampler2D u_hairTex;
-uniform vec4 u_hairTex_ST;
-uniform sampler2D u_specularShift;
-uniform vec4 u_specularShift_ST;
-    
+
+#ifdef USE_HAIR_TEXTURE
+    uniform sampler2D u_hairTex;
+#else
+    uniform vec4 u_hairTex_ST;
+#endif
+
+#ifdef USE_SPECULAR_SHIFT_TEXTURE
+    uniform sampler2D u_specularShift;
+#else
+    uniform float u_specularShift_ST;
+#endif
+
 uniform vec4 u_primaryColor;
 uniform float u_primaryShift;
 uniform vec4 u_secondaryColor;
@@ -115,7 +123,11 @@ float hairStrandSpecular(vec3 T, vec3 V, vec3 L, float specPower) {
 vec4 getSpecular(vec4 primaryColor, float primaryShift,
 				   vec4 secondaryColor, float secondaryShift,
 				   vec3 N, vec3 T, vec3 V, vec3 L, float specPower) {
+#ifdef USE_SPECULAR_SHIFT_TEXTURE
 	float shiftTex = texture2D(u_specularShift, v_uv).r;
+#else
+    float shiftTex = u_specularShift_ST;
+#endif			   
 
 	vec3 t1 = shiftTangent(T, N, primaryShift + shiftTex);
 	vec3 t2 = shiftTangent(T, N, secondaryShift + shiftTex);
@@ -143,7 +155,11 @@ void main() {
 	vec4 specular = getSpecular(u_primaryColor, u_primaryShift, 
 								u_secondaryColor, u_secondaryShift, N, B, V, L, u_specPower);
                 
+#ifdef USE_HAIR_TEXTURE
     vec4 hairColor = texture2D(u_hairTex, v_uv);
+#else
+    vec4 hairColor = u_hairTex_ST;
+#endif
 	glFragColor = (specular * u_specularScale + vec4(ambientDiffuse, 1.0)) * hairColor;
 	glFragColor.a = hairColor.a;
 }
@@ -192,7 +208,6 @@ Promise.all([
                             hairMaterial.hairTexture = hair;
                             hairMaterial.specularWidth = 1.0;
                             hairMaterial.specularScale = 0.5;
-                            hairMaterial.specularPower = 16.0;
 
                             hairMaterial.primaryColor.set(1, 1, 1, 1);
                             hairMaterial.primaryShift = 0.2;
