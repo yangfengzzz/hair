@@ -1,1 +1,2 @@
-import "./src/index";
+// import "./src/AnisoHairApp";
+import "./src/HairApp";

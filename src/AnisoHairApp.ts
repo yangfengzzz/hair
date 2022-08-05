@@ -4,7 +4,7 @@ import {
     DirectLight,
     GLTFResource,
     Logger,
-    MeshRenderer,
+    MeshRenderer, Script,
     Shader,
     Texture2D,
     Vector3,
@@ -23,10 +23,19 @@ ambientLight.diffuseSolidColor.set(1, 1, 1, 1);
 background.solidColor.set(0, 0, 0, 1);
 const rootEntity = scene.createRootEntity();
 
+class Rotate extends Script {
+    totalTime = 0;
+    target = new Vector3();
+    onUpdate(deltaTime: number) {
+        this.totalTime += deltaTime / 1000;
+        this.entity.transform.setPosition(10 * Math.sin(this.totalTime), 10, 10 * Math.cos(this.totalTime));
+        this.entity.transform.lookAt(this.target);
+    }
+}
+
 const directLightNode = rootEntity.createChild("dir_light");
 directLightNode.addComponent(DirectLight);
-directLightNode.transform.setPosition(10, 10, 10);
-directLightNode.transform.lookAt(new Vector3());
+directLightNode.addComponent(Rotate);
 
 //Create camera
 const cameraNode = rootEntity.createChild("camera_node");
@@ -124,7 +133,7 @@ void main() {
 	vec3 B = normalize(tbn[1]);
 	vec3 N = normalize(tbn[2]);
 	vec3 V = normalize(v_pos);
-	vec3 L = normalize(vec3(1.0, 1.0, 1.0)); // todo
+	vec3 L = normalize(u_directLightDirection[0]); // todo
 	vec3 H = normalize(L + V);
 	vec4 u_lightColor0 = vec4(u_directLightColor[0], 1.0);
 
@@ -162,7 +171,7 @@ Promise.all([
                     hairMaterial.specularShiftTexture = shift;
                     hairMaterial.hairTexture = hair;
                     hairMaterial.specularWidth = 1.0;
-                    hairMaterial.specularScale = 0.1;
+                    hairMaterial.specularScale = 0.5;
                     hairMaterial.specularPower = 16.0;
 
                     hairMaterial.primaryColor.set(1, 1, 1, 1);
