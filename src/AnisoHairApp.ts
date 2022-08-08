@@ -228,11 +228,11 @@ Promise.all([
                             hairMaterial.specularShiftTexture = shift;
                             hairMaterial.hairTexture = hair;
                             hairMaterial.specularWidth = 1.0;
-                            hairMaterial.specularScale = 1.0;
+                            hairMaterial.specularScale = 2.0;
 
                             hairMaterial.primaryColor.set(1, 1, 1, 1);
                             hairMaterial.primaryShift = 0.2;
-                            hairMaterial.secondaryColor.set(1, 1, 1, 1);
+                            hairMaterial.secondaryColor.set(0, 0, 1, 1);
                             hairMaterial.secondaryShift = -0.2;
                         })
                 })
