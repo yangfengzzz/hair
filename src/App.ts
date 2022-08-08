@@ -37,7 +37,6 @@ class Rotate extends Script {
 
 const directLightNode = rootEntity.createChild("dir_light");
 const light = directLightNode.addComponent(DirectLight);
-// light.intensity = 0.3;
 const renderer = directLightNode.addComponent(MeshRenderer);
 renderer.mesh = PrimitiveMesh.createSphere(engine, 0.03);
 renderer.setMaterial(new UnlitMaterial(engine));
@@ -164,6 +163,12 @@ void main() {
 #endif	
 	#include <begin_viewdir_frag>
 	
+#ifdef USE_HAIR_TEXTURE
+    vec4 hairColor = texture2D(u_hairTex, v_uv);
+#else
+    vec4 hairColor = u_hairTex_ST;
+#endif
+	
 	for( int i = 0; i < O3_DIRECT_LIGHT_COUNT; i++ ) {
         vec3 lightDir = normalize(-u_directLightDirection[i]);
         vec3 lightColor = u_directLightColor[i];
@@ -172,16 +177,10 @@ void main() {
         vec4 specular = getSpecular(u_primaryColor, u_primaryShift, 
                                     u_secondaryColor, u_secondaryShift, N, B, V, lightDir, u_specPower);
                                     
-        glFragColor += (specular * u_specularScale + vec4(diffuse, diffuse, diffuse, 1.0)) * vec4(lightColor, 1.0);
+        glFragColor += (specular * u_specularScale + vec4(diffuse, diffuse, diffuse, 1.0) * hairColor) * vec4(lightColor, 1.0);
     }
     glFragColor.xyz += u_envMapLight.diffuseIntensity * u_envMapLight.diffuse; // add ambient light
     
-#ifdef USE_HAIR_TEXTURE
-    vec4 hairColor = texture2D(u_hairTex, v_uv);
-#else
-    vec4 hairColor = u_hairTex_ST;
-#endif
-	glFragColor *= hairColor;
 	glFragColor.a = hairColor.a;
 }
 `);
@@ -218,12 +217,12 @@ Promise.all([
             hairMaterial.specularShiftTexture = shift;
             hairMaterial.hairColor.set(0.1, 0.1, 0.1, 1);
             hairMaterial.specularWidth = 1.0;
-            hairMaterial.specularScale = 2.0;
+            hairMaterial.specularScale = 0.1;
 
             hairMaterial.primaryColor.set(1, 1, 1, 1);
-            hairMaterial.primaryShift = 0;
+            hairMaterial.primaryShift = 0.1;
             hairMaterial.secondaryColor.set(1, 1, 1, 1);
-            hairMaterial.secondaryShift = 0;
+            hairMaterial.secondaryShift = -0.1;
         })
 ]).then(() => {
     engine.run();
