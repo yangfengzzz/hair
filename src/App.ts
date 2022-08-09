@@ -201,7 +201,7 @@ let normalTexture: Texture2D;
 
 Promise.all([
     engine.resourceManager
-        .load<GLTFResource>("http://30.46.131.68:8000/ant.glb")
+        .load<GLTFResource>("http://30.46.130.4:8000/ant.glb")
         .then((gltf) => {
             const entity = rootEntity.createChild("hair");
             entity.addChild(gltf.defaultSceneRoot);
@@ -222,7 +222,7 @@ Promise.all([
             ambientLight.diffuseIntensity = 0.1;
         }),
     engine.resourceManager
-        .load<Texture2D>("http://30.46.131.68:8000/shift.png")
+        .load<Texture2D>("http://30.46.130.4:8000/shift.png")
         .then((shift) => {
             hairMaterial.normalTexture = normalTexture;
             hairMaterial.specularShiftTexture = shift;
