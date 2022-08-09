@@ -1,4 +1,4 @@
 // import "./src/AnisoHairApp";
 // import "./src/HairApp";
-
-import "./src/App";
+import "./src/SphereApp";
+// import "./src/App";
