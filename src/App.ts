@@ -138,7 +138,8 @@ vec4 getSpecular(vec4 primaryColor, float primaryShift,
 	float shiftTex = texture2D(u_specularShift, v_uv).r;
 #else
     float shiftTex = u_specularShift_ST;
-#endif			   
+#endif		
+    shiftTex -= 1.0;	   
 
 	vec3 t1 = shiftTangent(T, N, primaryShift + shiftTex);
 	vec3 t2 = shiftTangent(T, N, secondaryShift + shiftTex);
@@ -219,12 +220,13 @@ Promise.all([
             hairMaterial.specularShiftTexture = shift;
             hairMaterial.hairColor.set(0, 0, 0, 1);
             hairMaterial.specularWidth = 1.0;
-            hairMaterial.specularScale = 0.2;
+            hairMaterial.specularScale = 0.5;
+            hairMaterial.specularPower = 16.0;
 
-            hairMaterial.primaryColor.set(1, 1, 1, 1);
-            hairMaterial.primaryShift = 0.1;
-            hairMaterial.secondaryColor.set(1, 1, 1, 1);
-            hairMaterial.secondaryShift = -0.1;
+            hairMaterial.primaryColor.set(0.5, 0.5, 0.5, 1);
+            hairMaterial.primaryShift = 1.0;
+            hairMaterial.secondaryColor.set(0.5, 0.5, 0.5, 1);
+            hairMaterial.secondaryShift = 1.0;
         })
 ]).then(() => {
     engine.run();
