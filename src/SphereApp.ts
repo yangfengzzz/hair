@@ -18,37 +18,6 @@ Logger.enable();
 const engine = new WebGLEngine("canvas");
 engine.canvas.resizeByClientSize();
 
-const scene = engine.sceneManager.activeScene;
-scene.background.solidColor.set(0.0, 0.5, 0.5, 1);
-const rootEntity = scene.createRootEntity();
-
-class Rotate extends Script {
-    totalTime = 0;
-    target = new Vector3();
-
-    onUpdate(deltaTime: number) {
-        this.totalTime += deltaTime / 1000;
-        this.entity.transform.setPosition(0.3 * Math.sin(this.totalTime), 0.3, 0.3 * Math.cos(this.totalTime));
-        this.entity.transform.lookAt(this.target);
-    }
-}
-
-const directLightNode = rootEntity.createChild("dir_light");
-const light = directLightNode.addComponent(DirectLight);
-light.color.set(1, 0.3, 0.3, 1);
-const renderer = directLightNode.addComponent(MeshRenderer);
-renderer.mesh = PrimitiveMesh.createSphere(engine, 0.03);
-renderer.setMaterial(new UnlitMaterial(engine));
-directLightNode.addComponent(Rotate);
-// directLightNode.transform.setPosition(0.3, 0.3, 0.3);
-// directLightNode.transform.lookAt(new Vector3());
-
-//Create camera
-const cameraNode = rootEntity.createChild("camera_node");
-cameraNode.transform.setPosition(0, 0, -5);
-cameraNode.addComponent(Camera);
-cameraNode.addComponent(OrbitControl);
-
 Shader.create("hair",
     `
 #include <common>
@@ -184,62 +153,48 @@ void main() {
 }
 `);
 
+const scene = engine.sceneManager.activeScene;
+scene.background.solidColor.set(0.0, 0.5, 0.5, 1);
+const rootEntity = scene.createRootEntity();
+
+class Rotate extends Script {
+    totalTime = 0;
+    target = new Vector3();
+
+    onUpdate(deltaTime: number) {
+        this.totalTime += deltaTime / 1000;
+        this.entity.transform.setPosition(0.3 * Math.sin(this.totalTime), 0.3, 0.3 * Math.cos(this.totalTime));
+        this.entity.transform.lookAt(this.target);
+    }
+}
+
+const directLightNode = rootEntity.createChild("dir_light");
+const light = directLightNode.addComponent(DirectLight);
+const renderer = directLightNode.addComponent(MeshRenderer);
+renderer.mesh = PrimitiveMesh.createSphere(engine, 0.03);
+renderer.setMaterial(new UnlitMaterial(engine));
+directLightNode.addComponent(Rotate);
+// directLightNode.transform.setPosition(0.3, 0.3, 0.3);
+// directLightNode.transform.lookAt(new Vector3());
+
+//Create camera
+const cameraNode = rootEntity.createChild("camera_node");
+cameraNode.transform.setPosition(0, 0, -5);
+cameraNode.addComponent(Camera);
+cameraNode.addComponent(OrbitControl);
+
 const hairMaterial = new HairMaterial(engine);
 const hairEntity = rootEntity.createChild("hair");
 const hairRenderer = hairEntity.addComponent(MeshRenderer);
-hairRenderer.mesh = PrimitiveMesh.createSphere(engine, 1);
+hairRenderer.mesh = PrimitiveMesh.createSphere(engine, 1, 100);
 hairRenderer.setMaterial(hairMaterial);
 
-engine.run();
+hairMaterial.specularWidth = 1.0;
+hairMaterial.specularScale = 2.0;
 
-// Promise.all([
-//     engine.resourceManager
-//         .load<GLTFResource>("https://gw.alipayobjects.com/os/OasisHub/676000145/1682/Pocolov%252520Hair%25252016.gltf")
-//         .then((gltf) => {
-//             const entity = rootEntity.createChild("hair");
-//             entity.addChild(gltf.defaultSceneRoot);
-//             entity.transform.setPosition(0, -1.5, 0);
-//             const renderer = gltf.defaultSceneRoot.findByName("Hair_16").getComponent(MeshRenderer);
-//             renderer.setMaterial(hairMaterial);
-//
-//             const renderers: MeshRenderer[] = [];
-//             entity.getComponentsIncludeChildren(MeshRenderer, renderers);
-//             renderers[1]._onDisable(); // remove yellow cover
-//         }),
-//     engine.resourceManager
-//         .load<AmbientLight>({
-//             type: AssetType.Env,
-//             url: "https://gw.alipayobjects.com/os/bmw-prod/89c54544-1184-45a1-b0f5-c0b17e5c3e68.bin"
-//         })
-//         .then((ambientLight) => {
-//             scene.ambientLight = ambientLight;
-//             ambientLight.diffuseSolidColor.set(1, 1, 1, 1);
-//             ambientLight.diffuseIntensity = 0.1;
-//         }),
-//     engine.resourceManager
-//         .load<Texture2D>("http://30.46.128.43:8000/shift.png")
-//         .then((shift) => {
-//             engine.resourceManager
-//                 .load<Texture2D>("https://gw.alipayobjects.com/zos/OasisHub/676000145/7692/Hair_01_Gray.png")
-//                 .then((hair) => {
-//                     engine.resourceManager
-//                         .load<Texture2D>("http://30.46.128.43:8000/Hair_01N.png")
-//                         .then((normal) => {
-//                             hairMaterial.tilingOffset.set(1, 1, 0, -0.015);
-//                             hairMaterial.isTransparent = true;
-//
-//                             hairMaterial.normalTexture = normal;
-//                             hairMaterial.specularShiftTexture = shift;
-//                             hairMaterial.hairTexture = hair;
-//                             hairMaterial.specularWidth = 1.0;
-//                             hairMaterial.specularScale = 2.0;
-//
-//                             hairMaterial.primaryColor.set(1, 1, 1, 1);
-//                             hairMaterial.primaryShift = 0.2;
-//                             hairMaterial.secondaryColor.set(0, 0, 1, 1);
-//                             hairMaterial.secondaryShift = -0.2;
-//                         })
-//                 })
-//         })
-// ]).then(() => {
-// });
+hairMaterial.primaryColor.set(1, 1, 1, 1);
+hairMaterial.primaryShift = 0;
+hairMaterial.secondaryColor.set(0, 0, 1, 1);
+hairMaterial.secondaryShift = 0;
+
+engine.run();
