@@ -11,7 +11,8 @@ import {
     Vector3,
     WebGLEngine,
     AmbientLight,
-    AssetType, Mesh, PrimitiveMesh, UnlitMaterial, PBRMaterial
+    AssetType,
+    PBRMaterial
 } from "oasis-engine";
 import {HairMaterial} from "./HairMaterial";
 
