@@ -35,25 +35,16 @@ class Rotate extends Script {
     }
 }
 
-const directLightNode = rootEntity.createChild("dir_light");
-const light = directLightNode.addComponent(DirectLight);
-light.color.set(0.4, 0, 0.4, 0);
-const renderer = directLightNode.addComponent(MeshRenderer);
-renderer.mesh = PrimitiveMesh.createSphere(engine, 0.03);
-renderer.setMaterial(new UnlitMaterial(engine));
-// directLightNode.addComponent(Rotate);
-directLightNode.transform.setPosition(0, 0, -0.3);
-directLightNode.transform.lookAt(new Vector3());
+const mainLightEntity = rootEntity.createChild('mainLight');
+const mainLight = mainLightEntity.addComponent(DirectLight);
+const purpleLightEntity = rootEntity.createChild('purpleLight');
+const purpleLight = purpleLightEntity.addComponent(DirectLight);
 
-const directLightNode2 = rootEntity.createChild("dir_light2");
-const light2 = directLightNode2.addComponent(DirectLight);
-light2.intensity = 0.5;
-const renderer2 = directLightNode2.addComponent(MeshRenderer);
-renderer2.mesh = PrimitiveMesh.createSphere(engine, 0.03);
-renderer2.setMaterial(new UnlitMaterial(engine));
-// directLightNode.addComponent(Rotate);
-directLightNode2.transform.setPosition(0, 0, 0.3);
-directLightNode2.transform.lookAt(new Vector3());
+mainLightEntity.transform.setRotation(-22, 0, 0);
+purpleLightEntity.transform.setRotation(0, 210, 0);
+mainLight.intensity = 0.55;
+purpleLight.intensity = 0.15;
+purpleLight.color.set(189 / 255, 16 / 255, 224 / 255, 1.0);
 
 //Create camera
 const cameraNode = rootEntity.createChild("camera_node");
@@ -201,7 +192,7 @@ let normalTexture: Texture2D;
 
 Promise.all([
     engine.resourceManager
-        .load<GLTFResource>("http://30.46.130.4:8000/ant.glb")
+        .load<GLTFResource>("http://30.46.130.230:8000/ant.glb")
         .then((gltf) => {
             const entity = rootEntity.createChild("hair");
             entity.addChild(gltf.defaultSceneRoot);
@@ -214,17 +205,17 @@ Promise.all([
     engine.resourceManager
         .load<AmbientLight>({
             type: AssetType.Env,
-            url: "https://gw.alipayobjects.com/os/bmw-prod/89c54544-1184-45a1-b0f5-c0b17e5c3e68.bin"
+            url: 'https://gw.alipayobjects.com/os/bmw-prod/67b05052-ecf8-46f1-86ff-26d9abcc83ea.bin',
         })
         .then((ambientLight) => {
+            ambientLight.diffuseIntensity = ambientLight.specularIntensity = 0.5;
             scene.ambientLight = ambientLight;
             ambientLight.diffuseSolidColor.set(1, 1, 1, 1);
             ambientLight.diffuseIntensity = 0.1;
         }),
     engine.resourceManager
-        .load<Texture2D>("http://30.46.130.4:8000/shift.png")
+        .load<Texture2D>("http://30.46.130.230:8000/shift.png")
         .then((shift) => {
-            hairMaterial.normalTexture = normalTexture;
             hairMaterial.specularShiftTexture = shift;
             hairMaterial.hairColor.set(0, 0, 0, 1);
             hairMaterial.specularWidth = 1.0;
