@@ -10,6 +10,7 @@ export class PBRFlowMaterial extends PBRBaseMaterial {
 
     private static _shiftUProp = Shader.getPropertyByName("u_shiftU");
     private static _shiftVProp = Shader.getPropertyByName("u_shiftV");
+    private static _flowColorProp = Shader.getPropertyByName("u_flowColor");
     private static _flowTextureProp = Shader.getPropertyByName("u_flowTexture");
 
     /**
@@ -32,6 +33,20 @@ export class PBRFlowMaterial extends PBRBaseMaterial {
 
     set shiftV(value: number) {
         this.shaderData.setFloat(PBRFlowMaterial._shiftVProp, value);
+    }
+
+    /**
+     * flow color
+     */
+    get flowColor(): Color {
+        return this.shaderData.getColor(PBRFlowMaterial._flowColorProp);
+    }
+
+    set flowColor(value: Color) {
+        const flowColor = this.shaderData.getColor(PBRFlowMaterial._flowColorProp);
+        if (value !== flowColor) {
+            flowColor.copyFrom(value);
+        }
     }
 
     /**
@@ -95,6 +110,7 @@ export class PBRFlowMaterial extends PBRBaseMaterial {
 
         this.shaderData.setFloat(PBRFlowMaterial._shiftUProp, 0);
         this.shaderData.setFloat(PBRFlowMaterial._shiftVProp, 0);
+        this.shaderData.setColor(PBRFlowMaterial._flowColorProp, new Color(1, 1, 1, 1));
     }
 
     /**

@@ -90,10 +90,11 @@ void main() {
 
 uniform float u_shiftU;
 uniform float u_shiftV;
+uniform vec4 u_flowColor;
 uniform sampler2D u_flowTexture;
 
 vec4 flowColor() {    
-    return texture2D(u_flowTexture, v_uv + vec2(u_shiftU, u_shiftV));    
+    return texture2D(u_flowTexture, v_uv + vec2(u_shiftU, u_shiftV)) * u_flowColor;    
 }
 
 #include <normal_get>
@@ -237,8 +238,13 @@ class Flow extends Script {
         const forward = this._forward;
         this.entity.transform.getWorldForward(forward);
         const sinTheta = Math.sqrt(1 - forward.y * forward.y);
-        this._material.shiftU = forward.x / sinTheta;
-        this._material.shiftV = forward.y;
+        if (forward.z > 0) {
+            this._material.shiftU = forward.x / sinTheta;
+            this._material.shiftV = forward.y;
+        } else {
+            this._material.shiftU = -forward.x / sinTheta;
+            this._material.shiftV = 1 - forward.y;
+        }
     }
 }
 
@@ -321,6 +327,7 @@ Promise.all([
         .load<Texture2D>("http://30.46.128.40:8000/hair-Hlight.jpg")
         .then((highlight) => {
             hairMaterial.flowTexture = highlight;
+            hairMaterial.flowColor.set(0.5, 0.5, 0.5, 1.0);
         })
 ]).then(() => {
     engine.run();
