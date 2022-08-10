@@ -8,45 +8,18 @@ export class PBRFlowMaterial extends PBRBaseMaterial {
     private static _roughnessProp = Shader.getPropertyByName("u_roughness");
     private static _roughnessMetallicTextureProp = Shader.getPropertyByName("u_roughnessMetallicTexture");
 
-    private static _velProp = Shader.getPropertyByName("u_vel");
-    private static _timeProp = Shader.getPropertyByName("u_time");
-    private static _flowColorProp = Shader.getPropertyByName("u_flowColor");
+    private static _shiftProp = Shader.getPropertyByName("u_shift");
     private static _flowTextureProp = Shader.getPropertyByName("u_flowTexture");
 
     /**
-     * velocity
+     * shift
      */
-    get vel(): number {
-        return this.shaderData.getFloat(PBRFlowMaterial._velProp);
+    get shift(): number {
+        return this.shaderData.getFloat(PBRFlowMaterial._shiftProp);
     }
 
-    set vel(value: number) {
-        this.shaderData.setFloat(PBRFlowMaterial._velProp, value);
-    }
-
-    /**
-     * time
-     */
-    get time(): number {
-        return this.shaderData.getFloat(PBRFlowMaterial._timeProp);
-    }
-
-    set time(value: number) {
-        this.shaderData.setFloat(PBRFlowMaterial._timeProp, value);
-    }
-
-    /**
-     * flow color
-     */
-    get flowColor(): Color {
-        return this.shaderData.getColor(PBRFlowMaterial._flowColorProp);
-    }
-
-    set flowColor(value: Color) {
-        const flowColor = this.shaderData.getColor(PBRFlowMaterial._flowColorProp);
-        if (value !== flowColor) {
-            flowColor.copyFrom(value);
-        }
+    set shift(value: number) {
+        this.shaderData.setFloat(PBRFlowMaterial._shiftProp, value);
     }
 
     /**
@@ -108,9 +81,7 @@ export class PBRFlowMaterial extends PBRBaseMaterial {
         this.shaderData.setFloat(PBRFlowMaterial._metallicProp, 1);
         this.shaderData.setFloat(PBRFlowMaterial._roughnessProp, 1);
 
-        this.shaderData.setFloat(PBRFlowMaterial._timeProp, 0);
-        this.shaderData.setFloat(PBRFlowMaterial._velProp, 0);
-        this.shaderData.setColor(PBRFlowMaterial._flowColorProp, new Color(0, 0, 0, 1));
+        this.shaderData.setFloat(PBRFlowMaterial._shiftProp, 0);
     }
 
     /**

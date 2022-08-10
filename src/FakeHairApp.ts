@@ -84,14 +84,11 @@ void main() {
 
 #include <pbr_frag_define>
 
-uniform float u_time;
-uniform float u_vel;
-uniform vec4 u_flowColor;
+uniform float u_shift;
 uniform sampler2D u_flowTexture;
-varying vec3 v_position;
 
 vec4 flowColor() {    
-    return texture2D(u_flowTexture, v_uv);    
+    return texture2D(u_flowTexture, v_uv + vec2(0.0, u_shift));    
 }
 
 #include <normal_get>
@@ -141,7 +138,7 @@ void initGeometry(out Geometry geometry){
 }
 
 void initMaterial(out Material material, const in Geometry geometry){
-        vec4 baseColor = u_baseColor + flowColor();
+        vec4 baseColor = u_baseColor;
         float metal = u_metal;
         float roughness = u_roughness;
         vec3 specularColor = u_PBRSpecularColor;
@@ -155,6 +152,7 @@ void initMaterial(out Material material, const in Geometry geometry){
             #endif
             baseColor *= baseTextureColor;
         #endif
+        baseColor += flowColor();
 
         #ifdef O3_HAS_VERTEXCOLOR
             baseColor *= v_color;
@@ -231,7 +229,11 @@ class Flow extends Script {
     }
 
     onUpdate(deltaTime: number) {
-        this._material.time = 0;
+        this._time += deltaTime / 1000;
+        if (this._time > 1) {
+            this._time -= 1;
+        }
+        this._material.shift = this._time;
     }
 }
 
@@ -262,6 +264,7 @@ Promise.all([
     engine.resourceManager
         .load<Texture2D>("http://30.46.128.40:8000/hair-Hlight.jpg")
         .then((highlight) => {
+            hairMaterial.baseColor.set(0, 0, 0, 1);
             hairMaterial.flowTexture = highlight;
         })
 ]).then(() => {
