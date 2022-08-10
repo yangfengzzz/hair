@@ -1,4 +1,4 @@
-import {GizmoControls, GizmoState, OrbitControl} from "oasis-engine-toolkit";
+import {OrbitControl} from "oasis-engine-toolkit";
 import {
     AmbientLight,
     AssetType,
@@ -17,6 +17,7 @@ import {
 } from "oasis-engine";
 import {PBRFlowMaterial} from "./PBRFlowMaterial";
 import {PrimitiveMesh} from "./PrimitiveMesh";
+import {Gizmo} from "./Gizmo";
 
 Logger.enable();
 //-- create engine object
@@ -39,10 +40,10 @@ purpleLight.intensity = 0.15;
 purpleLight.color.set(189 / 255, 16 / 255, 224 / 255, 1.0);
 
 //Create camera
-const cameraNode = rootEntity.createChild("camera_node");
+const cameraNode = rootEntity.createChild("camera");
 cameraNode.transform.setPosition(0, 0, 1);
 const camera = cameraNode.addComponent(Camera);
-cameraNode.addComponent(OrbitControl);
+// cameraNode.addComponent(OrbitControl);
 
 Shader.create("pbr-scan", `
 #include <common>
@@ -284,7 +285,7 @@ Promise.all([
         .load<GLTFResource>("http://30.46.128.40:8000//ant.glb")
         .then((gltf) => {
             gltf.defaultSceneRoot.transform.setPosition(0, -1.3, 0);
-            gltf.defaultSceneRoot.addComponent(RotateX);
+            // gltf.defaultSceneRoot.addComponent(RotateX);
             // gltf.defaultSceneRoot.addComponent(RotateY);
             // gltf.defaultSceneRoot.addComponent(RotateZ);
 
@@ -295,8 +296,7 @@ Promise.all([
             const box = entity.addComponent(MeshRenderer);
             box.mesh = PrimitiveMesh.createSphere(engine, 0.1);
             box.setMaterial(new UnlitMaterial(engine));
-            // const gizmo = entity.addComponent(GizmoControls);
-            // gizmo.initGizmoControl(camera);
+            const gizmo = entity.addComponent(Gizmo);
 
             const renderer = gltf.defaultSceneRoot.findByName("Hair_16").getComponent(MeshRenderer);
             hairMaterial.normalTexture = (<PBRMaterial>renderer.getMaterial()).normalTexture;
