@@ -14,9 +14,8 @@ import {
     WebGLEngine,
     BackgroundMode,
     PrimitiveMesh,
-    SkyBoxMaterial
+    UnlitMaterial
 } from "oasis-engine";
-import {UnlitMaterial} from "_oasis-engine@0.8.0-beta.9@oasis-engine";
 
 Logger.enable();
 //-- create engine object
