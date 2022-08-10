@@ -194,7 +194,7 @@ let normalTexture: Texture2D;
 
 Promise.all([
     engine.resourceManager
-        .load<GLTFResource>("http://30.46.130.230:8000/ant.glb")
+        .load<GLTFResource>("http://30.46.128.40:8000/ant.glb")
         .then((gltf) => {
             const entity = rootEntity.createChild("hair");
             entity.addChild(gltf.defaultSceneRoot);
@@ -212,11 +212,9 @@ Promise.all([
         .then((ambientLight) => {
             ambientLight.diffuseIntensity = ambientLight.specularIntensity = 0.5;
             scene.ambientLight = ambientLight;
-            ambientLight.diffuseSolidColor.set(1, 1, 1, 1);
-            ambientLight.diffuseIntensity = 0.1;
         }),
     engine.resourceManager
-        .load<Texture2D>("http://30.46.130.230:8000/shift.png")
+        .load<Texture2D>("http://30.46.128.40:8000/hair-Anisotropic.jpg")
         .then((shift) => {
             hairMaterial.specularShiftTexture = shift;
             hairMaterial.hairColor.set(0, 0, 0, 1);
@@ -224,9 +222,9 @@ Promise.all([
             hairMaterial.specularScale = 0.5;
             hairMaterial.specularPower = 16.0;
 
-            hairMaterial.primaryColor.set(0.5, 0.5, 0.5, 1);
+            hairMaterial.primaryColor.set(0, 0, 0, 1);
             hairMaterial.primaryShift = 1.0;
-            hairMaterial.secondaryColor.set(0.5, 0.5, 0.5, 1);
+            hairMaterial.secondaryColor.set(1, 1, 1, 1);
             hairMaterial.secondaryShift = 1.0;
         })
 ]).then(() => {
