@@ -11,7 +11,7 @@ import {
     WebGLEngine,
     AmbientLight,
     AssetType,
-    PBRMaterial
+    PBRMaterial, Vector3
 } from "oasis-engine";
 import {PBRFlowMaterial} from "./PBRFlowMaterial";
 
@@ -84,11 +84,12 @@ void main() {
 
 #include <pbr_frag_define>
 
-uniform float u_shift;
+uniform float u_shiftU;
+uniform float u_shiftV;
 uniform sampler2D u_flowTexture;
 
 vec4 flowColor() {    
-    return texture2D(u_flowTexture, v_uv + vec2(0.0, u_shift));    
+    return texture2D(u_flowTexture, v_uv + vec2(u_shiftU, u_shiftV));    
 }
 
 #include <normal_get>
@@ -221,19 +222,20 @@ void main() {
 }`);
 
 class Flow extends Script {
-    private _time: number = 0;
     private _material: PBRFlowMaterial = null;
+    private _up = new Vector3();
 
     set material(value: PBRFlowMaterial) {
         this._material = value;
     }
 
     onUpdate(deltaTime: number) {
-        this._time += deltaTime / 1000;
-        if (this._time > 1) {
-            this._time -= 1;
-        }
-        this._material.shift = this._time;
+        const up = this._up;
+        this.entity.transform.getWorldUp(up);
+        up.normalize();
+        const sinTheta = Math.sqrt(1 - up.y * up.y);
+        this._material.shiftU = up.x / sinTheta;
+        this._material.shiftV = up.y;
     }
 }
 

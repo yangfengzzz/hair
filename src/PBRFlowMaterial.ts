@@ -8,18 +8,30 @@ export class PBRFlowMaterial extends PBRBaseMaterial {
     private static _roughnessProp = Shader.getPropertyByName("u_roughness");
     private static _roughnessMetallicTextureProp = Shader.getPropertyByName("u_roughnessMetallicTexture");
 
-    private static _shiftProp = Shader.getPropertyByName("u_shift");
+    private static _shiftUProp = Shader.getPropertyByName("u_shiftU");
+    private static _shiftVProp = Shader.getPropertyByName("u_shiftV");
     private static _flowTextureProp = Shader.getPropertyByName("u_flowTexture");
 
     /**
-     * shift
+     * shift U
      */
-    get shift(): number {
-        return this.shaderData.getFloat(PBRFlowMaterial._shiftProp);
+    get shiftU(): number {
+        return this.shaderData.getFloat(PBRFlowMaterial._shiftUProp);
     }
 
-    set shift(value: number) {
-        this.shaderData.setFloat(PBRFlowMaterial._shiftProp, value);
+    set shiftU(value: number) {
+        this.shaderData.setFloat(PBRFlowMaterial._shiftUProp, value);
+    }
+
+    /**
+     * shift V
+     */
+    get shiftV(): number {
+        return this.shaderData.getFloat(PBRFlowMaterial._shiftVProp);
+    }
+
+    set shiftV(value: number) {
+        this.shaderData.setFloat(PBRFlowMaterial._shiftVProp, value);
     }
 
     /**
@@ -81,7 +93,8 @@ export class PBRFlowMaterial extends PBRBaseMaterial {
         this.shaderData.setFloat(PBRFlowMaterial._metallicProp, 1);
         this.shaderData.setFloat(PBRFlowMaterial._roughnessProp, 1);
 
-        this.shaderData.setFloat(PBRFlowMaterial._shiftProp, 0);
+        this.shaderData.setFloat(PBRFlowMaterial._shiftUProp, 0);
+        this.shaderData.setFloat(PBRFlowMaterial._shiftVProp, 0);
     }
 
     /**
