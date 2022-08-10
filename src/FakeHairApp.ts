@@ -239,10 +239,10 @@ class Flow extends Script {
         this.entity.transform.getWorldForward(forward);
         const sinTheta = Math.sqrt(1 - forward.y * forward.y);
         if (forward.z > 0) {
-            this._material.shiftU = forward.x / sinTheta;
+            // this._material.shiftU = forward.x / sinTheta;
             this._material.shiftV = forward.y;
         } else {
-            this._material.shiftU = -forward.x / sinTheta;
+            // this._material.shiftU = -forward.x / sinTheta;
             this._material.shiftV = 1 - forward.y;
         }
     }
