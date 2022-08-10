@@ -226,19 +226,18 @@ void main() {
 
 class Flow extends Script {
     private _material: PBRFlowMaterial = null;
-    private _up = new Vector3();
+    private _forward = new Vector3();
 
     set material(value: PBRFlowMaterial) {
         this._material = value;
     }
 
     onUpdate(deltaTime: number) {
-        const up = this._up;
-        this.entity.transform.getWorldUp(up);
-        up.normalize();
-        const sinTheta = Math.sqrt(1 - up.y * up.y);
-        this._material.shiftU = up.x / sinTheta;
-        this._material.shiftV = up.y;
+        const forward = this._forward;
+        this.entity.transform.getWorldForward(forward);
+        const sinTheta = Math.sqrt(1 - forward.y * forward.y);
+        this._material.shiftU = forward.x / sinTheta;
+        this._material.shiftV = forward.y;
     }
 }
 
@@ -285,7 +284,7 @@ Promise.all([
         .load<GLTFResource>("http://30.46.128.40:8000//ant.glb")
         .then((gltf) => {
             gltf.defaultSceneRoot.transform.setPosition(0, -1.3, 0);
-            // gltf.defaultSceneRoot.addComponent(RotateX);
+            gltf.defaultSceneRoot.addComponent(RotateX);
             // gltf.defaultSceneRoot.addComponent(RotateY);
             // gltf.defaultSceneRoot.addComponent(RotateZ);
 
