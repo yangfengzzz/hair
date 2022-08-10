@@ -40,6 +40,7 @@ purpleLight.color.set(189 / 255, 16 / 255, 224 / 255, 1.0);
 const cameraNode = rootEntity.createChild("camera");
 cameraNode.transform.setPosition(0, 0, 1);
 const camera = cameraNode.addComponent(Camera);
+cameraNode.addComponent(OrbitControl);
 
 class RotateX extends Script {
     private _time: number = -30;
@@ -98,6 +99,7 @@ Promise.all([
 
             const renderer = gltf.defaultSceneRoot.findByName("Hair_16").getComponent(MeshRenderer);
             const hairMaterial = <PBRMaterial>renderer.getMaterial();
+            hairMaterial.anisotropy = -1;
         }),
     engine.resourceManager
         .load<AmbientLight>({
