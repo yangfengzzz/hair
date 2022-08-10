@@ -8,7 +8,6 @@ import {
     Script,
     Shader,
     Texture2D,
-    Vector3,
     WebGLEngine,
     AmbientLight,
     AssetType,
@@ -84,7 +83,6 @@ void main() {
 #include <light_frag_define>
 
 #include <pbr_frag_define>
-#include <pbr_helper>
 
 uniform float u_time;
 uniform float u_vel;
@@ -92,91 +90,135 @@ uniform vec4 u_flowColor;
 uniform sampler2D u_flowTexture;
 varying vec3 v_position;
 
-vec4 flowColor() {
-    vec2 offset = vec2(u_time * u_vel, 0.0);
-    vec2 tiling = vec2(0.3, 1.0);
-    vec2 uv = v_uv * tiling + offset;
-    
-    return texture2D(u_flowTexture, uv) * u_flowColor;    
+vec4 flowColor() {    
+    return texture2D(u_flowTexture, v_uv);    
 }
 
-void main() {
-    Geometry geometry;
-    Material material;
-    ReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );
-    
-    initGeometry(geometry);
-    initMaterial(material, geometry);
-    
-    // Direct Light
-    addTotalDirectRadiance(geometry, material, reflectedLight);
-    
-    // IBL diffuse
-    #ifdef O3_USE_SH
-        vec3 irradiance = getLightProbeIrradiance(u_env_sh, geometry.normal);
-        #ifdef OASIS_COLORSPACE_GAMMA
-            irradiance = linearToGamma(vec4(irradiance, 1.0)).rgb;
-        #endif
-        irradiance *= u_envMapLight.diffuseIntensity;
+#include <normal_get>
+
+float computeSpecularOcclusion(float ambientOcclusion, float roughness, float dotNV ) {
+    return saturate( pow( dotNV + ambientOcclusion, exp2( - 16.0 * roughness - 1.0 ) ) - 1.0 + ambientOcclusion );
+}
+
+float getAARoughnessFactor(vec3 normal) {
+    // Kaplanyan 2016, "Stable specular highlights"
+    // Tokuyoshi 2017, "Error Reduction and Simplification for Shading Anti-Aliasing"
+    // Tokuyoshi and Kaplanyan 2019, "Improved Geometric Specular Antialiasing"
+    #ifdef HAS_DERIVATIVES
+        vec3 dxy = max( abs(dFdx(normal)), abs(dFdy(normal)) );
+        return 0.04 + max( max(dxy.x, dxy.y), dxy.z );
     #else
-       vec3 irradiance = u_envMapLight.diffuse * u_envMapLight.diffuseIntensity;
-       irradiance *= PI;
+        return 0.04;
     #endif
-    
-    reflectedLight.indirectDiffuse += irradiance * BRDF_Diffuse_Lambert( material.diffuseColor );
-    
-    // IBL specular
-    vec3 radiance = getLightProbeRadiance(geometry.viewDir, geometry.normal, material.roughness, int(u_envMapLight.mipMapLevel), u_envMapLight.specularIntensity);
-    float radianceAttenuation = 1.0;
-    
+}
+
+void initGeometry(out Geometry geometry){
+    geometry.position = v_pos;
+    geometry.viewDir =  normalize(u_cameraPos - v_pos);
+
+    #if defined(NORMALTEXTURE) || defined(HAS_CLEARCOATNORMALTEXTURE)
+        mat3 tbn = getTBN();
+    #endif
+
+    #ifdef NORMALTEXTURE
+        geometry.normal = getNormalByNormalTexture(tbn, u_normalTexture, u_normalIntensity, v_uv);
+    #else
+        geometry.normal = getNormal();
+    #endif
+
+    geometry.dotNV = saturate( dot(geometry.normal, geometry.viewDir) );
+
+
     #ifdef CLEARCOAT
-        vec3 clearCoatRadiance = getLightProbeRadiance( geometry.viewDir, geometry.clearCoatNormal, material.clearCoatRoughness, int(u_envMapLight.mipMapLevel), u_envMapLight.specularIntensity );
-    
-        reflectedLight.indirectSpecular += clearCoatRadiance * material.clearCoat * envBRDFApprox(vec3( 0.04 ), material.clearCoatRoughness, geometry.clearCoatDotNV);
-        radianceAttenuation -= material.clearCoat * F_Schlick(geometry.clearCoatDotNV);
+        #ifdef HAS_CLEARCOATNORMALTEXTURE
+            geometry.clearCoatNormal = getNormalByNormalTexture(tbn, u_clearCoatNormalTexture, u_normalIntensity, v_uv);
+        #else
+            geometry.clearCoatNormal = getNormal();
+        #endif
+        geometry.clearCoatDotNV = saturate( dot(geometry.clearCoatNormal, geometry.viewDir) );
     #endif
-    
-    reflectedLight.indirectSpecular += radianceAttenuation * radiance * envBRDFApprox(material.specularColor, material.roughness, geometry.dotNV );
-    
-    
-    // Occlusion
-    #ifdef OCCLUSIONTEXTURE
-        vec2 aoUV = v_uv;
-        #ifdef O3_HAS_UV1
-            if(u_occlusionTextureCoord == 1.0){
-                aoUV = v_uv1;
+
+}
+
+void initMaterial(out Material material, const in Geometry geometry){
+        vec4 baseColor = u_baseColor + flowColor();
+        float metal = u_metal;
+        float roughness = u_roughness;
+        vec3 specularColor = u_PBRSpecularColor;
+        float glossiness = u_glossiness;
+        float alphaCutoff = u_alphaCutoff;
+
+        #ifdef BASETEXTURE
+            vec4 baseTextureColor = texture2D(u_baseTexture, v_uv);
+            #ifndef OASIS_COLORSPACE_GAMMA
+                baseTextureColor = gammaToLinear(baseTextureColor);
+            #endif
+            baseColor *= baseTextureColor;
+        #endif
+
+        #ifdef O3_HAS_VERTEXCOLOR
+            baseColor *= v_color;
+        #endif
+
+
+        #ifdef ALPHA_CUTOFF
+            if( baseColor.a < alphaCutoff ) {
+                discard;
             }
         #endif
-        float ambientOcclusion = (texture2D(u_occlusionTexture, aoUV).r - 1.0) * u_occlusionIntensity + 1.0;
-        reflectedLight.indirectDiffuse *= ambientOcclusion;
-        #ifdef O3_USE_SPECULAR_ENV
-            reflectedLight.indirectSpecular *= computeSpecularOcclusion(ambientOcclusion, material.roughness, geometry.dotNV);
+
+        #ifdef ROUGHNESSMETALLICTEXTURE
+            vec4 metalRoughMapColor = texture2D( u_roughnessMetallicTexture, v_uv );
+            roughness *= metalRoughMapColor.g;
+            metal *= metalRoughMapColor.b;
         #endif
-    #endif
-        
-    // Emissive
-    vec3 emissiveRadiance = flowColor().rgb;
-    #ifdef EMISSIVETEXTURE
-        vec4 emissiveColor = texture2D(u_emissiveTexture, v_uv);
-        #ifndef OASIS_COLORSPACE_GAMMA
-            emissiveColor = gammaToLinear(emissiveColor);
+
+        #ifdef SPECULARGLOSSINESSTEXTURE
+            vec4 specularGlossinessColor = texture2D(u_specularGlossinessTexture, v_uv );
+            #ifndef OASIS_COLORSPACE_GAMMA
+                specularGlossinessColor = gammaToLinear(specularGlossinessColor);
+            #endif
+            specularColor *= specularGlossinessColor.rgb;
+            glossiness *= specularGlossinessColor.a;
         #endif
-        emissiveRadiance *= emissiveColor.rgb;
-    #endif
-    
-    // Total
-    vec3 totalRadiance =    reflectedLight.directDiffuse + 
-                            reflectedLight.indirectDiffuse + 
-                            reflectedLight.directSpecular + 
-                            reflectedLight.indirectSpecular + 
-                            emissiveRadiance;
-    
-    vec4 targetColor =vec4(totalRadiance, material.opacity);
-    #ifndef OASIS_COLORSPACE_GAMMA
-        targetColor = linearToGamma(targetColor);
-    #endif
-    gl_FragColor = targetColor;
-    
+
+
+        #ifdef IS_METALLIC_WORKFLOW
+            material.diffuseColor = baseColor.rgb * ( 1.0 - metal );
+            material.specularColor = mix( vec3( 0.04), baseColor.rgb, metal );
+            material.roughness = roughness;
+        #else
+            float specularStrength = max( max( specularColor.r, specularColor.g ), specularColor.b );
+            material.diffuseColor = baseColor.rgb * ( 1.0 - specularStrength );
+            material.specularColor = specularColor;
+            material.roughness = 1.0 - glossiness;
+        #endif
+
+        material.roughness = max(material.roughness, getAARoughnessFactor(geometry.normal));
+
+        #ifdef CLEARCOAT
+            material.clearCoat = u_clearCoat;
+            material.clearCoatRoughness = u_clearCoatRoughness;
+            #ifdef HAS_CLEARCOATTEXTURE
+                material.clearCoat *= texture2D( u_clearCoatTexture, v_uv ).r;
+            #endif
+            #ifdef HAS_CLEARCOATROUGHNESSTEXTURE
+                material.clearCoatRoughness *= texture2D( u_clearCoatRoughnessTexture, v_uv ).g;
+            #endif
+            material.clearCoat = saturate( material.clearCoat );
+            material.clearCoatRoughness = max(material.clearCoatRoughness, getAARoughnessFactor(geometry.clearCoatNormal));
+        #endif
+
+        material.opacity = baseColor.a;
+}
+
+// direct + indirect
+#include <brdf>
+#include <direct_irradiance_frag_define>
+#include <ibl_frag_define>
+
+void main() {
+    #include <pbr_frag>
     #include <fog_frag>
 }`);
 
