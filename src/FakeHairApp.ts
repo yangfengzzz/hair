@@ -249,6 +249,10 @@ Promise.all([
 
             const renderer = gltf.defaultSceneRoot.findByName("Hair_16").getComponent(MeshRenderer);
             hairMaterial.normalTexture = (<PBRMaterial>renderer.getMaterial()).normalTexture;
+            hairMaterial.roughness = (<PBRMaterial>renderer.getMaterial()).roughness;
+            hairMaterial.metallic = (<PBRMaterial>renderer.getMaterial()).metallic;
+            hairMaterial.baseColor = (<PBRMaterial>renderer.getMaterial()).baseColor;
+            hairMaterial.baseTexture = (<PBRMaterial>renderer.getMaterial()).baseTexture;
             renderer.setMaterial(hairMaterial);
             renderer.entity.addComponent(Flow).material = hairMaterial;
         }),
@@ -264,7 +268,6 @@ Promise.all([
     engine.resourceManager
         .load<Texture2D>("http://30.46.128.40:8000/hair-Hlight.jpg")
         .then((highlight) => {
-            hairMaterial.baseColor.set(0, 0, 0, 1);
             hairMaterial.flowTexture = highlight;
         })
 ]).then(() => {
