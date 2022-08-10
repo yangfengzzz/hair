@@ -1,19 +1,22 @@
-import {OrbitControl} from "@oasis-engine-toolkit/controls";
+import {GizmoControls, GizmoState, OrbitControl} from "oasis-engine-toolkit";
 import {
+    AmbientLight,
+    AssetType,
     Camera,
     DirectLight,
     GLTFResource,
     Logger,
     MeshRenderer,
+    PBRMaterial,
     Script,
     Shader,
     Texture2D,
-    WebGLEngine,
-    AmbientLight,
-    AssetType,
-    PBRMaterial, Vector3
+    UnlitMaterial,
+    Vector3,
+    WebGLEngine
 } from "oasis-engine";
 import {PBRFlowMaterial} from "./PBRFlowMaterial";
+import {PrimitiveMesh} from "./PrimitiveMesh";
 
 Logger.enable();
 //-- create engine object
@@ -245,9 +248,15 @@ Promise.all([
     engine.resourceManager
         .load<GLTFResource>("http://30.46.128.40:8000//ant.glb")
         .then((gltf) => {
+            gltf.defaultSceneRoot.transform.setPosition(0, -1.3, 0);
             const entity = rootEntity.createChild("hair");
             entity.addChild(gltf.defaultSceneRoot);
-            entity.transform.setPosition(0, -1.5, 0);
+            entity.transform.setPosition(0, -0.2, 0);
+
+            const box = entity.addComponent(MeshRenderer);
+            box.mesh = PrimitiveMesh.createSphere(engine, 0.1);
+            box.setMaterial(new UnlitMaterial(engine));
+            const gizmo = entity.addComponent(GizmoControls);
 
             const renderer = gltf.defaultSceneRoot.findByName("Hair_16").getComponent(MeshRenderer);
             hairMaterial.normalTexture = (<PBRMaterial>renderer.getMaterial()).normalTexture;
