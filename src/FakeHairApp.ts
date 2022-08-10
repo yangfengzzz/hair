@@ -41,7 +41,7 @@ purpleLight.color.set(189 / 255, 16 / 255, 224 / 255, 1.0);
 //Create camera
 const cameraNode = rootEntity.createChild("camera_node");
 cameraNode.transform.setPosition(0, 0, 1);
-cameraNode.addComponent(Camera);
+const camera = cameraNode.addComponent(Camera);
 cameraNode.addComponent(OrbitControl);
 
 Shader.create("pbr-scan", `
@@ -244,11 +244,51 @@ class Flow extends Script {
 
 const hairMaterial = new PBRFlowMaterial(engine);
 
+class RotateX extends Script {
+    private _time: number = -30;
+
+    onUpdate(deltaTime: number) {
+        this._time += deltaTime / 100;
+        if (this._time > 30) {
+            this._time -= 60;
+        }
+        this.entity.transform.rotation.x = this._time;
+    }
+}
+
+class RotateY extends Script {
+    private _time: number = 0;
+
+    onUpdate(deltaTime: number) {
+        this._time += deltaTime / 100;
+        if (this._time > 360) {
+            this._time -= 360;
+        }
+        this.entity.transform.rotation.y = this._time;
+    }
+}
+
+class RotateZ extends Script {
+    private _time: number = -30;
+
+    onUpdate(deltaTime: number) {
+        this._time += deltaTime / 100;
+        if (this._time > 30) {
+            this._time -= 60;
+        }
+        this.entity.transform.rotation.z = this._time;
+    }
+}
+
 Promise.all([
     engine.resourceManager
         .load<GLTFResource>("http://30.46.128.40:8000//ant.glb")
         .then((gltf) => {
             gltf.defaultSceneRoot.transform.setPosition(0, -1.3, 0);
+            // gltf.defaultSceneRoot.addComponent(RotateX);
+            // gltf.defaultSceneRoot.addComponent(RotateY);
+            // gltf.defaultSceneRoot.addComponent(RotateZ);
+
             const entity = rootEntity.createChild("hair");
             entity.addChild(gltf.defaultSceneRoot);
             entity.transform.setPosition(0, -0.2, 0);
@@ -256,7 +296,8 @@ Promise.all([
             const box = entity.addComponent(MeshRenderer);
             box.mesh = PrimitiveMesh.createSphere(engine, 0.1);
             box.setMaterial(new UnlitMaterial(engine));
-            const gizmo = entity.addComponent(GizmoControls);
+            // const gizmo = entity.addComponent(GizmoControls);
+            // gizmo.initGizmoControl(camera);
 
             const renderer = gltf.defaultSceneRoot.findByName("Hair_16").getComponent(MeshRenderer);
             hairMaterial.normalTexture = (<PBRMaterial>renderer.getMaterial()).normalTexture;
