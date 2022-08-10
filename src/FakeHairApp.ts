@@ -5,6 +5,7 @@ import {
     Camera,
     DirectLight,
     GLTFResource,
+    Layer,
     Logger,
     MeshRenderer,
     PBRMaterial,
@@ -43,7 +44,6 @@ purpleLight.color.set(189 / 255, 16 / 255, 224 / 255, 1.0);
 const cameraNode = rootEntity.createChild("camera");
 cameraNode.transform.setPosition(0, 0, 1);
 const camera = cameraNode.addComponent(Camera);
-// cameraNode.addComponent(OrbitControl);
 
 Shader.create("pbr-scan", `
 #include <common>
@@ -282,7 +282,7 @@ class RotateZ extends Script {
 
 Promise.all([
     engine.resourceManager
-        .load<GLTFResource>("http://30.46.128.40:8000//ant.glb")
+        .load<GLTFResource>("http://30.46.128.40:8000/ant.glb")
         .then((gltf) => {
             gltf.defaultSceneRoot.transform.setPosition(0, -1.3, 0);
             // gltf.defaultSceneRoot.addComponent(RotateX);
@@ -296,7 +296,8 @@ Promise.all([
             const box = entity.addComponent(MeshRenderer);
             box.mesh = PrimitiveMesh.createSphere(engine, 0.1);
             box.setMaterial(new UnlitMaterial(engine));
-            const gizmo = entity.addComponent(Gizmo);
+            rootEntity.addComponent(Gizmo);
+            entity.layer = Layer.Layer20;
 
             const renderer = gltf.defaultSceneRoot.findByName("Hair_16").getComponent(MeshRenderer);
             hairMaterial.normalTexture = (<PBRMaterial>renderer.getMaterial()).normalTexture;

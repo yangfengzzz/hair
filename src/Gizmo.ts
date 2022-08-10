@@ -25,8 +25,8 @@ export class Gizmo extends Script {
     this.camera = this.rootEntity.findByName("camera").getComponent(Camera);
 
     // orbit Controls
-    // this.orbitControl = this.camera.entity.addComponent(OrbitControl);
-    // this.orbitControl.enableDamping = true;
+    this.orbitControl = this.camera.entity.addComponent(OrbitControl);
+    this.orbitControl.enableDamping = true;
 
     // FramebufferPicker
     this.framebufferPicker = entity.addComponent(FramebufferPicker);
