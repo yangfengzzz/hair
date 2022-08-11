@@ -154,13 +154,14 @@ vec3 shiftTangent(vec3 T, vec3 N, float shift) {
 }
 
 float hairStrandSpecular(vec3 T, vec3 V, vec3 L, float specPower) {
+    float scale = dot(V, L) > 0.0? 1.0 : 0.0; // prevent back light
 	vec3 H = normalize(V + L);
 
 	float HdotT = dot(T, H);
 	float sinTH = sqrt(1.0 - HdotT * HdotT);
 	float dirAtten = smoothstep(-u_specularWidth, 0.0, HdotT);
 	
-	return dirAtten * clamp(pow(sinTH, specPower), 0.0, 1.0);
+	return scale * dirAtten * clamp(pow(sinTH, specPower), 0.0, 1.0);
 }
 
 vec4 getSpecular(vec4 primaryColor, float primaryShift,
