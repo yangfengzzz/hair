@@ -251,6 +251,7 @@ Promise.all([
         .then((ambientLight) => {
             ambientLight.diffuseIntensity = ambientLight.specularIntensity = 0.5;
             scene.ambientLight = ambientLight;
+            scene.ambientLight.diffuseSolidColor.set(0.6, 0.6, 0.6, 1);
         }),
     engine.resourceManager
         .load<Texture2D>("http://30.46.128.46:8000/hair-Anisotropic.jpg")
@@ -273,6 +274,7 @@ Promise.all([
 
 function openDebug() {
     const info = {
+        diffuseSolidColor: [0.6 * 255, 0.5 * 255, 0.5 * 255],
         hairColor: [0, 0, 0],
         primaryColor: [255, 0.5 * 255, 0.5 * 255],
         secondaryColor: [255, 255, 255],
@@ -282,7 +284,9 @@ function openDebug() {
     gui.add(info, "pause").onChange((v) => {
         rotate.pause = !!v;
     });
-
+    gui.addColor(info, "diffuseSolidColor").onChange((v) => {
+        scene.ambientLight.diffuseSolidColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
+    });
     gui.addColor(info, "hairColor").onChange((v) => {
         hairMaterial.hairColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
     });
