@@ -161,7 +161,7 @@ class Rotate extends Script {
 
     onUpdate(deltaTime: number) {
         this.totalTime += deltaTime / 1000;
-        this.entity.transform.setPosition(2 * Math.sin(this.totalTime), 0,  2 * Math.cos(this.totalTime));
+        this.entity.transform.setPosition(2 * Math.sin(this.totalTime), 0, 2 * Math.cos(this.totalTime));
         this.entity.transform.lookAt(this.target);
     }
 }
@@ -189,22 +189,17 @@ hairRenderer.mesh = PrimitiveMesh.createSphere(engine, 1, 100);
 hairRenderer.setMaterial(hairMaterial);
 
 engine.resourceManager
-    .load<Texture2D>("http://30.46.130.230:8000/shift.png")
+    .load<Texture2D>("http://30.46.128.46:8000/shift.png")
     .then((shift) => {
-        engine.resourceManager
-            .load<Texture2D>("http://30.46.130.230:8000/Hair_01N.png")
-            .then((normal) => {
-                hairMaterial.hairColor.set(0, 0, 0, 1);
-                hairMaterial.normalTexture = normal;
-                hairMaterial.specularShiftTexture = shift;
-                hairMaterial.specularWidth = 1.0;
-                hairMaterial.specularScale = 1.0;
-                hairMaterial.specularPower = 16.0;
+        hairMaterial.hairColor.set(0, 0, 0, 1);
+        hairMaterial.specularShiftTexture = shift;
+        hairMaterial.specularWidth = 1.0;
+        hairMaterial.specularScale = 1.0;
+        hairMaterial.specularPower = 16.0;
 
-                hairMaterial.primaryColor.set(1, 1, 1, 1);
-                hairMaterial.primaryShift = 0;
-                hairMaterial.secondaryColor.set(1, 1, 1, 1);
-                hairMaterial.secondaryShift = 0;
-                engine.run();
-            })
+        hairMaterial.primaryColor.set(1, 1, 1, 1);
+        hairMaterial.primaryShift = 0;
+        hairMaterial.secondaryColor.set(1, 1, 1, 1);
+        hairMaterial.secondaryShift = 0;
+        engine.run();
     })
