@@ -16,7 +16,7 @@ import {
     PrimitiveMesh,
     UnlitMaterial
 } from "oasis-engine";
-import {HairMaterial} from "./HairMaterial";
+import {PBRHairMaterial} from "./PBRHairMaterial";
 
 Logger.enable();
 const gui = new dat.GUI();
@@ -141,11 +141,6 @@ void main() {
 #include <pbr_frag_define>
 #include <pbr_helper>
 
-#ifdef NORMALTEXTURE
-    uniform sampler2D u_normalTexture;
-#endif
-uniform float u_normalIntensity;
-
 #ifdef USE_HAIR_TEXTURE
     uniform sampler2D u_hairTex;
 #else
@@ -232,12 +227,9 @@ void addTotalDirectRadiance(inout ReflectedLight reflectedLight) {
         vec4 specular = getSpecular(u_primaryColor, u_primaryShift, 
                                     u_secondaryColor, u_secondaryShift, N, B, V, lightDir, u_specPower);
                                     
-        reflectedLight.directSpecular += specular * u_specularScale * vec4(lightColor, 1.0);
-        reflectedLight.directDiffuse += vec4(diffuse, diffuse, diffuse, 1.0) * hairColor * vec4(lightColor, 1.0);
+        reflectedLight.directSpecular += specular.xyz * u_specularScale * lightColor;
+        reflectedLight.directDiffuse += diffuse * hairColor.xyz * lightColor;
     }
-    
-	result.a = hairColor.a;
-	return result;
 }
 
 void main() {
@@ -319,7 +311,7 @@ void main() {
     gl_FragColor = targetColor;
 }`);
 
-const hairMaterial = new HairMaterial(engine);
+const hairMaterial = new PBRHairMaterial(engine);
 let rotate: RotateY;
 
 Promise.all([
