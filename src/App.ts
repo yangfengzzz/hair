@@ -58,7 +58,7 @@ class RotateY extends Script {
     private _time: number = 0;
 
     onUpdate(deltaTime: number) {
-        this._time += deltaTime / 100;
+        this._time += deltaTime / 20;
         if (this._time > 360) {
             this._time -= 360;
         }
@@ -252,10 +252,10 @@ Promise.all([
             hairMaterial.specularScale = 0.2;
             hairMaterial.specularPower = 16.0;
 
-            hairMaterial.primaryColor.set(1, 1, 1, 1);
-            hairMaterial.primaryShift = 1.0;
+            hairMaterial.primaryColor.set(1, 0.5, 0.5, 1);
+            hairMaterial.primaryShift = 0.5;
             hairMaterial.secondaryColor.set(1, 1, 1, 1);
-            hairMaterial.secondaryShift = 1.0;
+            hairMaterial.secondaryShift = 0.5;
         })
 ]).then(() => {
     engine.run();
