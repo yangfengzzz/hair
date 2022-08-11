@@ -25,17 +25,6 @@ const scene = engine.sceneManager.activeScene;
 scene.background.solidColor.set(0.0, 0.5, 0.5, 1);
 const rootEntity = scene.createRootEntity();
 
-class Rotate extends Script {
-    totalTime = 0;
-    target = new Vector3();
-
-    onUpdate(deltaTime: number) {
-        this.totalTime += deltaTime / 1000;
-        this.entity.transform.setPosition(0.3 * Math.sin(this.totalTime), 0.3, 0.3 * Math.cos(this.totalTime));
-        this.entity.transform.lookAt(this.target);
-    }
-}
-
 const mainLightEntity = rootEntity.createChild('mainLight');
 const mainLight = mainLightEntity.addComponent(DirectLight);
 const purpleLightEntity = rootEntity.createChild('purpleLight');
@@ -52,6 +41,42 @@ const cameraNode = rootEntity.createChild("camera_node");
 cameraNode.transform.setPosition(0, 0, 1);
 cameraNode.addComponent(Camera);
 cameraNode.addComponent(OrbitControl);
+
+class RotateX extends Script {
+    private _time: number = -30;
+
+    onUpdate(deltaTime: number) {
+        this._time += deltaTime / 100;
+        if (this._time > 30) {
+            this._time -= 60;
+        }
+        this.entity.transform.rotation.x = this._time;
+    }
+}
+
+class RotateY extends Script {
+    private _time: number = 0;
+
+    onUpdate(deltaTime: number) {
+        this._time += deltaTime / 100;
+        if (this._time > 360) {
+            this._time -= 360;
+        }
+        this.entity.transform.rotation.y = this._time;
+    }
+}
+
+class RotateZ extends Script {
+    private _time: number = -30;
+
+    onUpdate(deltaTime: number) {
+        this._time += deltaTime / 100;
+        if (this._time > 30) {
+            this._time -= 60;
+        }
+        this.entity.transform.rotation.z = this._time;
+    }
+}
 
 Shader.create("hair",
     `
@@ -140,7 +165,7 @@ vec4 getSpecular(vec4 primaryColor, float primaryShift,
 #else
     float shiftTex = u_specularShift_ST;
 #endif		
-    shiftTex -= 1.0;	   
+    shiftTex -= 0.5;	   
 
 	vec3 t1 = shiftTangent(T, N, primaryShift + shiftTex);
 	vec3 t2 = shiftTangent(T, N, secondaryShift + shiftTex);
@@ -194,11 +219,16 @@ let normalTexture: Texture2D;
 
 Promise.all([
     engine.resourceManager
-        .load<GLTFResource>("http://30.46.128.40:8000/ant.glb")
+        .load<GLTFResource>("http://30.46.128.46:8000/ant.glb")
         .then((gltf) => {
+            gltf.defaultSceneRoot.transform.setPosition(0, -1.3, 0);
+            // gltf.defaultSceneRoot.addComponent(RotateX);
+            gltf.defaultSceneRoot.addComponent(RotateY);
+            // gltf.defaultSceneRoot.addComponent(RotateZ);
+
             const entity = rootEntity.createChild("hair");
             entity.addChild(gltf.defaultSceneRoot);
-            entity.transform.setPosition(0, -1.5, 0);
+            entity.transform.setPosition(0, -0.2, 0);
 
             const renderer = gltf.defaultSceneRoot.findByName("Hair_16").getComponent(MeshRenderer);
             normalTexture = (<PBRMaterial>renderer.getMaterial()).normalTexture;
@@ -214,15 +244,15 @@ Promise.all([
             scene.ambientLight = ambientLight;
         }),
     engine.resourceManager
-        .load<Texture2D>("http://30.46.128.40:8000/hair-Anisotropic.jpg")
+        .load<Texture2D>("http://30.46.128.46:8000/hair-Anisotropic.jpg")
         .then((shift) => {
             hairMaterial.specularShiftTexture = shift;
             hairMaterial.hairColor.set(0, 0, 0, 1);
             hairMaterial.specularWidth = 1.0;
-            hairMaterial.specularScale = 0.5;
+            hairMaterial.specularScale = 0.2;
             hairMaterial.specularPower = 16.0;
 
-            hairMaterial.primaryColor.set(0, 0, 0, 1);
+            hairMaterial.primaryColor.set(1, 1, 1, 1);
             hairMaterial.primaryShift = 1.0;
             hairMaterial.secondaryColor.set(1, 1, 1, 1);
             hairMaterial.secondaryShift = 1.0;

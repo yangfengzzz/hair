@@ -106,7 +106,7 @@ vec4 getSpecular(vec4 primaryColor, float primaryShift,
 #else
     float shiftTex = u_specularShift_ST;
 #endif			 
-    shiftTex -= 1.0;  
+    shiftTex -= 0.5;  
 
 	vec3 t1 = shiftTangent(T, N, primaryShift + shiftTex);
 	vec3 t2 = shiftTangent(T, N, secondaryShift + shiftTex);
@@ -189,17 +189,17 @@ hairRenderer.mesh = PrimitiveMesh.createSphere(engine, 1, 100);
 hairRenderer.setMaterial(hairMaterial);
 
 engine.resourceManager
-    .load<Texture2D>("http://30.46.128.46:8000/shift.png")
+    .load<Texture2D>("http://30.46.128.46:8000/hair-Anisotropic.jpg")
     .then((shift) => {
         hairMaterial.hairColor.set(0, 0, 0, 1);
         hairMaterial.specularShiftTexture = shift;
         hairMaterial.specularWidth = 1.0;
-        hairMaterial.specularScale = 1.0;
-        hairMaterial.specularPower = 16.0;
+        hairMaterial.specularScale = 1;
+        hairMaterial.specularPower = 64.0;
 
-        hairMaterial.primaryColor.set(1, 1, 1, 1);
+        hairMaterial.primaryColor.set(1, 0, 0, 1);
         hairMaterial.primaryShift = 0;
-        hairMaterial.secondaryColor.set(1, 1, 1, 1);
+        hairMaterial.secondaryColor.set(1, 0, 0, 1);
         hairMaterial.secondaryShift = 0;
         engine.run();
     })
