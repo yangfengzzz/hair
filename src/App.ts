@@ -58,6 +58,7 @@ class RotateX extends Script {
 }
 
 class RotateY extends Script {
+    pause = false;
     private _time: number = 0;
 
     onUpdate(deltaTime: number) {
@@ -65,7 +66,9 @@ class RotateY extends Script {
         if (this._time > 360) {
             this._time -= 360;
         }
-        this.entity.transform.rotation.y = this._time;
+        if (!this.pause) {
+            this.entity.transform.rotation.y = this._time;
+        }
     }
 }
 
@@ -218,15 +221,15 @@ void main() {
 `);
 
 const hairMaterial = new HairMaterial(engine);
-let normalTexture: Texture2D;
+let rotate: RotateY;
 
 Promise.all([
     engine.resourceManager
         .load<GLTFResource>("http://30.46.128.46:8000/ant.glb")
         .then((gltf) => {
             gltf.defaultSceneRoot.transform.setPosition(0, -1.3, 0);
+            rotate = gltf.defaultSceneRoot.addComponent(RotateY);
             // gltf.defaultSceneRoot.addComponent(RotateX);
-            gltf.defaultSceneRoot.addComponent(RotateY);
             // gltf.defaultSceneRoot.addComponent(RotateZ);
 
             const entity = rootEntity.createChild("hair");
@@ -234,7 +237,10 @@ Promise.all([
             entity.transform.setPosition(0, -0.2, 0);
 
             const renderer = gltf.defaultSceneRoot.findByName("Hair_16").getComponent(MeshRenderer);
-            normalTexture = (<PBRMaterial>renderer.getMaterial()).normalTexture;
+            const material = <PBRMaterial>renderer.getMaterial();
+            hairMaterial.normalTexture = material.normalTexture;
+            hairMaterial.hairTexture = material.baseTexture;
+            hairMaterial.hairColor = material.baseColor;
             renderer.setMaterial(hairMaterial);
         }),
     engine.resourceManager

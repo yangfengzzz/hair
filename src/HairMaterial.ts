@@ -72,7 +72,7 @@ export class HairMaterial extends BaseMaterial {
     set hairTexture(value: Texture2D) {
         const shaderData = this.shaderData;
         shaderData.setTexture(HairMaterial._hairTextureProp, value);
-        if (value !== null) {
+        if (value !== null && value !== undefined) {
             shaderData.enableMacro(HairMaterial._hairTextureMacro);
         } else {
             shaderData.disableMacro(HairMaterial._hairTextureMacro);
@@ -103,7 +103,7 @@ export class HairMaterial extends BaseMaterial {
     set specularShiftTexture(value: Texture2D) {
         const shaderData = this.shaderData;
         shaderData.setTexture(HairMaterial._specularShiftTextureProp, value);
-        if (value !== null) {
+        if (value !== null && value !== undefined) {
             shaderData.enableMacro(HairMaterial._specularShiftTextureMacro);
         } else {
             shaderData.disableMacro(HairMaterial._specularShiftTextureMacro);
