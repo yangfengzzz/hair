@@ -171,7 +171,7 @@ float hairStrandSpecular(vec3 N, vec3 T, vec3 V, vec3 L, float specPower) {
 	vec3 H = normalize(V + L);
 
 	float HdotT = dot(T, H);
-	float scale = dot(N, L) > 0.0? 1.0 : 0.0; // prevent back light
+	float scale = smoothstep(0.0, 1.0, dot(N, L)); // prevent back light
 	float sinTH = sqrt(1.0 - HdotT * HdotT);
 	float dirAtten = smoothstep(-u_specularWidth, 0.0, HdotT);
 	
@@ -316,7 +316,7 @@ let rotate: RotateY;
 
 Promise.all([
     engine.resourceManager
-        .load<GLTFResource>("http://30.46.128.46:8000/ant.glb")
+        .load<GLTFResource>("http://30.46.128.46:8000/ant-t.gltf")
         .then((gltf) => {
             gltf.defaultSceneRoot.transform.setPosition(0, -1.3, 0);
             rotate = gltf.defaultSceneRoot.addComponent(RotateY);
