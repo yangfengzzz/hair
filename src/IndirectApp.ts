@@ -125,12 +125,21 @@ void main() {
 }`,
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     `
+#define IS_METALLIC_WORKFLOW
+#include <common>
 #include <common_frag>
+
+#include <fog_share>
+
 #include <uv_share>
 #include <normal_share>
-#include <light_frag_define>
+#include <color_share>
 #include <worldpos_share>
-#include <normal_get>
+
+#include <light_frag_define>
+
+#include <pbr_frag_define>
+#include <pbr_helper>
 
 #ifdef NORMALTEXTURE
     uniform sampler2D u_normalTexture;
@@ -198,7 +207,7 @@ float getDiffuse(vec3 N, vec3 L) {
     return clamp(mix(0.25, 1.0, dot(N, L)), 0.0, 1.0);
 }
 
-void main() {
+void addTotalDirectRadiance(inout ReflectedLight reflectedLight) {
 	mat3 tbn = getTBN();
     vec3 T = normalize(tbn[0]);
 	vec3 B = normalize(tbn[1]);
@@ -223,13 +232,92 @@ void main() {
         vec4 specular = getSpecular(u_primaryColor, u_primaryShift, 
                                     u_secondaryColor, u_secondaryShift, N, B, V, lightDir, u_specPower);
                                     
-        glFragColor += (specular * u_specularScale + vec4(diffuse, diffuse, diffuse, 1.0) * hairColor) * vec4(lightColor, 1.0);
+        reflectedLight.directSpecular += specular * u_specularScale * vec4(lightColor, 1.0);
+        reflectedLight.directDiffuse += vec4(diffuse, diffuse, diffuse, 1.0) * hairColor * vec4(lightColor, 1.0);
     }
-    glFragColor.xyz += u_envMapLight.diffuseIntensity * u_envMapLight.diffuse; // add ambient light
     
-	glFragColor.a = hairColor.a;
+	result.a = hairColor.a;
+	return result;
 }
-`);
+
+void main() {
+    Geometry geometry;
+    Material material;
+    ReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );
+    
+    initGeometry(geometry);
+    initMaterial(material, geometry);
+    
+    // Direct Light
+    addTotalDirectRadiance(reflectedLight);
+    
+    // IBL diffuse
+    #ifdef O3_USE_SH
+        vec3 irradiance = getLightProbeIrradiance(u_env_sh, geometry.normal);
+        #ifdef OASIS_COLORSPACE_GAMMA
+            irradiance = linearToGamma(vec4(irradiance, 1.0)).rgb;
+        #endif
+        irradiance *= u_envMapLight.diffuseIntensity;
+    #else
+       vec3 irradiance = u_envMapLight.diffuse * u_envMapLight.diffuseIntensity;
+       irradiance *= PI;
+    #endif
+    
+    reflectedLight.indirectDiffuse += irradiance * BRDF_Diffuse_Lambert( material.diffuseColor );
+    
+    // IBL specular
+    vec3 radiance = getLightProbeRadiance(geometry, geometry.normal, material.roughness, int(u_envMapLight.mipMapLevel), u_envMapLight.specularIntensity);
+    float radianceAttenuation = 1.0;
+    
+    #ifdef CLEARCOAT
+        vec3 clearCoatRadiance = getLightProbeRadiance( geometry, geometry.clearCoatNormal, material.clearCoatRoughness, int(u_envMapLight.mipMapLevel), u_envMapLight.specularIntensity );
+    
+        reflectedLight.indirectSpecular += clearCoatRadiance * material.clearCoat * envBRDFApprox(vec3( 0.04 ), material.clearCoatRoughness, geometry.clearCoatDotNV);
+        radianceAttenuation -= material.clearCoat * F_Schlick(geometry.clearCoatDotNV);
+    #endif
+    
+    reflectedLight.indirectSpecular += radianceAttenuation * radiance * envBRDFApprox(material.specularColor, material.roughness, geometry.dotNV );
+    
+    
+    // Occlusion
+    #ifdef OCCLUSIONTEXTURE
+        vec2 aoUV = v_uv;
+        #ifdef O3_HAS_UV1
+            if(u_occlusionTextureCoord == 1.0){
+                aoUV = v_uv1;
+            }
+        #endif
+        float ambientOcclusion = (texture2D(u_occlusionTexture, aoUV).r - 1.0) * u_occlusionIntensity + 1.0;
+        reflectedLight.indirectDiffuse *= ambientOcclusion;
+        #ifdef O3_USE_SPECULAR_ENV
+            reflectedLight.indirectSpecular *= computeSpecularOcclusion(ambientOcclusion, material.roughness, geometry.dotNV);
+        #endif
+    #endif
+    
+    
+    // Emissive
+    vec3 emissiveRadiance = u_emissiveColor;
+    #ifdef EMISSIVETEXTURE
+        vec4 emissiveColor = texture2D(u_emissiveTexture, v_uv);
+        #ifndef OASIS_COLORSPACE_GAMMA
+            emissiveColor = gammaToLinear(emissiveColor);
+        #endif
+        emissiveRadiance *= emissiveColor.rgb;
+    #endif
+    
+    // Total
+    vec3 totalRadiance =    reflectedLight.directDiffuse + 
+                            reflectedLight.indirectDiffuse + 
+                            reflectedLight.directSpecular + 
+                            reflectedLight.indirectSpecular + 
+                            emissiveRadiance;
+    
+    vec4 targetColor =vec4(totalRadiance, material.opacity);
+    #ifndef OASIS_COLORSPACE_GAMMA
+        targetColor = linearToGamma(targetColor);
+    #endif
+    gl_FragColor = targetColor;
+}`);
 
 const hairMaterial = new HairMaterial(engine);
 let rotate: RotateY;
