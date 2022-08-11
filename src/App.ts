@@ -240,7 +240,7 @@ Promise.all([
             const material = <PBRMaterial>renderer.getMaterial();
             hairMaterial.normalTexture = material.normalTexture;
             hairMaterial.hairTexture = material.baseTexture;
-            hairMaterial.hairColor = material.baseColor;
+            // hairMaterial.hairColor = material.baseColor;
             renderer.setMaterial(hairMaterial);
         }),
     engine.resourceManager
@@ -256,15 +256,16 @@ Promise.all([
     engine.resourceManager
         .load<Texture2D>("http://30.46.128.46:8000/hair-Anisotropic.jpg")
         .then((shift) => {
+            hairMaterial.hairColor.set(80 / 255, 80 / 255, 80 / 255, 1);
             hairMaterial.specularShiftTexture = shift;
             hairMaterial.specularWidth = 1.0;
             hairMaterial.specularScale = 0.2;
-            hairMaterial.specularPower = 16.0;
+            hairMaterial.specularPower = 32.0;
 
             hairMaterial.primaryColor.set(1, 1, 1, 1);
-            hairMaterial.primaryShift = 0.5;
+            hairMaterial.primaryShift = -0.25;
             hairMaterial.secondaryColor.set(1, 1, 1, 1);
-            hairMaterial.secondaryShift = 0.5;
+            hairMaterial.secondaryShift = -0.25;
         })
 ]).then(() => {
     openDebug();
@@ -274,7 +275,7 @@ Promise.all([
 function openDebug() {
     const info = {
         diffuseSolidColor: [0, 0, 0],
-        hairColor: [125, 125, 125],
+        hairColor: [80, 80, 80],
         primaryColor: [255, 255, 255],
         secondaryColor: [255, 255, 255],
         pause: false
