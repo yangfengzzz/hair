@@ -1,3 +1,4 @@
+import * as dat from "dat.gui";
 import {OrbitControl} from "@oasis-engine-toolkit/controls";
 import {
     Camera,
@@ -17,6 +18,8 @@ import {
 import {HairMaterial} from "./HairMaterial";
 
 Logger.enable();
+const gui = new dat.GUI();
+
 //-- create engine object
 const engine = new WebGLEngine("canvas");
 engine.canvas.resizeByClientSize();
@@ -258,5 +261,14 @@ Promise.all([
             hairMaterial.secondaryShift = 0.5;
         })
 ]).then(() => {
+    openDebug();
     engine.run();
 });
+
+function openDebug() {
+    gui.add(hairMaterial, "specularWidth", 0, 1);
+    gui.add(hairMaterial, "specularScale", 0, 1);
+    gui.add(hairMaterial, "specularPower", 0, 100);
+    gui.add(hairMaterial, "primaryShift", -1, 1);
+    gui.add(hairMaterial, "secondaryShift", -1, 1);
+}
