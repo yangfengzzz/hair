@@ -261,7 +261,7 @@ Promise.all([
             hairMaterial.specularScale = 0.2;
             hairMaterial.specularPower = 16.0;
 
-            hairMaterial.primaryColor.set(1, 0.5, 0.5, 1);
+            hairMaterial.primaryColor.set(1, 1, 1, 1);
             hairMaterial.primaryShift = 0.5;
             hairMaterial.secondaryColor.set(1, 1, 1, 1);
             hairMaterial.secondaryShift = 0.5;
@@ -283,9 +283,9 @@ function openDebug() {
     gui.add(info, "pause").onChange((v) => {
         rotate.pause = !!v;
     });
-    gui.addColor(info, "diffuseSolidColor").onChange((v) => {
-        scene.ambientLight.diffuseSolidColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
-    });
+    // gui.addColor(info, "diffuseSolidColor").onChange((v) => {
+    //     scene.ambientLight.diffuseSolidColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
+    // });
     gui.addColor(info, "hairColor").onChange((v) => {
         hairMaterial.hairColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
     });
