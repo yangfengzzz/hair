@@ -353,13 +353,13 @@ Promise.all([
         .then((shift) => {
             hairMaterial.specularShiftTexture = shift;
             hairMaterial.specularWidth = 1.0;
-            hairMaterial.specularScale = 0.2;
-            hairMaterial.specularPower = 32.0;
+            hairMaterial.specularScale = 0.15;
+            hairMaterial.specularPower = 64.0;
 
             hairMaterial.primaryColor.set(1, 1, 1, 1);
-            hairMaterial.primaryShift = -0.25;
+            hairMaterial.primaryShift = 0.25;
             hairMaterial.secondaryColor.set(1, 1, 1, 1);
-            hairMaterial.secondaryShift = -0.25;
+            hairMaterial.secondaryShift = 0.25;
         })
 ]).then(() => {
     openDebug();
