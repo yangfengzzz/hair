@@ -9,11 +9,12 @@ import {
     Script,
     Shader,
     Texture2D,
-    Vector3,
     WebGLEngine,
     AmbientLight,
     AssetType,
-    PBRMaterial
+    PBRMaterial,
+    PrimitiveMesh,
+    UnlitMaterial
 } from "oasis-engine";
 import {HairMaterial} from "./HairMaterial";
 
@@ -33,11 +34,20 @@ const mainLight = mainLightEntity.addComponent(DirectLight);
 const purpleLightEntity = rootEntity.createChild('purpleLight');
 const purpleLight = purpleLightEntity.addComponent(DirectLight);
 
+mainLightEntity.transform.setPosition(0, 0, 0.5);
 mainLightEntity.transform.setRotation(-22, 0, 0);
+purpleLightEntity.transform.setPosition(0, 0, -0.5);
 purpleLightEntity.transform.setRotation(0, 210, 0);
 mainLight.intensity = 0.55;
 purpleLight.intensity = 0.15;
 purpleLight.color.set(189 / 255, 16 / 255, 224 / 255, 1.0);
+
+const mainLightRenderer = mainLightEntity.addComponent(MeshRenderer);
+mainLightRenderer.mesh = PrimitiveMesh.createCuboid(engine, 0.01, 0.01, 0.01);
+mainLightRenderer.setMaterial(new UnlitMaterial(engine));
+const purpleLightRenderer = purpleLightEntity.addComponent(MeshRenderer);
+purpleLightRenderer.mesh = PrimitiveMesh.createCuboid(engine, 0.01, 0.01, 0.01);
+purpleLightRenderer.setMaterial(new UnlitMaterial(engine));
 
 //Create camera
 const cameraNode = rootEntity.createChild("camera_node");
@@ -153,11 +163,11 @@ vec3 shiftTangent(vec3 T, vec3 N, float shift) {
 	return normalize(T + shift * N);
 }
 
-float hairStrandSpecular(vec3 T, vec3 V, vec3 L, float specPower) {
-    float scale = dot(V, L) > 0.0? 1.0 : 0.0; // prevent back light
+float hairStrandSpecular(vec3 N, vec3 T, vec3 V, vec3 L, float specPower) {
 	vec3 H = normalize(V + L);
 
 	float HdotT = dot(T, H);
+	float scale = dot(N, L) > 0.0? 1.0 : 0.0; // prevent back light
 	float sinTH = sqrt(1.0 - HdotT * HdotT);
 	float dirAtten = smoothstep(-u_specularWidth, 0.0, HdotT);
 	
@@ -178,8 +188,8 @@ vec4 getSpecular(vec4 primaryColor, float primaryShift,
 	vec3 t2 = shiftTangent(T, N, secondaryShift + shiftTex);
 
 	vec4 specular = vec4(0.0, 0.0, 0.0, 0.0);
-	specular += primaryColor * hairStrandSpecular(t1, V, L, specPower);
-	specular += secondaryColor * hairStrandSpecular(t2, V, L, specPower);
+	specular += primaryColor * hairStrandSpecular(N, t1, V, L, specPower);
+	specular += secondaryColor * hairStrandSpecular(N, t2, V, L, specPower);
 
 	return specular;
 }
