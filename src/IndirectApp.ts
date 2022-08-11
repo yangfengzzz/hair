@@ -202,7 +202,7 @@ float getDiffuse(vec3 N, vec3 L) {
     return clamp(mix(0.25, 1.0, dot(N, L)), 0.0, 1.0);
 }
 
-void addTotalDirectRadiance(inout ReflectedLight reflectedLight) {
+void addTotalHairRadiance(inout ReflectedLight reflectedLight) {
 	mat3 tbn = getTBN();
     vec3 T = normalize(tbn[0]);
 	vec3 B = normalize(tbn[1]);
@@ -241,7 +241,7 @@ void main() {
     initMaterial(material, geometry);
     
     // Direct Light
-    addTotalDirectRadiance(reflectedLight);
+    addTotalHairRadiance(reflectedLight);
     
     // IBL diffuse
     #ifdef O3_USE_SH
@@ -342,7 +342,6 @@ Promise.all([
         .then((ambientLight) => {
             ambientLight.diffuseIntensity = ambientLight.specularIntensity = 0.5;
             scene.ambientLight = ambientLight;
-            scene.ambientLight.diffuseSolidColor.set(0.6, 0.6, 0.6, 1);
         }),
     engine.resourceManager
         .load<Texture2D>("http://30.46.128.46:8000/hair-Anisotropic.jpg")
