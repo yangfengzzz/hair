@@ -329,9 +329,14 @@ Promise.all([
 
             const renderer = gltf.defaultSceneRoot.findByName("Hair_16").getComponent(MeshRenderer);
             const material = <PBRMaterial>renderer.getMaterial();
-            // hairMaterial.normalTexture = material.normalTexture;
-            // hairMaterial.hairTexture = material.baseTexture;
-            // hairMaterial.hairColor = material.baseColor;
+            hairMaterial.roughness = material.roughness;
+            hairMaterial.metallic = material.metallic;
+            hairMaterial.baseColor = material.baseColor;
+            hairMaterial.baseTexture = material.baseTexture;
+            hairMaterial.normalTexture = material.normalTexture;
+
+            hairMaterial.hairTexture = material.baseTexture;
+            hairMaterial.hairColor = material.baseColor;
             renderer.setMaterial(hairMaterial);
         }),
     engine.resourceManager
@@ -346,7 +351,6 @@ Promise.all([
     engine.resourceManager
         .load<Texture2D>("http://30.46.128.46:8000/hair-Anisotropic.jpg")
         .then((shift) => {
-            hairMaterial.hairColor.set(80 / 255, 80 / 255, 80 / 255, 1);
             hairMaterial.specularShiftTexture = shift;
             hairMaterial.specularWidth = 1.0;
             hairMaterial.specularScale = 0.2;
@@ -364,8 +368,7 @@ Promise.all([
 
 function openDebug() {
     const info = {
-        diffuseSolidColor: [0, 0, 0],
-        hairColor: [80, 80, 80],
+        hairColor: [0, 0, 0],
         primaryColor: [255, 255, 255],
         secondaryColor: [255, 255, 255],
         pause: false
@@ -374,9 +377,6 @@ function openDebug() {
     gui.add(info, "pause").onChange((v) => {
         rotate.pause = !!v;
     });
-    // gui.addColor(info, "diffuseSolidColor").onChange((v) => {
-    //     scene.ambientLight.diffuseSolidColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
-    // });
     gui.addColor(info, "hairColor").onChange((v) => {
         hairMaterial.hairColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
     });
