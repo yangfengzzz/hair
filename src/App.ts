@@ -62,11 +62,11 @@ class RotateY extends Script {
     private _time: number = 0;
 
     onUpdate(deltaTime: number) {
-        this._time += deltaTime / 20;
-        if (this._time > 360) {
-            this._time -= 360;
-        }
         if (!this.pause) {
+            this._time += deltaTime / 20;
+            if (this._time > 360) {
+                this._time -= 360;
+            }
             this.entity.transform.rotation.y = this._time;
         }
     }
@@ -276,7 +276,12 @@ function openDebug() {
         hairColor: [0, 0, 0],
         primaryColor: [255, 0.5 * 255, 0.5 * 255],
         secondaryColor: [255, 255, 255],
+        pause: false
     };
+
+    gui.add(info, "pause").onChange((v) => {
+        rotate.pause = !!v;
+    });
 
     gui.addColor(info, "hairColor").onChange((v) => {
         hairMaterial.hairColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
