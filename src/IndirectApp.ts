@@ -350,7 +350,7 @@ Promise.all([
             scene.ambientLight = ambientLight;
         }),
     engine.resourceManager
-        .load<Texture2D>("http://30.46.128.46:8000/hair-Anisotropic.jpg")
+        .load<Texture2D>("http://30.46.128.46:8000/hair-Anisotropic-4.jpg")
         .then((shift) => {
             hairMaterial.specularShiftTexture = shift;
             hairMaterial.specularWidth = 1.0;
@@ -396,4 +396,5 @@ function openDebug() {
     gui.add(hairMaterial, "roughness", 0, 1);
     gui.add(hairMaterial, "metallic", 0, 1);
     gui.add(hairMaterial, "normalTextureIntensity", 0, 1);
+    gui.add(mainLight, "intensity", 0, 1);
 }
