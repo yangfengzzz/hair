@@ -257,7 +257,6 @@ Promise.all([
         .load<Texture2D>("http://30.46.128.46:8000/hair-Anisotropic.jpg")
         .then((shift) => {
             hairMaterial.specularShiftTexture = shift;
-            hairMaterial.hairColor.set(0, 0, 0, 1);
             hairMaterial.specularWidth = 1.0;
             hairMaterial.specularScale = 0.2;
             hairMaterial.specularPower = 16.0;
@@ -274,9 +273,9 @@ Promise.all([
 
 function openDebug() {
     const info = {
-        diffuseSolidColor: [0.6 * 255, 0.5 * 255, 0.5 * 255],
-        hairColor: [0, 0, 0],
-        primaryColor: [255, 0.5 * 255, 0.5 * 255],
+        diffuseSolidColor: [0, 0, 0],
+        hairColor: [125, 125, 125],
+        primaryColor: [255, 255, 255],
         secondaryColor: [255, 255, 255],
         pause: false
     };
