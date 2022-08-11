@@ -372,7 +372,11 @@ function openDebug() {
         hairColor: [0, 0, 0],
         primaryColor: [255, 255, 255],
         secondaryColor: [255, 255, 255],
-        pause: false
+        pause: false,
+        mainLightIntensity: 0.55,
+        purpleLightIntensity: 0.15,
+        ambientLightDiffuseIntensity: 0.5,
+        ambientLightSpecularIntensity: 0.5,
     };
 
     gui.add(info, "pause").onChange((v) => {
@@ -396,5 +400,16 @@ function openDebug() {
     gui.add(hairMaterial, "roughness", 0, 1);
     gui.add(hairMaterial, "metallic", 0, 1);
     gui.add(hairMaterial, "normalTextureIntensity", 0, 1);
-    gui.add(mainLight, "intensity", 0, 1);
+    gui.add(info, "mainLightIntensity").onChange((v) => {
+        mainLight.intensity = v;
+    });
+    gui.add(info, "purpleLightIntensity").onChange((v) => {
+        purpleLight.intensity = v;
+    });
+    gui.add(info, "ambientLightDiffuseIntensity").onChange((v) => {
+        scene.ambientLight.diffuseIntensity = v;
+    });
+    gui.add(info, "ambientLightSpecularIntensity").onChange((v) => {
+        scene.ambientLight.specularIntensity = v;
+    });
 }
