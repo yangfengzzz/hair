@@ -334,6 +334,7 @@ Promise.all([
             hairMaterial.baseColor = material.baseColor;
             hairMaterial.baseTexture = material.baseTexture;
             hairMaterial.normalTexture = material.normalTexture;
+            hairMaterial.normalTextureIntensity = material.normalTextureIntensity;
 
             hairMaterial.hairTexture = material.baseTexture;
             hairMaterial.hairColor = material.baseColor;
@@ -391,4 +392,8 @@ function openDebug() {
     gui.addColor(info, "secondaryColor").onChange((v) => {
         hairMaterial.secondaryColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
     });
+
+    gui.add(hairMaterial, "roughness", 0, 1);
+    gui.add(hairMaterial, "metallic", 0, 1);
+    gui.add(hairMaterial, "normalTextureIntensity", 0, 1);
 }
