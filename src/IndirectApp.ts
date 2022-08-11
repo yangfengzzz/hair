@@ -316,7 +316,7 @@ let rotate: RotateY;
 
 Promise.all([
     engine.resourceManager
-        .load<GLTFResource>("http://30.46.128.46:8000/ant-t.gltf")
+        .load<GLTFResource>("https://gw.alipayobjects.com/os/bmw-prod/e2369c5f-b1ce-41c4-8e82-78990336a6ae.gltf")
         .then((gltf) => {
             gltf.defaultSceneRoot.transform.setPosition(0, -1.3, 0);
             rotate = gltf.defaultSceneRoot.addComponent(RotateY);
@@ -350,7 +350,10 @@ Promise.all([
             scene.ambientLight = ambientLight;
         }),
     engine.resourceManager
-        .load<Texture2D>("http://30.46.128.46:8000/hair-Anisotropic-4.jpg")
+        .load<Texture2D>({
+            type: AssetType.Texture2D,
+            url: 'https://gw.alipayobjects.com/mdn/rms_7c464e/afts/img/A*c0I7QbEzqYoAAAAAAAAAAAAAARQnAQ'
+        })
         .then((shift) => {
             hairMaterial.specularShiftTexture = shift;
             hairMaterial.specularWidth = 1.0;
