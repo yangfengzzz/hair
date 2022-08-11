@@ -266,9 +266,24 @@ Promise.all([
 });
 
 function openDebug() {
+    const info = {
+        hairColor: [0, 0, 0],
+        primaryColor: [255, 0.5 * 255, 0.5 * 255],
+        secondaryColor: [255, 255, 255],
+    };
+
+    gui.addColor(info, "hairColor").onChange((v) => {
+        hairMaterial.hairColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
+    });
     gui.add(hairMaterial, "specularWidth", 0, 1);
     gui.add(hairMaterial, "specularScale", 0, 1);
     gui.add(hairMaterial, "specularPower", 0, 100);
     gui.add(hairMaterial, "primaryShift", -1, 1);
+    gui.addColor(info, "primaryColor").onChange((v) => {
+        hairMaterial.primaryColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
+    });
     gui.add(hairMaterial, "secondaryShift", -1, 1);
+    gui.addColor(info, "secondaryColor").onChange((v) => {
+        hairMaterial.secondaryColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
+    });
 }
