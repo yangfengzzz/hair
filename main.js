@@ -4,4 +4,5 @@
 
 // import "./src/PBRHairApp"
 // import "./src/FakeHairApp"
-import "./src/App";
+// import "./src/App";
+import "./src/IndirectApp";
