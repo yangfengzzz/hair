@@ -118,9 +118,9 @@ Promise.all([
 
 function openDebug() {
     const info = {
-        anisotropyDirectionX: 0,
+        anisotropyDirectionX: 1,
         anisotropyDirectionY: 0,
-        anisotropyDirectionZ: 1,
+        anisotropyDirectionZ: 0,
 
         baseColor: [0, 0, 0],
         pause: true,
