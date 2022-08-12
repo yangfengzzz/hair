@@ -305,7 +305,9 @@ void main() {
 }`);
 
 //----------------------------------------------------------------------------------------------------------------------
-const hairMaterial = new PBRHairMaterial(engine);
+let hairMaterial: PBRHairMaterial = null;
+let specularShiftTexture: Texture2D = null;
+
 let rotate: RotateY = null;
 let gltfRootEntity: Entity = null;
 
@@ -412,15 +414,30 @@ function handleGltfResource(gltf: GLTFResource) {
 
     const renderer = gltfRootEntity.findByName("Hair_16").getComponent(MeshRenderer);
     const material = <PBRMaterial>renderer.getMaterial();
+
+    hairMaterial = new PBRHairMaterial(engine);
     hairMaterial.roughness = material.roughness;
     hairMaterial.metallic = material.metallic;
     hairMaterial.baseColor = material.baseColor;
     hairMaterial.baseTexture = material.baseTexture;
     hairMaterial.normalTexture = material.normalTexture;
     hairMaterial.normalTextureIntensity = material.normalTextureIntensity;
-    hairMaterial.baseTexture = material.baseTexture;
-    hairMaterial.baseColor = material.baseColor;
+    hairMaterial.occlusionTexture = material.occlusionTexture;
+    hairMaterial.occlusionTextureIntensity = material.occlusionTextureIntensity;
+    hairMaterial.occlusionTextureCoord = material.occlusionTextureCoord;
+
+    hairMaterial.specularShiftTexture = specularShiftTexture;
+    hairMaterial.specularWidth = 1.0;
+    hairMaterial.specularScale = 0.15;
+    hairMaterial.specularPower = 64.0;
+
+    hairMaterial.primaryColor.set(1, 1, 1, 1);
+    hairMaterial.primaryShift = 0.25;
+    hairMaterial.secondaryColor.set(1, 1, 1, 1);
+    hairMaterial.secondaryShift = 0.25;
     renderer.setMaterial(hairMaterial);
+
+    openDebug();
 }
 
 Promise.all([
@@ -439,18 +456,9 @@ Promise.all([
             url: 'https://gw.alipayobjects.com/mdn/rms_7c464e/afts/img/A*c0I7QbEzqYoAAAAAAAAAAAAAARQnAQ'
         })
         .then((shift) => {
-            hairMaterial.specularShiftTexture = shift;
-            hairMaterial.specularWidth = 1.0;
-            hairMaterial.specularScale = 0.15;
-            hairMaterial.specularPower = 64.0;
-
-            hairMaterial.primaryColor.set(1, 1, 1, 1);
-            hairMaterial.primaryShift = 0.25;
-            hairMaterial.secondaryColor.set(1, 1, 1, 1);
-            hairMaterial.secondaryShift = 0.25;
+            specularShiftTexture = shift;
         })
 ]).then(() => {
-    openDebug();
     engine.run();
 });
 
