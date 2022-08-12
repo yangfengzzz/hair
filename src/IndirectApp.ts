@@ -68,7 +68,7 @@ class RotateX extends Script {
 }
 
 class RotateY extends Script {
-    pause = false;
+    pause = true;
     private _time: number = 0;
 
     onUpdate(deltaTime: number) {
@@ -375,7 +375,7 @@ function openDebug() {
         hairColor: [0, 0, 0],
         primaryColor: [255, 255, 255],
         secondaryColor: [255, 255, 255],
-        pause: false,
+        pause: true,
         mainLightIntensity: 0.55,
         purpleLightIntensity: 0.15,
         ambientLightDiffuseIntensity: 0.5,

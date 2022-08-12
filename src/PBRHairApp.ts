@@ -1,3 +1,4 @@
+import * as dat from "dat.gui";
 import {OrbitControl} from "oasis-engine-toolkit";
 import {
     AmbientLight,
@@ -17,6 +18,8 @@ import {
 import {Gizmo} from "./Gizmo";
 
 Logger.enable();
+const gui = new dat.GUI();
+
 //-- create engine object
 const engine = new WebGLEngine("canvas");
 engine.canvas.resizeByClientSize();
@@ -55,14 +58,17 @@ class RotateX extends Script {
 }
 
 class RotateY extends Script {
+    pause = true;
     private _time: number = 0;
 
     onUpdate(deltaTime: number) {
-        this._time += deltaTime / 100;
-        if (this._time > 360) {
-            this._time -= 360;
+        if (!this.pause) {
+            this._time += deltaTime / 20;
+            if (this._time > 360) {
+                this._time -= 360;
+            }
+            this.entity.transform.rotation.y = this._time;
         }
-        this.entity.transform.rotation.y = this._time;
     }
 }
 
@@ -78,13 +84,16 @@ class RotateZ extends Script {
     }
 }
 
+let rotate: RotateY;
+let hairMaterial:PBRMaterial;
+
 Promise.all([
     engine.resourceManager
-        .load<GLTFResource>("http://30.46.128.40:8000/ant.glb")
+        .load<GLTFResource>("https://gw.alipayobjects.com/os/bmw-prod/e2369c5f-b1ce-41c4-8e82-78990336a6ae.gltf")
         .then((gltf) => {
             gltf.defaultSceneRoot.transform.setPosition(0, -1.3, 0);
+            rotate = gltf.defaultSceneRoot.addComponent(RotateY);
             // gltf.defaultSceneRoot.addComponent(RotateX);
-            // gltf.defaultSceneRoot.addComponent(RotateY);
             // gltf.defaultSceneRoot.addComponent(RotateZ);
 
             const entity = rootEntity.createChild("hair");
@@ -98,8 +107,7 @@ Promise.all([
             entity.layer = Layer.Layer20;
 
             const renderer = gltf.defaultSceneRoot.findByName("Hair_16").getComponent(MeshRenderer);
-            const hairMaterial = <PBRMaterial>renderer.getMaterial();
-            hairMaterial.anisotropy = -1;
+            hairMaterial = <PBRMaterial>renderer.getMaterial();
         }),
     engine.resourceManager
         .load<AmbientLight>({
@@ -113,3 +121,43 @@ Promise.all([
 ]).then(() => {
     engine.run();
 });
+
+function openDebug() {
+    const info = {
+        anisotropyDirection: [0, 0, 1],
+        baseColor: [0, 0, 0],
+        pause: true,
+        mainLightIntensity: 0.55,
+        purpleLightIntensity: 0.15,
+        ambientLightDiffuseIntensity: 0.5,
+        ambientLightSpecularIntensity: 0.5,
+    };
+
+    gui.add(info, "pause").onChange((v) => {
+        rotate.pause = !!v;
+    });
+
+    gui.add(hairMaterial, "anisotropy", -1, 1);
+    gui.addColor(info, "anisotropyDirection").onChange((v) => {
+        hairMaterial.anisotropyDirection.set(v[0] / 255, v[1] / 255, v[2] / 255);
+    });
+
+    gui.addColor(info, "baseColor").onChange((v) => {
+        hairMaterial.baseColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
+    });
+    gui.add(hairMaterial, "roughness", 0, 1);
+    gui.add(hairMaterial, "metallic", 0, 1);
+    gui.add(hairMaterial, "normalTextureIntensity", 0, 1);
+    gui.add(info, "mainLightIntensity").onChange((v) => {
+        mainLight.intensity = v;
+    });
+    gui.add(info, "purpleLightIntensity").onChange((v) => {
+        purpleLight.intensity = v;
+    });
+    gui.add(info, "ambientLightDiffuseIntensity").onChange((v) => {
+        scene.ambientLight.diffuseIntensity = v;
+    });
+    gui.add(info, "ambientLightSpecularIntensity").onChange((v) => {
+        scene.ambientLight.specularIntensity = v;
+    });
+}
