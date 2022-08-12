@@ -6,14 +6,11 @@ import {
     Camera,
     DirectLight,
     GLTFResource,
-    Layer,
     Logger,
     MeshRenderer,
     PBRMaterial,
     Script,
-    UnlitMaterial,
     WebGLEngine,
-    PrimitiveMesh
 } from "oasis-engine";
 
 Logger.enable();

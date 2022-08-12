@@ -141,12 +141,6 @@ void main() {
 #include <pbr_frag_define>
 #include <pbr_helper>
 
-#ifdef USE_HAIR_TEXTURE
-    uniform sampler2D u_hairTex;
-#else
-    uniform vec4 u_hairTex_ST;
-#endif
-
 #ifdef USE_SPECULAR_SHIFT_TEXTURE
     uniform sampler2D u_specularShift;
 #else
@@ -202,7 +196,7 @@ float getDiffuse(vec3 N, vec3 L) {
     return clamp(mix(0.25, 1.0, dot(N, L)), 0.0, 1.0);
 }
 
-void addTotalHairRadiance(inout ReflectedLight reflectedLight) {
+void addTotalHairRadiance(vec3 hairColor, vec3 viewDir, inout ReflectedLight reflectedLight) {
 	mat3 tbn = getTBN();
     vec3 T = normalize(tbn[0]);
 	vec3 B = normalize(tbn[1]);
@@ -211,13 +205,6 @@ void addTotalHairRadiance(inout ReflectedLight reflectedLight) {
 #else
     vec3 N = getNormal();
 #endif	
-	#include <begin_viewdir_frag>
-	
-#ifdef USE_HAIR_TEXTURE
-    vec4 hairColor = texture2D(u_hairTex, v_uv);
-#else
-    vec4 hairColor = u_hairTex_ST;
-#endif
 	
 	for( int i = 0; i < O3_DIRECT_LIGHT_COUNT; i++ ) {
         vec3 lightDir = normalize(-u_directLightDirection[i]);
@@ -225,10 +212,10 @@ void addTotalHairRadiance(inout ReflectedLight reflectedLight) {
         
         float diffuse = getDiffuse(N, lightDir);
         vec4 specular = getSpecular(u_primaryColor, u_primaryShift, 
-                                    u_secondaryColor, u_secondaryShift, N, B, V, lightDir, u_specPower);
+                                    u_secondaryColor, u_secondaryShift, N, B, viewDir, lightDir, u_specPower);
                                     
         reflectedLight.directSpecular += specular.xyz * u_specularScale * lightColor;
-        reflectedLight.directDiffuse += diffuse * hairColor.xyz * lightColor;
+        reflectedLight.directDiffuse += diffuse * hairColor * lightColor;
     }
 }
 
@@ -241,7 +228,7 @@ void main() {
     initMaterial(material, geometry);
     
     // Direct Light
-    addTotalHairRadiance(reflectedLight);
+    addTotalHairRadiance(material.diffuseColor, geometry.viewDir, reflectedLight);
     
     // IBL diffuse
     #ifdef O3_USE_SH
@@ -336,8 +323,8 @@ Promise.all([
             hairMaterial.normalTexture = material.normalTexture;
             hairMaterial.normalTextureIntensity = material.normalTextureIntensity;
 
-            hairMaterial.hairTexture = material.baseTexture;
-            hairMaterial.hairColor = material.baseColor;
+            hairMaterial.baseTexture = material.baseTexture;
+            hairMaterial.baseColor = material.baseColor;
             renderer.setMaterial(hairMaterial);
         }),
     engine.resourceManager
@@ -372,7 +359,7 @@ Promise.all([
 
 function openDebug() {
     const info = {
-        hairColor: [0, 0, 0],
+        baseColor: [0, 0, 0],
         primaryColor: [255, 255, 255],
         secondaryColor: [255, 255, 255],
         pause: true,
@@ -385,8 +372,8 @@ function openDebug() {
     gui.add(info, "pause").onChange((v) => {
         rotate.pause = !!v;
     });
-    gui.addColor(info, "hairColor").onChange((v) => {
-        hairMaterial.hairColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
+    gui.addColor(info, "baseColor").onChange((v) => {
+        hairMaterial.baseColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
     });
     gui.add(hairMaterial, "specularWidth", 0, 1);
     gui.add(hairMaterial, "specularScale", 0, 1);

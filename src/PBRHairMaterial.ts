@@ -8,11 +8,7 @@ export class PBRHairMaterial extends PBRBaseMaterial {
     private static _roughnessProp = Shader.getPropertyByName("u_roughness");
     private static _roughnessMetallicTextureProp = Shader.getPropertyByName("u_roughnessMetallicTexture");
 
-    private static _hairTextureMacro = Shader.getMacroByName("USE_HAIR_TEXTURE");
     private static _specularShiftTextureMacro = Shader.getMacroByName("USE_SPECULAR_SHIFT_TEXTURE");
-
-    private static _hairTextureProp = Shader.getPropertyByName("u_hairTex");
-    private static _hairColorProp = Shader.getPropertyByName("u_hairTex_ST");
     private static _specularShiftTextureProp = Shader.getPropertyByName("u_specularShift");
     private static _specularShiftProp = Shader.getPropertyByName("u_specularShift_ST");
 
@@ -24,37 +20,6 @@ export class PBRHairMaterial extends PBRBaseMaterial {
     private static _specPowerProp = Shader.getPropertyByName("u_specPower");
     private static _specularWidthProp = Shader.getPropertyByName("u_specularWidth");
     private static _specularScaleProp = Shader.getPropertyByName("u_specularScale");
-
-    /**
-     * hair texture
-     */
-    get hairTexture(): Texture2D {
-        return <Texture2D>this.shaderData.getTexture(PBRHairMaterial._hairTextureProp);
-    }
-
-    set hairTexture(value: Texture2D) {
-        const shaderData = this.shaderData;
-        shaderData.setTexture(PBRHairMaterial._hairTextureProp, value);
-        if (value !== null && value !== undefined) {
-            shaderData.enableMacro(PBRHairMaterial._hairTextureMacro);
-        } else {
-            shaderData.disableMacro(PBRHairMaterial._hairTextureMacro);
-        }
-    }
-
-    /**
-     * hair color
-     */
-    get hairColor(): Color {
-        return this.shaderData.getColor(PBRHairMaterial._hairColorProp);
-    }
-
-    set hairColor(value: Color) {
-        const color = this.shaderData.getColor(PBRHairMaterial._hairColorProp);
-        if (color !== value) {
-            color.copyFrom(value);
-        }
-    }
 
     /**
      * specular shift texture
@@ -210,7 +175,6 @@ export class PBRHairMaterial extends PBRBaseMaterial {
         super(engine, Shader.find("hair"));
 
         const shaderData = this.shaderData;
-        shaderData.setColor(PBRHairMaterial._hairColorProp, new Color(1, 1, 1, 1));
         shaderData.setColor(PBRHairMaterial._primaryColorProp, new Color(1, 1, 1, 1));
         shaderData.setColor(PBRHairMaterial._secondaryColorProp, new Color(1, 1, 1, 1));
         shaderData.setFloat(PBRHairMaterial._specPowerProp, 16);
