@@ -14,11 +14,11 @@ export function createGridPlane(engine: Engine): ModelMesh {
   positions[5] = new Vector3(1, -1, 0);
 
   const indices = new Uint16Array(6);
-  indices[0] = 0;
-  indices[1] = 2;
-  indices[2] = 1;
-  indices[3] = 2;
-  indices[4] = 0;
+  indices[0] = 2;
+  indices[1] = 1;
+  indices[2] = 0;
+  indices[3] = 5;
+  indices[4] = 4;
   indices[5] = 3;
 
   const mesh = new ModelMesh(engine);
