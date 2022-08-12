@@ -13,8 +13,17 @@ export function createGridPlane(engine: Engine): ModelMesh {
   positions[4] = new Vector3(1, 1, 0);
   positions[5] = new Vector3(1, -1, 0);
 
+  const indices = new Uint16Array(6);
+  indices[0] = 0;
+  indices[1] = 2;
+  indices[2] = 1;
+  indices[3] = 2;
+  indices[4] = 0;
+  indices[5] = 3;
+
   const mesh = new ModelMesh(engine);
   mesh.setPositions(positions);
+  mesh.setIndices(indices);
   mesh.uploadData(true);
   mesh.addSubMesh(0, 6);
   return mesh;
@@ -46,7 +55,7 @@ vec3 UnprojectPoint(float x, float y, float z, mat4 view, mat4 projection) {
 }
 
 void main() {
-    nearPoint = UnprojectPoint(POSITION.x, POSITION.y, 0.0, u_viewMat, u_projMat).xyz;// unprojecting on the near plane
+    nearPoint = UnprojectPoint(POSITION.x, POSITION.y, -1.0, u_viewMat, u_projMat).xyz;// unprojecting on the near plane
     farPoint = UnprojectPoint(POSITION.x, POSITION.y, 1.0, u_viewMat, u_projMat).xyz;// unprojecting on the far plane
     gl_Position = vec4(POSITION, 1.0);// using directly the clipped coordinates
 }`,
