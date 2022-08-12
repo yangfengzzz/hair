@@ -26,6 +26,7 @@ export function createGridPlane(engine: Engine): ModelMesh {
 export class GridMaterial extends BaseMaterial {
   constructor(engine: Engine) {
     super(engine, Shader.find("grid"));
+    this.isTransparent = true;
   }
 }
 
