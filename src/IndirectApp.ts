@@ -474,34 +474,37 @@ function openDebug() {
     gui.add(info, "pause").onChange((v) => {
         rotate.pause = !!v;
     });
-    gui.addColor(info, "baseColor").onChange((v) => {
+
+    const materialFolder = gui.addFolder("Material");
+    materialFolder.addColor(info, "baseColor").onChange((v) => {
         hairMaterial.baseColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
     });
-    gui.add(hairMaterial, "specularWidth", 0, 1);
-    gui.add(hairMaterial, "specularScale", 0, 1);
-    gui.add(hairMaterial, "specularPower", 0, 100);
-    gui.add(hairMaterial, "primaryShift", -1, 1);
-    gui.addColor(info, "primaryColor").onChange((v) => {
+    materialFolder.add(hairMaterial, "specularWidth", 0, 1);
+    materialFolder.add(hairMaterial, "specularScale", 0, 1);
+    materialFolder.add(hairMaterial, "specularPower", 0, 100);
+    materialFolder.add(hairMaterial, "primaryShift", -1, 1);
+    materialFolder.addColor(info, "primaryColor").onChange((v) => {
         hairMaterial.primaryColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
     });
-    gui.add(hairMaterial, "secondaryShift", -1, 1);
-    gui.addColor(info, "secondaryColor").onChange((v) => {
+    materialFolder.add(hairMaterial, "secondaryShift", -1, 1);
+    materialFolder.addColor(info, "secondaryColor").onChange((v) => {
         hairMaterial.secondaryColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
     });
+    materialFolder.add(hairMaterial, "roughness", 0, 1);
+    materialFolder.add(hairMaterial, "metallic", 0, 1);
+    materialFolder.add(hairMaterial, "normalTextureIntensity", 0, 1);
 
-    gui.add(hairMaterial, "roughness", 0, 1);
-    gui.add(hairMaterial, "metallic", 0, 1);
-    gui.add(hairMaterial, "normalTextureIntensity", 0, 1);
-    gui.add(info, "mainLightIntensity").onChange((v) => {
+    const sceneFolder = gui.addFolder("Scene Light");
+    sceneFolder.add(info, "mainLightIntensity").onChange((v) => {
         mainLight.intensity = v;
     });
-    gui.add(info, "purpleLightIntensity").onChange((v) => {
+    sceneFolder.add(info, "purpleLightIntensity").onChange((v) => {
         purpleLight.intensity = v;
     });
-    gui.add(info, "ambientLightDiffuseIntensity").onChange((v) => {
+    sceneFolder.add(info, "ambientLightDiffuseIntensity").onChange((v) => {
         scene.ambientLight.diffuseIntensity = v;
     });
-    gui.add(info, "ambientLightSpecularIntensity").onChange((v) => {
+    sceneFolder.add(info, "ambientLightSpecularIntensity").onChange((v) => {
         scene.ambientLight.specularIntensity = v;
     });
 }
