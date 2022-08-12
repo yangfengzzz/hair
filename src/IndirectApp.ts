@@ -14,7 +14,8 @@ import {
     AssetType,
     PBRMaterial,
     PrimitiveMesh,
-    UnlitMaterial
+    UnlitMaterial,
+    Entity
 } from "oasis-engine";
 import {PBRHairMaterial} from "./PBRHairMaterial";
 import {SimpleDropzone} from "simple-dropzone";
@@ -25,9 +26,6 @@ const gui = new dat.GUI();
 const dropEl = document.querySelector('#dropzone');
 const inputEl = document.querySelector('#input');
 const dropCtrl = new SimpleDropzone(dropEl, inputEl);
-dropCtrl.on('drop', ({files}) => {
-    console.log(files);
-});
 
 //-- create engine object
 const engine = new WebGLEngine("canvas");
@@ -306,35 +304,126 @@ void main() {
     gl_FragColor = targetColor;
 }`);
 
+//----------------------------------------------------------------------------------------------------------------------
 const hairMaterial = new PBRHairMaterial(engine);
-let rotate: RotateY;
+let rotate: RotateY = null;
+let gltfRootEntity: Entity = null;
+
+dropCtrl.on('drop', ({files}) => {
+    loadFileMaps(files);
+});
+
+function loadFileMaps(files: Map<string, File>) {
+    const modelReg = /\.(gltf|glb)$/i;
+
+    let mainFile: File;
+    let type = "gltf";
+
+    const filesMap = {}; // [fileName]:LocalUrl
+    const fileArray: any = Array.from(files); // ['/*/*.*',obj:File]
+
+    fileArray.some((f) => {
+        const file = f[1];
+        if (modelReg.test(file.name)) {
+            type = RegExp.$1;
+            mainFile = file;
+            return true;
+        }
+
+        return false;
+    });
+
+    if (mainFile) {
+        const url = URL.createObjectURL(mainFile);
+        console.log(url);
+        loadModel(url, filesMap, type as any);
+    }
+}
+
+function loadModel(url: string, filesMap: Record<string, string>, type: "gltf" | "glb") {
+    destoryGLTF();
+
+    // replace relative path
+    if (type.toLowerCase() === "gltf") {
+        engine.resourceManager
+            .load({
+                type: AssetType.JSON,
+                url
+            })
+            .then((gltf: any) => {
+                gltf.buffers.concat(gltf.images).forEach((item) => {
+                    if (!item) return;
+                    let {uri} = item;
+                    if (uri) {
+                        let index = uri.lastIndexOf("/");
+                        if (index > -1) {
+                            uri = uri.substr(index + 1);
+                        }
+                        if (filesMap[uri]) {
+                            item.uri = filesMap[uri];
+                        }
+                    }
+                });
+                const blob = new Blob([JSON.stringify(gltf)]);
+                const urlNew = URL.createObjectURL(blob);
+                engine.resourceManager
+                    .load<GLTFResource>({
+                        type: AssetType.Prefab,
+                        url: `${urlNew}#.gltf`
+                    })
+                    .then((asset) => {
+                        handleGltfResource(asset);
+                    })
+                    .catch(() => {
+                        console.log("Fail loader")
+                    });
+            });
+    } else {
+        engine.resourceManager
+            .load<GLTFResource>({
+                type: AssetType.Prefab,
+                url: `${url}#.glb`
+            })
+            .then((asset) => {
+                handleGltfResource(asset);
+            })
+            .catch(() => {
+                console.log("Fail loader")
+            });
+    }
+}
+
+function destoryGLTF() {
+    if (gltfRootEntity) {
+        gltfRootEntity.destroy();
+    }
+}
+
+function handleGltfResource(gltf: GLTFResource) {
+    gltfRootEntity = gltf.defaultSceneRoot;
+    gltfRootEntity.transform.setPosition(0, -1.3, 0);
+    rotate = gltfRootEntity.addComponent(RotateY);
+    // gltf.defaultSceneRoot.addComponent(RotateX);
+    // gltf.defaultSceneRoot.addComponent(RotateZ);
+
+    const entity = rootEntity.createChild("hair");
+    entity.addChild(gltfRootEntity);
+    entity.transform.setPosition(0, -0.2, 0);
+
+    const renderer = gltfRootEntity.findByName("Hair_16").getComponent(MeshRenderer);
+    const material = <PBRMaterial>renderer.getMaterial();
+    hairMaterial.roughness = material.roughness;
+    hairMaterial.metallic = material.metallic;
+    hairMaterial.baseColor = material.baseColor;
+    hairMaterial.baseTexture = material.baseTexture;
+    hairMaterial.normalTexture = material.normalTexture;
+    hairMaterial.normalTextureIntensity = material.normalTextureIntensity;
+    hairMaterial.baseTexture = material.baseTexture;
+    hairMaterial.baseColor = material.baseColor;
+    renderer.setMaterial(hairMaterial);
+}
 
 Promise.all([
-    engine.resourceManager
-        .load<GLTFResource>("https://gw.alipayobjects.com/os/bmw-prod/e2369c5f-b1ce-41c4-8e82-78990336a6ae.gltf")
-        .then((gltf) => {
-            gltf.defaultSceneRoot.transform.setPosition(0, -1.3, 0);
-            rotate = gltf.defaultSceneRoot.addComponent(RotateY);
-            // gltf.defaultSceneRoot.addComponent(RotateX);
-            // gltf.defaultSceneRoot.addComponent(RotateZ);
-
-            const entity = rootEntity.createChild("hair");
-            entity.addChild(gltf.defaultSceneRoot);
-            entity.transform.setPosition(0, -0.2, 0);
-
-            const renderer = gltf.defaultSceneRoot.findByName("Hair_16").getComponent(MeshRenderer);
-            const material = <PBRMaterial>renderer.getMaterial();
-            hairMaterial.roughness = material.roughness;
-            hairMaterial.metallic = material.metallic;
-            hairMaterial.baseColor = material.baseColor;
-            hairMaterial.baseTexture = material.baseTexture;
-            hairMaterial.normalTexture = material.normalTexture;
-            hairMaterial.normalTextureIntensity = material.normalTextureIntensity;
-
-            hairMaterial.baseTexture = material.baseTexture;
-            hairMaterial.baseColor = material.baseColor;
-            renderer.setMaterial(hairMaterial);
-        }),
     engine.resourceManager
         .load<AmbientLight>({
             type: AssetType.Env,
