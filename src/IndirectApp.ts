@@ -202,15 +202,10 @@ float getDiffuse(vec3 N, vec3 L) {
     return clamp(mix(0.25, 1.0, dot(N, L)), 0.0, 1.0);
 }
 
-void addTotalHairRadiance(vec3 hairColor, vec3 viewDir, inout ReflectedLight reflectedLight) {
+void addTotalHairRadiance(vec3 hairColor, vec3 viewDir, vec3 N, inout ReflectedLight reflectedLight) {
 	mat3 tbn = getTBN();
     vec3 T = normalize(tbn[0]);
 	vec3 B = normalize(tbn[1]);
-#ifdef NORMALTEXTURE
-    vec3 N = getNormalByNormalTexture(tbn, u_normalTexture, u_normalIntensity, v_uv);
-#else
-    vec3 N = getNormal();
-#endif	
 	
 	for( int i = 0; i < O3_DIRECT_LIGHT_COUNT; i++ ) {
         vec3 lightDir = normalize(-u_directLightDirection[i]);
@@ -234,7 +229,7 @@ void main() {
     initMaterial(material, geometry);
     
     // Direct Light
-    addTotalHairRadiance(material.diffuseColor, geometry.viewDir, reflectedLight);
+    addTotalHairRadiance(material.diffuseColor, geometry.viewDir, geometry.normal, reflectedLight);
     
     // IBL diffuse
     #ifdef O3_USE_SH
@@ -399,18 +394,20 @@ function destoryGLTF() {
     if (gltfRootEntity) {
         gltfRootEntity.destroy();
     }
+
+    if (hairMaterial) {
+        hairMaterial.destroy(true);
+    }
 }
 
 function handleGltfResource(gltf: GLTFResource) {
-    gltfRootEntity = gltf.defaultSceneRoot;
-    gltfRootEntity.transform.setPosition(0, -1.3, 0);
+    gltfRootEntity = gltf.defaultSceneRoot.clone();
     rotate = gltfRootEntity.addComponent(RotateY);
     // gltf.defaultSceneRoot.addComponent(RotateX);
     // gltf.defaultSceneRoot.addComponent(RotateZ);
 
-    const entity = rootEntity.createChild("hair");
-    entity.addChild(gltfRootEntity);
-    entity.transform.setPosition(0, -0.2, 0);
+    rootEntity.addChild(gltfRootEntity);
+    gltfRootEntity.transform.setPosition(0, -1.5, 0);
 
     const renderer = gltfRootEntity.findByName("Hair_16").getComponent(MeshRenderer);
     const material = <PBRMaterial>renderer.getMaterial();
