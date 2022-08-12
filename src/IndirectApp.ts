@@ -17,9 +17,17 @@ import {
     UnlitMaterial
 } from "oasis-engine";
 import {PBRHairMaterial} from "./PBRHairMaterial";
+import {SimpleDropzone} from "simple-dropzone";
 
 Logger.enable();
 const gui = new dat.GUI();
+
+const dropEl = document.querySelector('#dropzone');
+const inputEl = document.querySelector('#input');
+const dropCtrl = new SimpleDropzone(dropEl, inputEl);
+dropCtrl.on('drop', ({files}) => {
+    console.log(files);
+});
 
 //-- create engine object
 const engine = new WebGLEngine("canvas");
