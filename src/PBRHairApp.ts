@@ -15,7 +15,6 @@ import {
     WebGLEngine,
     PrimitiveMesh
 } from "oasis-engine";
-import {Gizmo} from "./Gizmo";
 
 Logger.enable();
 const gui = new dat.GUI();
@@ -85,7 +84,7 @@ class RotateZ extends Script {
 }
 
 let rotate: RotateY;
-let hairMaterial:PBRMaterial;
+let hairMaterial: PBRMaterial;
 
 Promise.all([
     engine.resourceManager
@@ -100,12 +99,6 @@ Promise.all([
             entity.addChild(gltf.defaultSceneRoot);
             entity.transform.setPosition(0, -0.2, 0);
 
-            const box = entity.addComponent(MeshRenderer);
-            box.mesh = PrimitiveMesh.createSphere(engine, 0.1);
-            box.setMaterial(new UnlitMaterial(engine));
-            rootEntity.addComponent(Gizmo);
-            entity.layer = Layer.Layer20;
-
             const renderer = gltf.defaultSceneRoot.findByName("Hair_16").getComponent(MeshRenderer);
             hairMaterial = <PBRMaterial>renderer.getMaterial();
         }),
@@ -119,12 +112,16 @@ Promise.all([
             scene.ambientLight = ambientLight;
         })
 ]).then(() => {
+    openDebug();
     engine.run();
 });
 
 function openDebug() {
     const info = {
-        anisotropyDirection: [0, 0, 1],
+        anisotropyDirectionX: 0,
+        anisotropyDirectionY: 0,
+        anisotropyDirectionZ: 1,
+
         baseColor: [0, 0, 0],
         pause: true,
         mainLightIntensity: 0.55,
@@ -138,10 +135,15 @@ function openDebug() {
     });
 
     gui.add(hairMaterial, "anisotropy", -1, 1);
-    gui.addColor(info, "anisotropyDirection").onChange((v) => {
-        hairMaterial.anisotropyDirection.set(v[0] / 255, v[1] / 255, v[2] / 255);
+    gui.add(info, "anisotropyDirectionX").onChange((v) => {
+        hairMaterial.anisotropyDirection.x = v;
     });
-
+    gui.add(info, "anisotropyDirectionY").onChange((v) => {
+        hairMaterial.anisotropyDirection.y = v;
+    });
+    gui.add(info, "anisotropyDirectionZ").onChange((v) => {
+        hairMaterial.anisotropyDirection.z = v;
+    });
     gui.addColor(info, "baseColor").onChange((v) => {
         hairMaterial.baseColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
     });
