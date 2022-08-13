@@ -1,4 +1,4 @@
-import { BaseMaterial, Engine, ModelMesh, Shader, Vector3 } from "oasis-engine";
+import {BaseMaterial, Engine, ModelMesh, Shader, Vector3} from "oasis-engine";
 
 /**
  * Create Mesh with position in clipped space.
@@ -13,7 +13,7 @@ export function createGridPlane(engine: Engine): ModelMesh {
   positions[4] = new Vector3(1, 1, 0);
   positions[5] = new Vector3(1, -1, 0);
 
-  const indices = new Uint16Array(6);
+  const indices = new Uint8Array(6);
   indices[0] = 2;
   indices[1] = 1;
   indices[2] = 0;
@@ -84,11 +84,11 @@ vec4 grid(vec3 fragPos3D, float scale, bool drawAxis) {
 
 float computeDepth(vec3 pos) {
     vec4 clip_space_pos = u_projMat * u_viewMat * vec4(pos.xyz, 1.0);
-    return (clip_space_pos.z / clip_space_pos.w);
+    return (clip_space_pos.z / clip_space_pos.w) * 0.5 + 0.5;
 }
 
-const float far = 50.0;
-const float near = 0.01;
+const float far = 100.0;
+const float near = 0.1;
 
 float computeLinearDepth(vec3 pos) {
     vec4 clip_space_pos = u_projMat * u_viewMat * vec4(pos.xyz, 1.0);
