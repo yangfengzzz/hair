@@ -33,6 +33,31 @@ export function createGridPlane(engine: Engine): ModelMesh {
  * Grid Material.
  */
 export class GridMaterial extends BaseMaterial {
+  private static _farClipProperty = Shader.getPropertyByName("u_far");
+  private static _nearClipProperty = Shader.getPropertyByName("u_near");
+
+  /**
+   * Near clip plane - the closest point to the camera when rendering occurs.
+   */
+  get nearClipPlane(): number {
+    return this.shaderData.getFloat(GridMaterial._nearClipProperty);
+  }
+
+  set nearClipPlane(value: number) {
+    this.shaderData.setFloat(GridMaterial._nearClipProperty, value);
+  }
+
+  /**
+   * Far clip plane - the furthest point to the camera when rendering occurs.
+   */
+  get farClipPlane(): number {
+    return this.shaderData.getFloat(GridMaterial._farClipProperty);
+  }
+
+  set farClipPlane(value: number) {
+    this.shaderData.setFloat(GridMaterial._farClipProperty, value);
+  }
+
   constructor(engine: Engine) {
     super(engine, Shader.find("grid"));
     this.isTransparent = true;
@@ -43,24 +68,27 @@ Shader.create(
   "grid",
   `
 #include <common_vert>
-  
+uniform mat4 u_viewInvMat;
+uniform mat4 u_projInvMat;
+
 varying vec3 nearPoint;
 varying vec3 farPoint;
 
-vec3 UnprojectPoint(float x, float y, float z, mat4 view, mat4 projection) {
-    mat4 viewInv = inverse(view);
-    mat4 projInv = inverse(projection);
-    vec4 unprojectedPoint =  viewInv * projInv * vec4(x, y, z, 1.0);
+vec3 UnprojectPoint(float x, float y, float z) {
+    vec4 unprojectedPoint =  u_viewInvMat * u_projInvMat * vec4(x, y, z, 1.0);
     return unprojectedPoint.xyz / unprojectedPoint.w;
 }
 
 void main() {
-    nearPoint = UnprojectPoint(POSITION.x, POSITION.y, -1.0, u_viewMat, u_projMat).xyz;// unprojecting on the near plane
-    farPoint = UnprojectPoint(POSITION.x, POSITION.y, 1.0, u_viewMat, u_projMat).xyz;// unprojecting on the far plane
+    nearPoint = UnprojectPoint(POSITION.x, POSITION.y, -1.0).xyz;// unprojecting on the near plane
+    farPoint = UnprojectPoint(POSITION.x, POSITION.y, 1.0).xyz;// unprojecting on the far plane
     gl_Position = vec4(POSITION, 1.0);// using directly the clipped coordinates
 }`,
   `
 #include <common_frag>
+
+uniform float u_far;
+uniform float u_near;
 
 varying vec3 nearPoint;
 varying vec3 farPoint;
@@ -87,14 +115,11 @@ float computeDepth(vec3 pos) {
     return (clip_space_pos.z / clip_space_pos.w) * 0.5 + 0.5;
 }
 
-const float far = 100.0;
-const float near = 0.1;
-
 float computeLinearDepth(vec3 pos) {
     vec4 clip_space_pos = u_projMat * u_viewMat * vec4(pos.xyz, 1.0);
     float clip_space_depth = (clip_space_pos.z / clip_space_pos.w) * 2.0 - 1.0;// put back between -1 and 1
-    float linearDepth = (2.0 * near * far) / (far + near - clip_space_depth * (far - near));// get linear value between 0.01 and 100
-    return linearDepth / far;// normalize
+    float linearDepth = (2.0 * u_near * u_far) / (u_far + u_near - clip_space_depth * (u_far - u_near));
+    return linearDepth / u_far;// normalize
 }
 
 void main() {
