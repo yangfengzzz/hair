@@ -1,6 +1,9 @@
+import * as dat from "dat.gui";
 import {OrbitControl} from "@oasis-engine-toolkit/controls";
 import {Camera, GLTFResource, MeshRenderer, WebGLEngine} from "oasis-engine";
 import {GridMaterial, createGridPlane} from "./GridMaterial";
+
+const gui = new dat.GUI();
 
 const engine = new WebGLEngine("canvas");
 engine.canvas.resizeByClientSize();
@@ -26,4 +29,12 @@ engine.resourceManager
         rootEntity.addChild(gltf.defaultSceneRoot);
     });
 
+openDebug();
 engine.run();
+
+function openDebug() {
+    gui.add(gridMaterial, "nearClipPlane", 0, 1);
+    gui.add(gridMaterial, "farClipPlane", 0, 100);
+    gui.add(gridMaterial, "primaryScale", 0, 100, 1);
+    gui.add(gridMaterial, "secondaryScale", 0, 10, 1);
+}
