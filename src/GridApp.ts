@@ -33,6 +33,13 @@ openDebug();
 engine.run();
 
 function openDebug() {
+    const info = {
+        backgroundColor: [0, 0, 0],
+    }
+    gui.addColor(info, "backgroundColor").onChange((v) => {
+        engine.sceneManager.activeScene.background.solidColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
+    });
+
     gui.add(gridMaterial, "nearClipPlane", 0, 1);
     gui.add(gridMaterial, "farClipPlane", 0, 100);
     gui.add(gridMaterial, "primaryScale", 0, 100, 1);

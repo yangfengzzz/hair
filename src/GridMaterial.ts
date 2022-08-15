@@ -172,12 +172,13 @@ vec4 grid(vec3 fragPos3D, float scale, bool drawAxis) {
 
 float computeDepth(vec3 pos) {
     vec4 clip_space_pos = u_projMat * u_viewMat * vec4(pos.xyz, 1.0);
+    // map to 0-1
     return (clip_space_pos.z / clip_space_pos.w) * 0.5 + 0.5;
 }
 
 float computeLinearDepth(vec3 pos) {
     vec4 clip_space_pos = u_projMat * u_viewMat * vec4(pos.xyz, 1.0);
-    float clip_space_depth = (clip_space_pos.z / clip_space_pos.w) * 2.0 - 1.0;// put back between -1 and 1
+    float clip_space_depth = clip_space_pos.z / clip_space_pos.w;
     float linearDepth = (2.0 * u_near * u_far) / (u_far + u_near - clip_space_depth * (u_far - u_near));
     return linearDepth / u_far;// normalize
 }
