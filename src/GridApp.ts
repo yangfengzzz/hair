@@ -1,6 +1,16 @@
 import * as dat from "dat.gui";
 import {OrbitControl} from "@oasis-engine-toolkit/controls";
-import {Camera, GLTFResource, MathUtil, Matrix, MeshRenderer, Script, WebGLEngine} from "oasis-engine";
+import {
+    Camera,
+    GLTFResource,
+    MathUtil,
+    Matrix,
+    MeshRenderer,
+    Quaternion,
+    Script,
+    WebGLEngine,
+    Vector3
+} from "oasis-engine";
 import {GridMaterial, createGridPlane} from "./GridMaterial";
 
 const gui = new dat.GUI();
@@ -59,6 +69,27 @@ class OrthoToPersp extends CameraChange {
     }
 }
 
+class TwoThreeTransform extends Script {
+    target = new Quaternion();
+    progress = new Quaternion();
+
+    onUpdate(deltaTime: number) {
+        if (this.enabled) {
+            Quaternion.lerp(this.entity.transform.worldRotationQuaternion, this.target, 0.1, this.progress);
+            this.entity.transform.worldRotationQuaternion = this.progress;
+        }
+    }
+
+    onEnable() {
+        const transform = this.entity.transform;
+        const target = transform.worldPosition.clone();
+        target.z *= 2;
+        const rotMat = new Matrix();
+        Matrix.lookAt(transform.worldPosition, target, new Vector3(0, 1, 0), rotMat);
+        rotMat.getRotation(this.target);
+    }
+}
+
 const engine = new WebGLEngine("canvas");
 engine.canvas.resizeByClientSize();
 engine.sceneManager.activeScene.ambientLight.diffuseSolidColor.set(1, 1, 1, 1);
@@ -73,6 +104,8 @@ const perspToOrtho = cameraEntity.addComponent(PerspToOrtho);
 perspToOrtho.enabled = false;
 const orthoToPersp = cameraEntity.addComponent(OrthoToPersp);
 orthoToPersp.enabled = false;
+const twoThree = cameraEntity.addComponent(TwoThreeTransform);
+twoThree.enabled = false;
 
 const gridRenderer = rootEntity.addComponent(MeshRenderer);
 gridRenderer.mesh = createGridPlane(engine);
@@ -94,11 +127,20 @@ function openDebug() {
     const info = {
         backgroundColor: [0, 0, 0],
         isOrthographic: false,
+        isTwo: false,
     }
     gui.add(info, "isOrthographic").onChange((v) => {
         camera.isOrthographic = !!v;
         if (v) {
             perspToOrtho.enabled = true;
+        } else {
+            orthoToPersp.enabled = true;
+        }
+    });
+
+    gui.add(info, "isTwo").onChange((v) => {
+        if (v) {
+            twoThree.enabled = true;
         } else {
             orthoToPersp.enabled = true;
         }
