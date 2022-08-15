@@ -1,4 +1,4 @@
-import {BaseMaterial, Engine, ModelMesh, Shader, Vector3} from "oasis-engine";
+import {BaseMaterial, Engine, MathUtil, ModelMesh, Shader, Vector3} from "oasis-engine";
 
 /**
  * Create Mesh with position in clipped space.
@@ -115,7 +115,7 @@ export class GridMaterial extends BaseMaterial {
   }
 
   set flipProgress(value: number) {
-    this.shaderData.setFloat(GridMaterial._flipProgressProperty, value);
+    this.shaderData.setFloat(GridMaterial._flipProgressProperty, MathUtil.clamp(value, 0, 1));
   }
 
   constructor(engine: Engine) {

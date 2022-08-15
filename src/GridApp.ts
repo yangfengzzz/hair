@@ -15,15 +15,17 @@ import {GridMaterial, createGridPlane} from "./GridMaterial";
 
 const gui = new dat.GUI();
 
-class CameraChange extends Script {
+class CameraTransform extends Script {
     protected _camera: Camera = null;
     projMat = new Matrix();
     perspectiveMat = new Matrix();
     orthoMat = new Matrix();
     progress = 0;
-    total = 1;
+    total = 0.5;
+    isInverse = false;
 
     onAwake() {
+        this.enabled = false;
         this._camera = this.entity.getComponent(Camera);
         const camera = this._camera;
         Matrix.perspective(
@@ -38,34 +40,55 @@ class CameraChange extends Script {
         Matrix.ortho(-width, width, -height, height, camera.nearClipPlane, camera.farClipPlane, this.orthoMat);
     }
 
+    onUpdate(deltaTime: number) {
+        if (this.enabled) {
+            this.progress += deltaTime / 1000;
+            let percent = this.progress / this.total;
+            if (percent > 1) {
+                this.enabled = false;
+            }
+
+            if (this.isInverse) {
+                percent = 1 - percent;
+            }
+            Matrix.lerp(this.perspectiveMat, this.orthoMat, percent, this.projMat);
+            this._camera.projectionMatrix = this.projMat;
+        }
+    }
+
     onEnable() {
         this.progress = 0;
     }
 }
 
-class PerspToOrtho extends CameraChange {
+class FlipTransform extends Script {
+    private _material: GridMaterial;
+    private _progress = 0;
+    private _total = 0.5;
+    isInverse = false;
+
+    onAwake() {
+        this._material = <GridMaterial>this.entity.getComponent(MeshRenderer).getMaterial();
+        this.enabled = false;
+    }
+
     onUpdate(deltaTime: number) {
         if (this.enabled) {
-            this.progress += deltaTime / 1000;
-            Matrix.lerp(this.perspectiveMat, this.orthoMat, this.progress / this.total, this.projMat);
-            this._camera.projectionMatrix = this.projMat;
-            if (this.progress / this.total > 1) {
+            this._progress += deltaTime / 1000;
+            let percent = this._progress / this._total;
+            if (percent > 1) {
                 this.enabled = false;
             }
+
+            if (this.isInverse) {
+                percent = 1 - percent;
+            }
+            this._material.flipProgress = percent
         }
     }
-}
 
-class OrthoToPersp extends CameraChange {
-    onUpdate(deltaTime: number) {
-        if (this.enabled) {
-            this.progress += deltaTime / 1000;
-            Matrix.lerp(this.orthoMat, this.perspectiveMat, this.progress / this.total, this.projMat);
-            this._camera.projectionMatrix = this.projMat;
-            if (this.progress / this.total > 1) {
-                this.enabled = false;
-            }
-        }
+    onEnable() {
+        this._progress = 0;
     }
 }
 
@@ -99,32 +122,6 @@ class TwoThreeTransform extends Script {
     }
 }
 
-class FlipTransform extends Script {
-    private _material: GridMaterial;
-    private _progress = 0;
-    private _total = 1;
-
-    onAwake() {
-        this._material = <GridMaterial>this.entity.getComponent(MeshRenderer).getMaterial();
-        this.enabled = false;
-    }
-
-    onUpdate(deltaTime: number) {
-        if (this.enabled) {
-            this._progress += deltaTime / 1000;
-            const percent = this._progress / this._total;
-            this._material.flipProgress = percent
-            if (percent > 1) {
-                this.enabled = false;
-            }
-        }
-    }
-
-    onEnable() {
-        this._progress = 0;
-    }
-}
-
 const engine = new WebGLEngine("canvas");
 engine.canvas.resizeByClientSize();
 engine.sceneManager.activeScene.ambientLight.diffuseSolidColor.set(1, 1, 1, 1);
@@ -135,13 +132,11 @@ const cameraEntity = rootEntity.createChild("camera");
 const camera = cameraEntity.addComponent(Camera);
 cameraEntity.transform.setPosition(3, 3, 3);
 cameraEntity.transform.lookAt(new Vector3())
+const cameraTransform = cameraEntity.addComponent(CameraTransform);
+
 const orbitControl = cameraEntity.addComponent(OrbitControl);
 const orthoControl = cameraEntity.addComponent(OrthoControl);
 orthoControl.enabled = false;
-const perspToOrtho = cameraEntity.addComponent(PerspToOrtho);
-perspToOrtho.enabled = false;
-const orthoToPersp = cameraEntity.addComponent(OrthoToPersp);
-orthoToPersp.enabled = false;
 const twoThree = cameraEntity.addComponent(TwoThreeTransform);
 twoThree.enabled = false;
 
@@ -171,10 +166,15 @@ function openDebug() {
     gui.add(info, "isOrthographic").onChange((v) => {
         camera.isOrthographic = !!v;
         if (v) {
+            flipTransform.isInverse = false;
             flipTransform.enabled = true;
-            perspToOrtho.enabled = true;
+            cameraTransform.isInverse = false;
+            cameraTransform.enabled = true;
         } else {
-            orthoToPersp.enabled = true;
+            flipTransform.isInverse = true;
+            flipTransform.enabled = true;
+            cameraTransform.isInverse = true;
+            cameraTransform.enabled = true;
         }
     });
 
@@ -184,7 +184,8 @@ function openDebug() {
             orthoControl.enabled = true;
             twoThree.enabled = true;
         } else {
-            orthoToPersp.enabled = true;
+            orbitControl.enabled = true;
+            orthoControl.enabled = false;
         }
     });
 
