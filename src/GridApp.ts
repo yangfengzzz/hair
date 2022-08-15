@@ -70,7 +70,7 @@ class OrthoToPersp extends CameraChange {
 }
 
 class TwoThreeTransform extends Script {
-    targetPos = new Vector3(0, 0.01, -3);
+    targetPos = new Vector3(0, 0.1, -3);
     progressPos = new Vector3();
     targetRot = new Quaternion();
     progressRot = new Quaternion();
@@ -96,6 +96,32 @@ class TwoThreeTransform extends Script {
         const rotMat = new Matrix();
         Matrix.lookAt(transform.worldPosition, target, new Vector3(0, 1, 0), rotMat);
         rotMat.getRotation(this.targetRot);
+    }
+}
+
+class FlipTransform extends Script {
+    private _material: GridMaterial;
+    private _progress = 0;
+    private _total = 1;
+
+    onAwake() {
+        this._material = <GridMaterial>this.entity.getComponent(MeshRenderer).getMaterial();
+        this.enabled = false;
+    }
+
+    onUpdate(deltaTime: number) {
+        if (this.enabled) {
+            this._progress += deltaTime / 1000;
+            const percent = this._progress / this._total;
+            this._material.flipProgress = percent
+            if (percent > 1) {
+                this.enabled = false;
+            }
+        }
+    }
+
+    onEnable() {
+        this._progress = 0;
     }
 }
 
@@ -125,6 +151,7 @@ const gridMaterial = new GridMaterial(engine);
 gridMaterial.nearClipPlane = camera.nearClipPlane;
 gridMaterial.farClipPlane = camera.farClipPlane;
 gridRenderer.setMaterial(gridMaterial);
+const flipTransform = rootEntity.addComponent(FlipTransform);
 
 engine.resourceManager
     .load<GLTFResource>("https://gw.alipayobjects.com/os/OasisHub/267000040/9994/%25E5%25BD%2592%25E6%25A1%25A3.gltf")
@@ -144,6 +171,7 @@ function openDebug() {
     gui.add(info, "isOrthographic").onChange((v) => {
         camera.isOrthographic = !!v;
         if (v) {
+            flipTransform.enabled = true;
             perspToOrtho.enabled = true;
         } else {
             orthoToPersp.enabled = true;

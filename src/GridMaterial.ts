@@ -39,6 +39,7 @@ export class GridMaterial extends BaseMaterial {
   private static _secondaryScaleProperty = Shader.getPropertyByName("u_secondaryScale");
   private static _gridIntensityProperty = Shader.getPropertyByName("u_gridIntensity");
   private static _axisIntensityProperty = Shader.getPropertyByName("u_axisIntensity");
+  private static _flipProgressProperty = Shader.getPropertyByName("u_flipProgress");
 
   /**
    * Near clip plane - the closest point to the camera when rendering occurs.
@@ -106,6 +107,17 @@ export class GridMaterial extends BaseMaterial {
     this.shaderData.setFloat(GridMaterial._axisIntensityProperty, value);
   }
 
+  /**
+   * Flip Progress
+   */
+  get flipProgress(): number {
+    return this.shaderData.getFloat(GridMaterial._flipProgressProperty);
+  }
+
+  set flipProgress(value: number) {
+    this.shaderData.setFloat(GridMaterial._flipProgressProperty, value);
+  }
+
   constructor(engine: Engine) {
     super(engine, Shader.find("grid"));
     this.isTransparent = true;
@@ -117,6 +129,7 @@ export class GridMaterial extends BaseMaterial {
     shaderData.setFloat(GridMaterial._secondaryScaleProperty, 1);
     shaderData.setFloat(GridMaterial._gridIntensityProperty, 0.2);
     shaderData.setFloat(GridMaterial._axisIntensityProperty, 0.1);
+    shaderData.setFloat(GridMaterial._flipProgressProperty, 0.0);
   }
 }
 
@@ -149,23 +162,25 @@ uniform float u_primaryScale;
 uniform float u_secondaryScale;
 uniform float u_gridIntensity;
 uniform float u_axisIntensity;
+uniform float u_flipProgress;
 
 varying vec3 nearPoint;
 varying vec3 farPoint;
   
 vec4 grid(vec3 fragPos3D, float scale, bool drawAxis) {
-    vec2 coord = fragPos3D.xz * scale;
+    vec2 coord = mix(fragPos3D.xz, fragPos3D.xy, u_flipProgress) * scale;
     vec2 derivative = fwidth(coord);
     vec2 grid = abs(fract(coord - 0.5) - 0.5) / derivative;
     float line = min(grid.x, grid.y);
     float minimumz = min(derivative.y, 1.0);
     float minimumx = min(derivative.x, 1.0);
     vec4 color = vec4(u_gridIntensity, u_gridIntensity, u_gridIntensity, 1.0 - min(line, 1.0));
-    // z axis
+    // z-axis
     if (fragPos3D.x > -u_axisIntensity * minimumx && fragPos3D.x < u_axisIntensity * minimumx)
         color.z = 1.0;
-    // x axis
-    if (fragPos3D.z > -u_axisIntensity * minimumz && fragPos3D.z < u_axisIntensity * minimumz)
+    // x-axis or y-axis
+    float xy = mix(fragPos3D.z, fragPos3D.y, u_flipProgress);
+    if (xy > -u_axisIntensity * minimumz && xy < u_axisIntensity * minimumz)
         color.x = 1.0;
     return color;
 }
@@ -185,6 +200,7 @@ float computeLinearDepth(vec3 pos) {
 
 void main() {
     float t = -nearPoint.y / (farPoint.y - nearPoint.y);
+    t = mix(t, 0.99, u_flipProgress);
     vec3 fragPos3D = nearPoint + t * (farPoint - nearPoint);
 
     gl_FragDepth = computeDepth(fragPos3D);
