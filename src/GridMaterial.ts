@@ -26,6 +26,10 @@ export function createGridPlane(engine: Engine): ModelMesh {
   mesh.setIndices(indices);
   mesh.uploadData(true);
   mesh.addSubMesh(0, 6);
+
+  const { bounds } = mesh;
+  bounds.min.set(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+  bounds.max.set(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
   return mesh;
 }
 
