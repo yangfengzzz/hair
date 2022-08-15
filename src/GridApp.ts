@@ -139,12 +139,12 @@ class TwoThreeTransform extends Script {
         rotMat.getRotation(this.targetRot);
 
         this.beginRot.copyFrom(transform.worldRotationQuaternion);
-        this.beginPos.copyFrom(this.entity.transform.worldPosition);
+        this.beginPos.copyFrom(transform.worldPosition);
 
         if (this.isInverse) {
-            this.targetPerspPos.copyFrom(transform.worldPosition);
-        } else {
             this.targetOrthoPos.copyFrom(transform.worldPosition);
+        } else {
+            this.targetPerspPos.copyFrom(transform.worldPosition);
         }
     }
 }
