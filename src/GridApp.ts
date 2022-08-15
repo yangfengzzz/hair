@@ -132,18 +132,22 @@ class TwoThreeTransform extends Script {
 
     onEnable() {
         const transform = this.entity.transform;
-        const target = transform.worldPosition.clone();
-        target.z *= -2;
-        const rotMat = new Matrix();
-        Matrix.lookAt(transform.worldPosition, target, new Vector3(0, 1, 0), rotMat);
-        rotMat.getRotation(this.targetRot);
-
         this.beginRot.copyFrom(transform.worldRotationQuaternion);
         this.beginPos.copyFrom(transform.worldPosition);
 
         if (this.isInverse) {
+            const rotMat = new Matrix();
+            Matrix.lookAt(transform.worldPosition, new Vector3(), new Vector3(0, 1, 0), rotMat);
+            rotMat.getRotation(this.targetRot);
+
             this.targetOrthoPos.copyFrom(transform.worldPosition);
         } else {
+            const target = transform.worldPosition.clone();
+            target.z *= -2;
+            const rotMat = new Matrix();
+            Matrix.lookAt(transform.worldPosition, target, new Vector3(0, 1, 0), rotMat);
+            rotMat.getRotation(this.targetRot);
+
             this.targetPerspPos.copyFrom(transform.worldPosition);
         }
     }
