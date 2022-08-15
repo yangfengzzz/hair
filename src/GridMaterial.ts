@@ -38,6 +38,7 @@ export class GridMaterial extends BaseMaterial {
   private static _primaryScaleProperty = Shader.getPropertyByName("u_primaryScale");
   private static _secondaryScaleProperty = Shader.getPropertyByName("u_secondaryScale");
   private static _gridIntensityProperty = Shader.getPropertyByName("u_gridIntensity");
+  private static _axisIntensityProperty = Shader.getPropertyByName("u_axisIntensity");
 
   /**
    * Near clip plane - the closest point to the camera when rendering occurs.
@@ -94,6 +95,17 @@ export class GridMaterial extends BaseMaterial {
     this.shaderData.setFloat(GridMaterial._gridIntensityProperty, value);
   }
 
+  /**
+   * Axis Intensity
+   */
+  get axisIntensity(): number {
+    return this.shaderData.getFloat(GridMaterial._axisIntensityProperty);
+  }
+
+  set axisIntensity(value: number) {
+    this.shaderData.setFloat(GridMaterial._axisIntensityProperty, value);
+  }
+
   constructor(engine: Engine) {
     super(engine, Shader.find("grid"));
     this.isTransparent = true;
@@ -104,6 +116,7 @@ export class GridMaterial extends BaseMaterial {
     shaderData.setFloat(GridMaterial._primaryScaleProperty, 10);
     shaderData.setFloat(GridMaterial._secondaryScaleProperty, 1);
     shaderData.setFloat(GridMaterial._gridIntensityProperty, 0.2);
+    shaderData.setFloat(GridMaterial._axisIntensityProperty, 0.1);
   }
 }
 
@@ -135,6 +148,7 @@ uniform float u_near;
 uniform float u_primaryScale;
 uniform float u_secondaryScale;
 uniform float u_gridIntensity;
+uniform float u_axisIntensity;
 
 varying vec3 nearPoint;
 varying vec3 farPoint;
@@ -148,10 +162,10 @@ vec4 grid(vec3 fragPos3D, float scale, bool drawAxis) {
     float minimumx = min(derivative.x, 1.0);
     vec4 color = vec4(u_gridIntensity, u_gridIntensity, u_gridIntensity, 1.0 - min(line, 1.0));
     // z axis
-    if (fragPos3D.x > -0.1 * minimumx && fragPos3D.x < 0.1 * minimumx)
+    if (fragPos3D.x > -u_axisIntensity * minimumx && fragPos3D.x < u_axisIntensity * minimumx)
         color.z = 1.0;
     // x axis
-    if (fragPos3D.z > -0.1 * minimumz && fragPos3D.z < 0.1 * minimumz)
+    if (fragPos3D.z > -u_axisIntensity * minimumz && fragPos3D.z < u_axisIntensity * minimumz)
         color.x = 1.0;
     return color;
 }
