@@ -5,8 +5,8 @@ import {GridMaterial, createGridPlane} from "./GridMaterial";
 
 const gui = new dat.GUI();
 
-class PerspectiveToOrtho extends Script {
-    private _camera: Camera = null;
+class CameraChange extends Script {
+    protected _camera: Camera = null;
     projMat = new Matrix();
     perspectiveMat = new Matrix();
     orthoMat = new Matrix();
@@ -28,6 +28,12 @@ class PerspectiveToOrtho extends Script {
         Matrix.ortho(-width, width, -height, height, camera.nearClipPlane, camera.farClipPlane, this.orthoMat);
     }
 
+    onEnable() {
+        this.progress = 0;
+    }
+}
+
+class PerspToOrtho extends CameraChange {
     onUpdate(deltaTime: number) {
         if (this.enabled) {
             this.progress += deltaTime / 1000;
@@ -38,9 +44,18 @@ class PerspectiveToOrtho extends Script {
             }
         }
     }
+}
 
-    onEnable() {
-        this.progress = 0;
+class OrthoToPersp extends CameraChange {
+    onUpdate(deltaTime: number) {
+        if (this.enabled) {
+            this.progress += deltaTime / 1000;
+            Matrix.lerp(this.orthoMat, this.perspectiveMat, this.progress / this.total, this.projMat);
+            this._camera.projectionMatrix = this.projMat;
+            if (this.progress / this.total > 1) {
+                this.enabled = false;
+            }
+        }
     }
 }
 
@@ -54,8 +69,10 @@ const cameraEntity = rootEntity.createChild("camera");
 const camera = cameraEntity.addComponent(Camera);
 cameraEntity.transform.setPosition(3, 3, 3);
 cameraEntity.addComponent(OrbitControl);
-const perspToOrtho = cameraEntity.addComponent(PerspectiveToOrtho)
+const perspToOrtho = cameraEntity.addComponent(PerspToOrtho);
 perspToOrtho.enabled = false;
+const orthoToPersp = cameraEntity.addComponent(OrthoToPersp);
+orthoToPersp.enabled = false;
 
 const gridRenderer = rootEntity.addComponent(MeshRenderer);
 gridRenderer.mesh = createGridPlane(engine);
@@ -80,7 +97,11 @@ function openDebug() {
     }
     gui.add(info, "isOrthographic").onChange((v) => {
         camera.isOrthographic = !!v;
-        perspToOrtho.enabled = !!v;
+        if (v) {
+            perspToOrtho.enabled = true;
+        } else {
+            orthoToPersp.enabled = true;
+        }
     });
 
     gui.addColor(info, "backgroundColor").onChange((v) => {
