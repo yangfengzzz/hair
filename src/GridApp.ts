@@ -21,7 +21,7 @@ class CameraTransform extends Script {
     perspectiveMat = new Matrix();
     orthoMat = new Matrix();
     progress = 0;
-    total = 0.3;
+    total = 1.0;
     isInverse = false;
 
     onAwake() {
@@ -64,7 +64,7 @@ class CameraTransform extends Script {
 class FlipTransform extends Script {
     private _material: GridMaterial;
     private _progress = 0;
-    private _total = 0.3;
+    private _total = 1.0;
     isInverse = false;
 
     onAwake() {
@@ -102,7 +102,7 @@ class TwoThreeTransform extends Script {
     progressRot = new Quaternion();
 
     private _progress = 0;
-    private _total = 0.3;
+    private _total = 1.0;
     isInverse = false;
 
     onUpdate(deltaTime: number) {
