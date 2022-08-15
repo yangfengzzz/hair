@@ -93,7 +93,7 @@ class FlipTransform extends Script {
 }
 
 class TwoThreeTransform extends Script {
-    targetPos = new Vector3(0, 0.1, -3);
+    targetPos = new Vector3(0, 0.0, 3);
     progressPos = new Vector3();
     targetRot = new Quaternion();
     progressRot = new Quaternion();
@@ -104,7 +104,7 @@ class TwoThreeTransform extends Script {
             this.entity.transform.worldRotationQuaternion = this.progressRot;
 
             Vector3.subtract(this.entity.transform.worldPosition, this.targetPos, this.progressPos);
-            if (this.progressPos.length() < 0.1) {
+            if (this.progressPos.length() < 0.01) {
                 this.enabled = false;
             }
             Vector3.lerp(this.entity.transform.worldPosition, this.targetPos, 0.1, this.progressPos);
@@ -115,7 +115,7 @@ class TwoThreeTransform extends Script {
     onEnable() {
         const transform = this.entity.transform;
         const target = transform.worldPosition.clone();
-        target.z *= 2;
+        target.z *= -2;
         const rotMat = new Matrix();
         Matrix.lookAt(transform.worldPosition, target, new Vector3(0, 1, 0), rotMat);
         rotMat.getRotation(this.targetRot);
@@ -166,13 +166,9 @@ function openDebug() {
     gui.add(info, "isOrthographic").onChange((v) => {
         camera.isOrthographic = !!v;
         if (v) {
-            flipTransform.isInverse = false;
-            flipTransform.enabled = true;
             cameraTransform.isInverse = false;
             cameraTransform.enabled = true;
         } else {
-            flipTransform.isInverse = true;
-            flipTransform.enabled = true;
             cameraTransform.isInverse = true;
             cameraTransform.enabled = true;
         }
