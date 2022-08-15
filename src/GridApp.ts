@@ -176,10 +176,16 @@ function openDebug() {
 
     gui.add(info, "isTwo").onChange((v) => {
         if (v) {
+            flipTransform.isInverse = false;
+            flipTransform.enabled = true;
+
             orbitControl.enabled = false;
             orthoControl.enabled = true;
             twoThree.enabled = true;
         } else {
+            flipTransform.isInverse = true;
+            flipTransform.enabled = true;
+
             orbitControl.enabled = true;
             orthoControl.enabled = false;
         }
@@ -195,4 +201,5 @@ function openDebug() {
     gui.add(gridMaterial, "secondaryScale", 0, 10, 1);
     gui.add(gridMaterial, "gridIntensity", 0, 1);
     gui.add(gridMaterial, "axisIntensity", 0, 1);
+    gui.add(gridMaterial, "flipProgress", 0, 1);
 }
