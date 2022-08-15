@@ -37,6 +37,7 @@ export class GridMaterial extends BaseMaterial {
   private static _nearClipProperty = Shader.getPropertyByName("u_near");
   private static _primaryScaleProperty = Shader.getPropertyByName("u_primaryScale");
   private static _secondaryScaleProperty = Shader.getPropertyByName("u_secondaryScale");
+  private static _gridIntensityProperty = Shader.getPropertyByName("u_gridIntensity");
 
   /**
    * Near clip plane - the closest point to the camera when rendering occurs.
@@ -60,6 +61,9 @@ export class GridMaterial extends BaseMaterial {
     this.shaderData.setFloat(GridMaterial._farClipProperty, value);
   }
 
+  /**
+   * Primary Scale
+   */
   get primaryScale(): number {
     return this.shaderData.getFloat(GridMaterial._primaryScaleProperty);
   }
@@ -68,12 +72,26 @@ export class GridMaterial extends BaseMaterial {
     this.shaderData.setFloat(GridMaterial._primaryScaleProperty, value);
   }
 
+  /**
+   * Secondary Scale
+   */
   get secondaryScale(): number {
     return this.shaderData.getFloat(GridMaterial._secondaryScaleProperty);
   }
 
   set secondaryScale(value: number) {
     this.shaderData.setFloat(GridMaterial._secondaryScaleProperty, value);
+  }
+
+  /**
+   * Grid Intensity
+   */
+  get gridIntensity(): number {
+    return this.shaderData.getFloat(GridMaterial._gridIntensityProperty);
+  }
+
+  set gridIntensity(value: number) {
+    this.shaderData.setFloat(GridMaterial._gridIntensityProperty, value);
   }
 
   constructor(engine: Engine) {
@@ -85,6 +103,7 @@ export class GridMaterial extends BaseMaterial {
     shaderData.setFloat(GridMaterial._farClipProperty, 100);
     shaderData.setFloat(GridMaterial._primaryScaleProperty, 10);
     shaderData.setFloat(GridMaterial._secondaryScaleProperty, 1);
+    shaderData.setFloat(GridMaterial._gridIntensityProperty, 0.2);
   }
 }
 
@@ -115,6 +134,7 @@ uniform float u_far;
 uniform float u_near;
 uniform float u_primaryScale;
 uniform float u_secondaryScale;
+uniform float u_gridIntensity;
 
 varying vec3 nearPoint;
 varying vec3 farPoint;
@@ -126,7 +146,7 @@ vec4 grid(vec3 fragPos3D, float scale, bool drawAxis) {
     float line = min(grid.x, grid.y);
     float minimumz = min(derivative.y, 1.0);
     float minimumx = min(derivative.x, 1.0);
-    vec4 color = vec4(0.2, 0.2, 0.2, 1.0 - min(line, 1.0));
+    vec4 color = vec4(u_gridIntensity, u_gridIntensity, u_gridIntensity, 1.0 - min(line, 1.0));
     // z axis
     if (fragPos3D.x > -0.1 * minimumx && fragPos3D.x < 0.1 * minimumx)
         color.z = 1.0;

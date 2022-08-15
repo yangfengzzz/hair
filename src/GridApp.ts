@@ -37,4 +37,5 @@ function openDebug() {
     gui.add(gridMaterial, "farClipPlane", 0, 100);
     gui.add(gridMaterial, "primaryScale", 0, 100, 1);
     gui.add(gridMaterial, "secondaryScale", 0, 10, 1);
+    gui.add(gridMaterial, "gridIntensity", 0, 1);
 }
