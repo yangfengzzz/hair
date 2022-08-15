@@ -193,7 +193,7 @@ void main() {
     float fading = max(0.0, (0.5 - linearDepth));
 
     // adding multiple resolution for the grid
-    gl_FragColor = (grid(fragPos3D, u_primaryScale, true) + grid(fragPos3D, u_secondaryScale, true)) * float(t > 0.0);
+    gl_FragColor = (grid(fragPos3D, u_primaryScale, true) + grid(fragPos3D, u_secondaryScale, true));
     gl_FragColor.a *= fading;
 }
 `
