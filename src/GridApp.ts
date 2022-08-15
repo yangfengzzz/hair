@@ -43,8 +43,8 @@ class CameraTransform extends Script {
     onUpdate(deltaTime: number) {
         if (this.enabled) {
             this.progress += deltaTime / 1000;
-            let percent = this.progress / this.total;
-            if (percent > 1) {
+            let percent = MathUtil.clamp(this.progress / this.total, 0, 1);
+            if (percent >= 1) {
                 this.enabled = false;
             }
 
@@ -75,8 +75,8 @@ class FlipTransform extends Script {
     onUpdate(deltaTime: number) {
         if (this.enabled) {
             this._progress += deltaTime / 1000;
-            let percent = this._progress / this._total;
-            if (percent > 1) {
+            let percent = MathUtil.clamp(this._progress / this._total, 0, 1);
+            if (percent >= 1) {
                 this.enabled = false;
             }
 
