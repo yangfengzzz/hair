@@ -21,7 +21,7 @@ class CameraTransform extends Script {
     perspectiveMat = new Matrix();
     orthoMat = new Matrix();
     progress = 0;
-    total = 0.5;
+    total = 0.3;
     isInverse = false;
 
     onAwake() {
@@ -64,7 +64,7 @@ class CameraTransform extends Script {
 class FlipTransform extends Script {
     private _material: GridMaterial;
     private _progress = 0;
-    private _total = 0.5;
+    private _total = 0.3;
     isInverse = false;
 
     onAwake() {
@@ -93,26 +93,22 @@ class FlipTransform extends Script {
 }
 
 class TwoThreeTransform extends Script {
-    beginRot = new Quaternion();
+    targetPos = new Vector3(0, 3, 3);
+    progressPos = new Vector3();
     targetRot = new Quaternion();
     progressRot = new Quaternion();
-    private _progress = 0;
-    private _total = 0.5;
-    isInverse = false;
 
     onUpdate(deltaTime: number) {
         if (this.enabled) {
-            this._progress += deltaTime / 1000;
-            let percent = MathUtil.clamp(this._progress / this._total, 0, 1);
-            if (percent >= 1) {
+            Quaternion.slerp(this.entity.transform.worldRotationQuaternion, this.targetRot, 0.1, this.progressRot);
+            this.entity.transform.worldRotationQuaternion = this.progressRot;
+
+            Vector3.subtract(this.entity.transform.worldPosition, this.targetPos, this.progressPos);
+            if (this.progressPos.length() < 0.01) {
                 this.enabled = false;
             }
-
-            if (this.isInverse) {
-                percent = 1 - percent;
-            }
-            Quaternion.slerp(this.beginRot, this.targetRot, percent, this.progressRot);
-            this.entity.transform.worldRotationQuaternion = this.progressRot;
+            Vector3.lerp(this.entity.transform.worldPosition, this.targetPos, 0.1, this.progressPos);
+            this.entity.transform.worldPosition = this.progressPos;
         }
     }
 
@@ -123,7 +119,6 @@ class TwoThreeTransform extends Script {
         const rotMat = new Matrix();
         Matrix.lookAt(transform.worldPosition, target, new Vector3(0, 1, 0), rotMat);
         rotMat.getRotation(this.targetRot);
-        this.beginRot.copyFrom(transform.worldRotationQuaternion);
     }
 }
 
@@ -184,20 +179,21 @@ function openDebug() {
             flipTransform.isInverse = false;
             flipTransform.enabled = true;
 
+            cameraTransform.isInverse = false;
+            cameraTransform.enabled = true;
+
             orbitControl.enabled = false;
             orthoControl.enabled = true;
-
-            twoThree.isInverse = false;
             twoThree.enabled = true;
         } else {
             flipTransform.isInverse = true;
             flipTransform.enabled = true;
 
+            cameraTransform.isInverse = true;
+            cameraTransform.enabled = true;
+
             orbitControl.enabled = true;
             orthoControl.enabled = false;
-
-            twoThree.isInverse = true;
-            twoThree.enabled = true;
         }
     });
 
