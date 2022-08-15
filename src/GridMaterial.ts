@@ -35,6 +35,8 @@ export function createGridPlane(engine: Engine): ModelMesh {
 export class GridMaterial extends BaseMaterial {
   private static _farClipProperty = Shader.getPropertyByName("u_far");
   private static _nearClipProperty = Shader.getPropertyByName("u_near");
+  private static _primaryScaleProperty = Shader.getPropertyByName("u_primaryScale");
+  private static _secondaryScaleProperty = Shader.getPropertyByName("u_secondaryScale");
 
   /**
    * Near clip plane - the closest point to the camera when rendering occurs.
@@ -58,9 +60,31 @@ export class GridMaterial extends BaseMaterial {
     this.shaderData.setFloat(GridMaterial._farClipProperty, value);
   }
 
+  get primaryScale(): number {
+    return this.shaderData.getFloat(GridMaterial._primaryScaleProperty);
+  }
+
+  set primaryScale(value: number) {
+    this.shaderData.setFloat(GridMaterial._primaryScaleProperty, value);
+  }
+
+  get secondaryScale(): number {
+    return this.shaderData.getFloat(GridMaterial._secondaryScaleProperty);
+  }
+
+  set secondaryScale(value: number) {
+    this.shaderData.setFloat(GridMaterial._secondaryScaleProperty, value);
+  }
+
   constructor(engine: Engine) {
     super(engine, Shader.find("grid"));
     this.isTransparent = true;
+
+    const shaderData = this.shaderData;
+    shaderData.setFloat(GridMaterial._nearClipProperty, 0.1);
+    shaderData.setFloat(GridMaterial._farClipProperty, 100);
+    shaderData.setFloat(GridMaterial._primaryScaleProperty, 10);
+    shaderData.setFloat(GridMaterial._secondaryScaleProperty, 1);
   }
 }
 
@@ -89,6 +113,8 @@ void main() {
 
 uniform float u_far;
 uniform float u_near;
+uniform float u_primaryScale;
+uniform float u_secondaryScale;
 
 varying vec3 nearPoint;
 varying vec3 farPoint;
@@ -132,7 +158,7 @@ void main() {
     float fading = max(0.0, (0.5 - linearDepth));
 
     // adding multiple resolution for the grid
-    gl_FragColor = (grid(fragPos3D, 10.0, true) + grid(fragPos3D, 1.0, true)) * float(t > 0.0);
+    gl_FragColor = (grid(fragPos3D, u_primaryScale, true) + grid(fragPos3D, u_secondaryScale, true)) * float(t > 0.0);
     gl_FragColor.a *= fading;
 }
 `
