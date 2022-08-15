@@ -94,7 +94,8 @@ class FlipTransform extends Script {
 
 class TwoThreeTransform extends Script {
     beginPos = new Vector3();
-    targetPos = new Vector3(0, 0.1, 3);
+    targetPerspPos = new Vector3(0, 0.1, 3);
+    targetOrthoPos = new Vector3(0, 0.1, 3);
     progressPos = new Vector3();
 
     beginRot = new Quaternion();
@@ -109,7 +110,7 @@ class TwoThreeTransform extends Script {
         if (this.enabled) {
             this._progress += deltaTime / 1000;
             let percent = MathUtil.clamp(this._progress / this._total, 0, 0.999);
-            if (percent >= 1) {
+            if (percent >= 0.999) {
                 this.enabled = false;
             }
 
@@ -120,7 +121,11 @@ class TwoThreeTransform extends Script {
             Quaternion.slerp(this.beginRot, this.targetRot, percent, this.progressRot);
             this.entity.transform.worldRotationQuaternion = this.progressRot;
 
-            Vector3.lerp(this.beginPos, this.targetPos,  percent, this.progressPos);
+            if (this.isInverse) {
+                Vector3.lerp(this.beginPos, this.targetPerspPos,  percent, this.progressPos);
+            } else {
+                Vector3.lerp(this.beginPos, this.targetOrthoPos,  percent, this.progressPos);
+            }
             this.entity.transform.worldPosition = this.progressPos;
         }
     }
@@ -135,6 +140,12 @@ class TwoThreeTransform extends Script {
 
         this.beginRot.copyFrom(transform.worldRotationQuaternion);
         this.beginPos.copyFrom(this.entity.transform.worldPosition);
+
+        if (this.isInverse) {
+            this.targetPerspPos.copyFrom(transform.worldPosition);
+        } else {
+            this.targetOrthoPos.copyFrom(transform.worldPosition);
+        }
     }
 }
 
