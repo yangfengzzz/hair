@@ -93,22 +93,26 @@ class FlipTransform extends Script {
 }
 
 class TwoThreeTransform extends Script {
-    targetPos = new Vector3(0, 0.0, 3);
-    progressPos = new Vector3();
+    beginRot = new Quaternion();
     targetRot = new Quaternion();
     progressRot = new Quaternion();
+    private _progress = 0;
+    private _total = 0.5;
+    isInverse = false;
 
     onUpdate(deltaTime: number) {
         if (this.enabled) {
-            Quaternion.slerp(this.entity.transform.worldRotationQuaternion, this.targetRot, 0.1, this.progressRot);
-            this.entity.transform.worldRotationQuaternion = this.progressRot;
-
-            Vector3.subtract(this.entity.transform.worldPosition, this.targetPos, this.progressPos);
-            if (this.progressPos.length() < 0.01) {
+            this._progress += deltaTime / 1000;
+            let percent = MathUtil.clamp(this._progress / this._total, 0, 1);
+            if (percent >= 1) {
                 this.enabled = false;
             }
-            Vector3.lerp(this.entity.transform.worldPosition, this.targetPos, 0.1, this.progressPos);
-            this.entity.transform.worldPosition = this.progressPos;
+
+            if (this.isInverse) {
+                percent = 1 - percent;
+            }
+            Quaternion.slerp(this.beginRot, this.targetRot, percent, this.progressRot);
+            this.entity.transform.worldRotationQuaternion = this.progressRot;
         }
     }
 
@@ -119,6 +123,7 @@ class TwoThreeTransform extends Script {
         const rotMat = new Matrix();
         Matrix.lookAt(transform.worldPosition, target, new Vector3(0, 1, 0), rotMat);
         rotMat.getRotation(this.targetRot);
+        this.beginRot.copyFrom(transform.worldRotationQuaternion);
     }
 }
 
@@ -181,6 +186,8 @@ function openDebug() {
 
             orbitControl.enabled = false;
             orthoControl.enabled = true;
+
+            twoThree.isInverse = false;
             twoThree.enabled = true;
         } else {
             flipTransform.isInverse = true;
@@ -188,6 +195,9 @@ function openDebug() {
 
             orbitControl.enabled = true;
             orthoControl.enabled = false;
+
+            twoThree.isInverse = true;
+            twoThree.enabled = true;
         }
     });
 
