@@ -1,5 +1,4 @@
 import * as dat from "dat.gui";
-import {OrbitControl} from "@oasis-engine-toolkit/controls";
 import {
     Camera,
     GLTFResource,
@@ -11,6 +10,7 @@ import {
     WebGLEngine,
     Vector3
 } from "oasis-engine";
+import {OrthoControl, OrbitControl} from "oasis-engine-toolkit";
 import {GridMaterial, createGridPlane} from "./GridMaterial";
 
 const gui = new dat.GUI();
@@ -70,13 +70,22 @@ class OrthoToPersp extends CameraChange {
 }
 
 class TwoThreeTransform extends Script {
-    target = new Quaternion();
-    progress = new Quaternion();
+    targetPos = new Vector3(0, 0.01, -3);
+    progressPos = new Vector3();
+    targetRot = new Quaternion();
+    progressRot = new Quaternion();
 
     onUpdate(deltaTime: number) {
         if (this.enabled) {
-            Quaternion.lerp(this.entity.transform.worldRotationQuaternion, this.target, 0.1, this.progress);
-            this.entity.transform.worldRotationQuaternion = this.progress;
+            Quaternion.slerp(this.entity.transform.worldRotationQuaternion, this.targetRot, 0.1, this.progressRot);
+            this.entity.transform.worldRotationQuaternion = this.progressRot;
+
+            Vector3.subtract(this.entity.transform.worldPosition, this.targetPos, this.progressPos);
+            if (this.progressPos.length() < 0.1) {
+                this.enabled = false;
+            }
+            Vector3.lerp(this.entity.transform.worldPosition, this.targetPos, 0.1, this.progressPos);
+            this.entity.transform.worldPosition = this.progressPos;
         }
     }
 
@@ -86,7 +95,7 @@ class TwoThreeTransform extends Script {
         target.z *= 2;
         const rotMat = new Matrix();
         Matrix.lookAt(transform.worldPosition, target, new Vector3(0, 1, 0), rotMat);
-        rotMat.getRotation(this.target);
+        rotMat.getRotation(this.targetRot);
     }
 }
 
@@ -99,7 +108,10 @@ const rootEntity = engine.sceneManager.activeScene.createRootEntity();
 const cameraEntity = rootEntity.createChild("camera");
 const camera = cameraEntity.addComponent(Camera);
 cameraEntity.transform.setPosition(3, 3, 3);
-cameraEntity.addComponent(OrbitControl);
+cameraEntity.transform.lookAt(new Vector3())
+const orbitControl = cameraEntity.addComponent(OrbitControl);
+const orthoControl = cameraEntity.addComponent(OrthoControl);
+orthoControl.enabled = false;
 const perspToOrtho = cameraEntity.addComponent(PerspToOrtho);
 perspToOrtho.enabled = false;
 const orthoToPersp = cameraEntity.addComponent(OrthoToPersp);
@@ -140,6 +152,8 @@ function openDebug() {
 
     gui.add(info, "isTwo").onChange((v) => {
         if (v) {
+            orbitControl.enabled = false;
+            orthoControl.enabled = true;
             twoThree.enabled = true;
         } else {
             orthoToPersp.enabled = true;
