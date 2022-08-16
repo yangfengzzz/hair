@@ -81,7 +81,6 @@ class TwoThreeTransform extends Script {
 
     beginRot = new Quaternion();
     targetRot = new Quaternion();
-    progressRot = new Quaternion();
 
     private _progress = 0;
     isInverse = false;
@@ -128,11 +127,13 @@ class TwoThreeTransform extends Script {
 
             if (percent <= 1) {
                 if (this.isInverse) {
+                    this.orthoControl.enabled = false;
                     if (this.gridControl) {
                         this.gridControl.is2DGrid = false;
                         this.gridControl = null;
                     }
                 } else {
+                    this.orbitControl.enabled = false;
                     this._cameraTransform(percent);
                     this._projTransform(percent);
                 }
@@ -152,8 +153,11 @@ class TwoThreeTransform extends Script {
 
             if (percent >= 2) {
                 this.enabled = false;
-                this.orbitControl.enabled = this.isInverse;
-                this.orthoControl.enabled = !this.isInverse;
+                if (this.isInverse) {
+                    this.orbitControl.enabled = true;
+                } else {
+                    this.orthoControl.enabled = true;
+                }
             }
         }
     }
@@ -171,11 +175,7 @@ class TwoThreeTransform extends Script {
             Matrix.lookAt(transform.worldPosition, new Vector3(), new Vector3(0, 1, 0), rotMat);
             rotMat.getRotation(this.targetRot);
         } else {
-            const target = transform.worldPosition.clone();
-            target.z *= -2;
-            const rotMat = new Matrix();
-            Matrix.lookAt(transform.worldPosition, target, new Vector3(0, 1, 0), rotMat);
-            rotMat.getRotation(this.targetRot);
+            this.targetRot.set(0, 1, 0, 0);
         }
         this.targetOrthoPos.copyFrom(transform.worldPosition);
     }
@@ -185,8 +185,8 @@ class TwoThreeTransform extends Script {
             percent = 1 - percent;
         }
 
-        Quaternion.slerp(this.beginRot, this.targetRot, percent, this.progressRot);
-        this.entity.transform.worldRotationQuaternion = this.progressRot;
+        const worldQuat = this.entity.transform.worldRotationQuaternion;
+        Quaternion.lerp(this.beginRot, this.targetRot, percent, worldQuat);
 
         // if (this.isInverse) {
         //     Vector3.lerp(this.beginPos, this.targetPerspPos, percent, this.progressPos);
@@ -205,6 +205,13 @@ class TwoThreeTransform extends Script {
     }
 }
 
+class Debug extends Script {
+    onUpdate(deltaTime: number) {
+        const worldQuat = this.entity.transform.worldRotationQuaternion;
+        console.log(worldQuat.x, worldQuat.y, worldQuat.z, worldQuat.w);
+    }
+}
+
 const engine = new WebGLEngine("canvas");
 engine.canvas.resizeByClientSize();
 engine.sceneManager.activeScene.ambientLight.diffuseSolidColor.set(1, 1, 1, 1);
@@ -217,6 +224,7 @@ cameraEntity.transform.setPosition(0, 0.1, -5);
 cameraEntity.transform.lookAt(new Vector3())
 const cameraTransform = cameraEntity.addComponent(CameraTransform);
 const twoThree = cameraEntity.addComponent(TwoThreeTransform);
+cameraEntity.addComponent(Debug);
 
 engine.resourceManager
     .load<GLTFResource>("https://gw.alipayobjects.com/os/OasisHub/267000040/9994/%25E5%25BD%2592%25E6%25A1%25A3.gltf")
