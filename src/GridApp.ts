@@ -11,7 +11,7 @@ import {
     Vector3
 } from "oasis-engine";
 import {OrthoControl, OrbitControl} from "oasis-engine-toolkit";
-import {GridMaterial, createGridPlane} from "./GridMaterial";
+import {GridMaterial, GridControl} from "./GridMaterial";
 
 const gui = new dat.GUI();
 
@@ -61,37 +61,6 @@ class CameraTransform extends Script {
     }
 }
 
-class FlipTransform extends Script {
-    private _material: GridMaterial;
-    private _progress = 0;
-    private _total = 1.0;
-    isInverse = false;
-
-    onAwake() {
-        this._material = <GridMaterial>this.entity.getComponent(MeshRenderer).getMaterial();
-        this.enabled = false;
-    }
-
-    onUpdate(deltaTime: number) {
-        if (this.enabled) {
-            this._progress += deltaTime / 1000;
-            let percent = MathUtil.clamp(this._progress / this._total, 0, 1);
-            if (percent >= 1) {
-                this.enabled = false;
-            }
-
-            if (this.isInverse) {
-                percent = 1 - percent;
-            }
-            this._material.flipProgress = percent
-        }
-    }
-
-    onEnable() {
-        this._progress = 0;
-    }
-}
-
 class TwoThreeTransform extends Script {
     beginPos = new Vector3();
     targetPerspPos = new Vector3(0, 0.1, 3);
@@ -122,9 +91,9 @@ class TwoThreeTransform extends Script {
             this.entity.transform.worldRotationQuaternion = this.progressRot;
 
             if (this.isInverse) {
-                Vector3.lerp(this.beginPos, this.targetPerspPos,  percent, this.progressPos);
+                Vector3.lerp(this.beginPos, this.targetPerspPos, percent, this.progressPos);
             } else {
-                Vector3.lerp(this.beginPos, this.targetOrthoPos,  percent, this.progressPos);
+                Vector3.lerp(this.beginPos, this.targetOrthoPos, percent, this.progressPos);
             }
             this.entity.transform.worldPosition = this.progressPos;
         }
@@ -171,13 +140,7 @@ orthoControl.enabled = false;
 const twoThree = cameraEntity.addComponent(TwoThreeTransform);
 twoThree.enabled = false;
 
-const gridRenderer = rootEntity.addComponent(MeshRenderer);
-gridRenderer.mesh = createGridPlane(engine);
-const gridMaterial = new GridMaterial(engine);
-gridMaterial.nearClipPlane = camera.nearClipPlane;
-gridMaterial.farClipPlane = camera.farClipPlane;
-gridRenderer.setMaterial(gridMaterial);
-const flipTransform = rootEntity.addComponent(FlipTransform);
+const gridControl = cameraEntity.addComponent(GridControl);
 
 engine.resourceManager
     .load<GLTFResource>("https://gw.alipayobjects.com/os/OasisHub/267000040/9994/%25E5%25BD%2592%25E6%25A1%25A3.gltf")
@@ -207,8 +170,8 @@ function openDebug() {
 
     gui.add(info, "isTwo").onChange((v) => {
         if (v) {
-            flipTransform.isInverse = false;
-            flipTransform.enabled = true;
+            gridControl.isInverse = false;
+            gridControl.enabled = true;
 
             cameraTransform.isInverse = false;
             cameraTransform.enabled = true;
@@ -219,8 +182,8 @@ function openDebug() {
             twoThree.isInverse = false;
             twoThree.enabled = true;
         } else {
-            flipTransform.isInverse = true;
-            flipTransform.enabled = true;
+            gridControl.isInverse = true;
+            gridControl.enabled = true;
 
             cameraTransform.isInverse = true;
             cameraTransform.enabled = true;
@@ -237,11 +200,11 @@ function openDebug() {
         engine.sceneManager.activeScene.background.solidColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
     });
 
-    gui.add(gridMaterial, "nearClipPlane", 0, 1);
-    gui.add(gridMaterial, "farClipPlane", 0, 100);
-    gui.add(gridMaterial, "primaryScale", 0, 100, 1);
-    gui.add(gridMaterial, "secondaryScale", 0, 10, 1);
-    gui.add(gridMaterial, "gridIntensity", 0, 1);
-    gui.add(gridMaterial, "axisIntensity", 0, 1);
-    gui.add(gridMaterial, "flipProgress", 0, 1);
+    gui.add(gridControl.material, "nearClipPlane", 0, 1);
+    gui.add(gridControl.material, "farClipPlane", 0, 100);
+    gui.add(gridControl.material, "primaryScale", 0, 100, 1);
+    gui.add(gridControl.material, "secondaryScale", 0, 10, 1);
+    gui.add(gridControl.material, "gridIntensity", 0, 1);
+    gui.add(gridControl.material, "axisIntensity", 0, 1);
+    gui.add(gridControl.material, "flipProgress", 0, 1);
 }
