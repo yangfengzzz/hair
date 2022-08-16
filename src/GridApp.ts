@@ -198,6 +198,7 @@ function openDebug() {
         engine.sceneManager.activeScene.background.solidColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
     });
 
+    gui.add(gridControl, "speed", 0, 10);
     gui.add(gridControl.material, "nearClipPlane", 0, 1);
     gui.add(gridControl.material, "farClipPlane", 0, 100);
     gui.add(gridControl.material, "primaryScale", 0, 100, 1);

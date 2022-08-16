@@ -7,7 +7,6 @@ export class GridControl extends Script {
     private _camera: Camera;
     private _material: GridMaterial;
     private _progress = 0;
-    private _total = 1.0;
     private _is2DGrid = false;
     private _flipGrid = false;
 
@@ -43,6 +42,11 @@ export class GridControl extends Script {
         bounds.max.set(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         return mesh;
     }
+
+    /**
+     * Flip speed
+     */
+    speed = 1.0;
 
     /**
      * Grid Material.
@@ -87,7 +91,7 @@ export class GridControl extends Script {
 
         if (this._flipGrid) {
             this._progress += deltaTime / 1000;
-            let percent = MathUtil.clamp(this._progress / this._total, 0, 1);
+            let percent = MathUtil.clamp(this._progress * this.speed, 0, 1);
             if (percent >= 1) {
                 this._flipGrid = false;
             }
