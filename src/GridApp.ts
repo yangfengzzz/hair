@@ -75,10 +75,7 @@ class TwoThreeTransform extends Script {
     gridControl: GridControl;
 
     beginPos = new Vector3();
-    targetPerspPos = new Vector3(0, 0.01, 10);
-    targetOrthoPos = new Vector3(0, 0.01, 10);
-    progressPos = new Vector3();
-
+    targetPos = new Vector3(0, 0.01, 10);
     beginRot = new Quaternion();
     targetRot = new Quaternion();
 
@@ -154,7 +151,7 @@ class TwoThreeTransform extends Script {
             if (percent >= 2) {
                 this.enabled = false;
                 if (this.isInverse) {
-                    this.orbitControl.enabled = true;
+                    this.orbitControl.enabled = false;
                 } else {
                     this.orthoControl.enabled = true;
                 }
@@ -170,14 +167,15 @@ class TwoThreeTransform extends Script {
         this.beginRot.copyFrom(transform.worldRotationQuaternion);
         this.beginPos.copyFrom(transform.worldPosition);
 
-        if (this.isInverse) {
+        if (!this.isInverse) {
             const rotMat = new Matrix();
-            Matrix.lookAt(transform.worldPosition, new Vector3(), new Vector3(0, 1, 0), rotMat);
+            const worldPos = transform.worldPosition.clone();
+            worldPos.z += 10;
+            worldPos.y -= 0.01;
+            Matrix.lookAt(transform.worldPosition, worldPos, new Vector3(0, 1, 0), rotMat);
             rotMat.getRotation(this.targetRot);
-        } else {
-            this.targetRot.set(0, 1, 0, 0);
+            this.targetPos.set(0, 0.01, Math.sign(this.beginPos.z) * this.beginPos.length());
         }
-        this.targetOrthoPos.copyFrom(transform.worldPosition);
     }
 
     private _cameraTransform(percent: number) {
@@ -185,15 +183,11 @@ class TwoThreeTransform extends Script {
             percent = 1 - percent;
         }
 
-        const worldQuat = this.entity.transform.worldRotationQuaternion;
-        Quaternion.lerp(this.beginRot, this.targetRot, percent, worldQuat);
-
-        // if (this.isInverse) {
-        //     Vector3.lerp(this.beginPos, this.targetPerspPos, percent, this.progressPos);
-        // } else {
-        //     Vector3.lerp(this.beginPos, this.targetOrthoPos, percent, this.progressPos);
-        // }
-        // this.entity.transform.worldPosition = this.progressPos;
+        if (!this.isInverse) {
+            const worldQuat = this.entity.transform.worldRotationQuaternion;
+            Quaternion.lerp(this.beginRot, this.targetRot, percent, worldQuat);
+            Vector3.lerp(this.beginPos, this.targetPos, percent, this.entity.transform.worldPosition);
+        }
     }
 
     private _projTransform(percent: number) {
@@ -220,7 +214,7 @@ const rootEntity = engine.sceneManager.activeScene.createRootEntity();
 
 const cameraEntity = rootEntity.createChild("camera");
 const camera = cameraEntity.addComponent(Camera);
-cameraEntity.transform.setPosition(0, 0.1, -5);
+cameraEntity.transform.setPosition(3, 3, -3);
 cameraEntity.transform.lookAt(new Vector3())
 const cameraTransform = cameraEntity.addComponent(CameraTransform);
 const twoThree = cameraEntity.addComponent(TwoThreeTransform);
