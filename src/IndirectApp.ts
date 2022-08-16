@@ -368,6 +368,9 @@ function addTexture(name: string, url: string) {
         .then((texture) => {
             textures[name] = texture;
             specularShiftTexture = texture;
+            if (hairMaterial) {
+                hairMaterial.specularShiftTexture = texture;
+            }
             console.log("图片上传成功！", name);
         });
 }
