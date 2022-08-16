@@ -312,6 +312,8 @@ dropCtrl.on('drop', ({files}) => {
 
 function loadFileMaps(files: Map<string, File>) {
     const modelReg = /\.(gltf|glb)$/i;
+    const imgReg = /\.(jpg|jpeg|png)$/i;
+    const envReg = /\.(hdr|hdri)$/i;
 
     let mainFile: File;
     let type = "gltf";
@@ -330,11 +332,44 @@ function loadFileMaps(files: Map<string, File>) {
         return false;
     });
 
+    fileArray.forEach((f) => {
+        const file = f[1];
+        if (!modelReg.test(file.name)) {
+            const url = URL.createObjectURL(file);
+            const fileName = file.name;
+            filesMap[fileName] = url;
+            if (imgReg.test(fileName)) {
+                addTexture(fileName, url);
+            } else if (envReg.test(fileName)) {
+                // addEnv(fileName, url);
+            }
+        }
+    });
+
     if (mainFile) {
         const url = URL.createObjectURL(mainFile);
-        console.log(url);
         loadModel(url, filesMap, type as any);
     }
+}
+
+const textures: Record<string, Texture2D> = {};
+
+function addTexture(name: string, url: string) {
+    const repeat = Object.keys(textures).find((textureName) => textureName === name);
+    if (repeat) {
+        console.warn(`${name} 已经存在，请更换图片名字重新上传`);
+        return;
+    }
+    engine.resourceManager
+        .load<Texture2D>({
+            type: AssetType.Texture2D,
+            url
+        })
+        .then((texture) => {
+            textures[name] = texture;
+            specularShiftTexture = texture;
+            console.log("图片上传成功！", name);
+        });
 }
 
 function loadModel(url: string, filesMap: Record<string, string>, type: "gltf" | "glb") {

@@ -5,6 +5,6 @@
 // import "./src/FakeHairApp"
 // import "./src/App";
 // import "./src/PBRHairApp"
-// import "./src/IndirectApp";
+import "./src/IndirectApp";
 
-import "./src/GridApp";
+// import "./src/GridApp";
