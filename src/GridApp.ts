@@ -72,6 +72,7 @@ class TwoThreeTransform extends Script {
 
     orbitControl: OrbitControl;
     orthoControl: OrthoControl;
+    gridControl: GridControl;
 
     beginPos = new Vector3();
     targetPerspPos = new Vector3(0, 0.01, 10);
@@ -109,6 +110,7 @@ class TwoThreeTransform extends Script {
         this.orbitControl.enabled = false;
         this.orthoControl = this.entity.addComponent(OrthoControl);
         this.orthoControl.enabled = false;
+        this.gridControl = cameraEntity.addComponent(GridControl);
     }
 
     onUpdate(deltaTime: number) {
@@ -118,6 +120,11 @@ class TwoThreeTransform extends Script {
 
             if (percent <= 0.5) {
                 if (this.isInverse) {
+                    if (this.gridControl) {
+                        this.gridControl.is2DGrid = false;
+                        this.gridControl = null;
+                    }
+
                     this._cameraTransform(percent);
                 } else {
                     this._projTransform(percent);
@@ -129,6 +136,11 @@ class TwoThreeTransform extends Script {
                     this._cameraTransform(percent);
                     this._projTransform(percent - 0.5);
                 } else {
+                    if (this.gridControl) {
+                        this.gridControl.is2DGrid = true;
+                        this.gridControl = null;
+                    }
+
                     this._projTransform(percent);
                     this._cameraTransform(percent - 0.5);
                 }
@@ -144,21 +156,15 @@ class TwoThreeTransform extends Script {
 
             if (percent >= 1.5) {
                 this.enabled = false;
-                if (this.isInverse) {
-                    // this._camera.projectionMatrix = this.perspectiveMat;
-                    // this.orbitControl.enabled = true;
-                    this.orthoControl.enabled = false;
-                } else {
-                    // this._camera.projectionMatrix = this.orthoMat;
-                    // this.orbitControl.enabled = false;
-                    this.orthoControl.enabled = true;
-                }
+                this.orthoControl.enabled = !this.isInverse;
             }
         }
     }
 
     onEnable() {
         this._progress = 0;
+        this.gridControl = this.entity.getComponent(GridControl);
+
         const transform = this.entity.transform;
         this.beginRot.copyFrom(transform.worldRotationQuaternion);
         this.beginPos.copyFrom(transform.worldPosition);
@@ -213,7 +219,6 @@ const camera = cameraEntity.addComponent(Camera);
 cameraEntity.transform.setPosition(10, 10, 10);
 cameraEntity.transform.lookAt(new Vector3())
 const cameraTransform = cameraEntity.addComponent(CameraTransform);
-const gridControl = cameraEntity.addComponent(GridControl);
 const twoThree = cameraEntity.addComponent(TwoThreeTransform);
 
 engine.resourceManager
@@ -245,13 +250,9 @@ function openDebug() {
     gui.add(info, "isTwo").onChange((v) => {
         camera.isOrthographic = !!v;
         if (v) {
-            gridControl.is2DGrid = true;
-
             twoThree.isInverse = false;
             twoThree.enabled = true;
         } else {
-            gridControl.is2DGrid = false;
-
             twoThree.isInverse = true;
             twoThree.enabled = true;
         }
@@ -261,14 +262,14 @@ function openDebug() {
         engine.sceneManager.activeScene.background.solidColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
     });
 
-    gui.add(gridControl, "speed", 0, 10);
-    gui.add(gridControl.material, "nearClipPlane", 0, 1);
-    gui.add(gridControl.material, "farClipPlane", 0, 100);
-    gui.add(gridControl.material, "primaryScale", 0, 100, 1);
-    gui.add(gridControl.material, "secondaryScale", 0, 10, 1);
-    gui.add(gridControl.material, "gridIntensity", 0, 1);
-    gui.add(gridControl.material, "axisIntensity", 0, 1);
-    gui.add(gridControl.material, "flipProgress", 0, 1);
+    gui.add(twoThree.gridControl, "speed", 0, 10);
+    gui.add(twoThree.gridControl.material, "nearClipPlane", 0, 1);
+    gui.add(twoThree.gridControl.material, "farClipPlane", 0, 100);
+    gui.add(twoThree.gridControl.material, "primaryScale", 0, 100, 1);
+    gui.add(twoThree.gridControl.material, "secondaryScale", 0, 10, 1);
+    gui.add(twoThree.gridControl.material, "gridIntensity", 0, 1);
+    gui.add(twoThree.gridControl.material, "axisIntensity", 0, 1);
+    gui.add(twoThree.gridControl.material, "flipProgress", 0, 1);
 
     gui.add(cameraTransform, "speed", 0, 10);
     gui.add(twoThree, "speed", 0, 10);
