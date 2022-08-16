@@ -69,8 +69,8 @@ class TwoThreeTransform extends Script {
     orthoControl: OrthoControl;
 
     beginPos = new Vector3();
-    targetPerspPos = new Vector3(0, 0.1, 3);
-    targetOrthoPos = new Vector3(0, 0.1, 3);
+    targetPerspPos = new Vector3(0, 0.0, 10);
+    targetOrthoPos = new Vector3(0, 0.0, 10);
     progressPos = new Vector3();
 
     beginRot = new Quaternion();
@@ -153,7 +153,7 @@ const rootEntity = engine.sceneManager.activeScene.createRootEntity();
 
 const cameraEntity = rootEntity.createChild("camera");
 const camera = cameraEntity.addComponent(Camera);
-cameraEntity.transform.setPosition(3, 3, 3);
+cameraEntity.transform.setPosition(10, 10, 10);
 cameraEntity.transform.lookAt(new Vector3())
 const cameraTransform = cameraEntity.addComponent(CameraTransform);
 const gridControl = cameraEntity.addComponent(GridControl);
