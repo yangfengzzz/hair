@@ -25,7 +25,7 @@ class CameraTransform extends Script {
     /**
      * speed
      */
-    speed = 10;
+    speed = 3;
 
     onAwake() {
         this.enabled = false;
@@ -85,7 +85,7 @@ class TwoThreeTransform extends Script {
     /**
      * speed
      */
-    speed = 10;
+    speed = 3;
 
     onAwake() {
         this.enabled = false;
@@ -126,7 +126,7 @@ class TwoThreeTransform extends Script {
                 if (this.isInverse) {
                     this.orthoControl.enabled = false;
                     if (this.gridControl) {
-                        this.gridControl.speed = this.speed;
+                        this.gridControl.speed = this.speed * 1.5;
                         this.gridControl.is2DGrid = false;
                         this.gridControl = null;
                     }
@@ -142,7 +142,7 @@ class TwoThreeTransform extends Script {
                     this._projTransform(percent - 1);
                 } else {
                     if (this.gridControl) {
-                        this.gridControl.speed = this.speed;
+                        this.gridControl.speed = this.speed * 1.5;
                         this.gridControl.is2DGrid = true;
                         this.gridControl = null;
 
