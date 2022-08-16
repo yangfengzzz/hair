@@ -10,7 +10,7 @@ import {
     Vector3
 } from "oasis-engine";
 import {OrthoControl, OrbitControl} from "oasis-engine-toolkit";
-import {GridMaterial, GridControl} from "./GridMaterial";
+import {GridControl} from "./GridMaterial";
 
 const gui = new dat.GUI();
 
@@ -65,6 +65,9 @@ class CameraTransform extends Script {
 }
 
 class TwoThreeTransform extends Script {
+    orbitControl: OrbitControl;
+    orthoControl: OrthoControl;
+
     beginPos = new Vector3();
     targetPerspPos = new Vector3(0, 0.1, 3);
     targetOrthoPos = new Vector3(0, 0.1, 3);
@@ -82,12 +85,25 @@ class TwoThreeTransform extends Script {
      */
     speed = 10;
 
+    onAwake() {
+        this.orbitControl = this.entity.addComponent(OrbitControl);
+        this.orthoControl = this.entity.addComponent(OrthoControl);
+        this.orthoControl.enabled = false;
+    }
+
     onUpdate(deltaTime: number) {
         if (this.enabled) {
             this._progress += deltaTime / 1000;
             let percent = MathUtil.clamp(this._progress * this.speed, 0, 0.999);
             if (percent >= 0.999) {
                 this.enabled = false;
+                if (this.isInverse) {
+                    this.orbitControl.enabled = true;
+                    this.orthoControl.enabled = false;
+                } else {
+                    this.orbitControl.enabled = false;
+                    this.orthoControl.enabled = true;
+                }
             }
 
             if (this.isInverse) {
@@ -140,14 +156,10 @@ const camera = cameraEntity.addComponent(Camera);
 cameraEntity.transform.setPosition(3, 3, 3);
 cameraEntity.transform.lookAt(new Vector3())
 const cameraTransform = cameraEntity.addComponent(CameraTransform);
+const gridControl = cameraEntity.addComponent(GridControl);
 
-const orbitControl = cameraEntity.addComponent(OrbitControl);
-const orthoControl = cameraEntity.addComponent(OrthoControl);
-orthoControl.enabled = false;
 const twoThree = cameraEntity.addComponent(TwoThreeTransform);
 twoThree.enabled = false;
-
-const gridControl = cameraEntity.addComponent(GridControl);
 
 engine.resourceManager
     .load<GLTFResource>("https://gw.alipayobjects.com/os/OasisHub/267000040/9994/%25E5%25BD%2592%25E6%25A1%25A3.gltf")
@@ -182,9 +194,6 @@ function openDebug() {
             cameraTransform.isInverse = false;
             cameraTransform.enabled = true;
 
-            orbitControl.enabled = false;
-            orthoControl.enabled = true;
-
             twoThree.isInverse = false;
             twoThree.enabled = true;
         } else {
@@ -192,9 +201,6 @@ function openDebug() {
 
             cameraTransform.isInverse = true;
             cameraTransform.enabled = true;
-
-            orbitControl.enabled = true;
-            orthoControl.enabled = false;
 
             twoThree.isInverse = true;
             twoThree.enabled = true;
