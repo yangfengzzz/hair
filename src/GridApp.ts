@@ -132,23 +132,21 @@ class TwoThreeTransform extends Script {
                         this.gridControl.is2DGrid = false;
                         this.gridControl = null;
                     }
-
-                    // this._cameraTransform(percent);
                 } else {
+                    this._cameraTransform(percent);
                     this._projTransform(percent);
                 }
             }
 
             if (percent > 1 && percent <= 2) {
                 if (this.isInverse) {
+                    this._cameraTransform(percent - 1);
                     this._projTransform(percent - 1);
                 } else {
                     if (this.gridControl) {
                         this.gridControl.is2DGrid = true;
                         this.gridControl = null;
                     }
-
-                    // this._cameraTransform(percent - 1);
                 }
             }
 
