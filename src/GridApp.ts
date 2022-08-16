@@ -74,8 +74,8 @@ class TwoThreeTransform extends Script {
     orthoControl: OrthoControl;
 
     beginPos = new Vector3();
-    targetPerspPos = new Vector3(0, 0.0, 10);
-    targetOrthoPos = new Vector3(0, 0.0, 10);
+    targetPerspPos = new Vector3(0, 0.01, 10);
+    targetOrthoPos = new Vector3(0, 0.01, 10);
     progressPos = new Vector3();
 
     beginRot = new Quaternion();
@@ -106,6 +106,7 @@ class TwoThreeTransform extends Script {
         Matrix.ortho(-width, width, -height, height, camera.nearClipPlane, camera.farClipPlane, this.orthoMat);
 
         this.orbitControl = this.entity.addComponent(OrbitControl);
+        this.orbitControl.enabled = false;
         this.orthoControl = this.entity.addComponent(OrthoControl);
         this.orthoControl.enabled = false;
     }
@@ -113,20 +114,43 @@ class TwoThreeTransform extends Script {
     onUpdate(deltaTime: number) {
         if (this.enabled) {
             this._progress += deltaTime / 1000;
-            let percent = MathUtil.clamp(this._progress * this.speed, 0, 0.999);
+            let percent = MathUtil.clamp(this._progress * this.speed, 0, 1.5);
 
-            if (percent <= 0.999) {
-                this._projTransform(percent);
-                this._cameraTransform(percent);
+            if (percent <= 0.5) {
+                if (this.isInverse) {
+                    this._cameraTransform(percent);
+                } else {
+                    this._projTransform(percent);
+                }
             }
 
-            if (percent >= 0.999) {
+            if (percent > 0.5 && percent <= 1) {
+                if (this.isInverse) {
+                    this._cameraTransform(percent);
+                    this._projTransform(percent - 0.5);
+                } else {
+                    this._projTransform(percent);
+                    this._cameraTransform(percent - 0.5);
+                }
+            }
+
+            if (percent > 1 && percent <= 1.5) {
+                if (this.isInverse) {
+                    this._projTransform(percent - 0.5);
+                } else {
+                    this._cameraTransform(percent - 0.5);
+                }
+            }
+
+            if (percent >= 1.5) {
                 this.enabled = false;
                 if (this.isInverse) {
-                    this.orbitControl.enabled = true;
+                    // this._camera.projectionMatrix = this.perspectiveMat;
+                    // this.orbitControl.enabled = true;
                     this.orthoControl.enabled = false;
                 } else {
-                    this.orbitControl.enabled = false;
+                    // this._camera.projectionMatrix = this.orthoMat;
+                    // this.orbitControl.enabled = false;
                     this.orthoControl.enabled = true;
                 }
             }
@@ -140,10 +164,7 @@ class TwoThreeTransform extends Script {
         this.beginPos.copyFrom(transform.worldPosition);
 
         if (this.isInverse) {
-            const rotMat = new Matrix();
-            Matrix.lookAt(transform.worldPosition, new Vector3(), new Vector3(0, 1, 0), rotMat);
-            rotMat.getRotation(this.targetRot);
-
+            this.targetRot.copyFrom(transform.worldRotationQuaternion);
             this.targetOrthoPos.copyFrom(transform.worldPosition);
         } else {
             const target = transform.worldPosition.clone();
