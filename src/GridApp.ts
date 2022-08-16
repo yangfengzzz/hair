@@ -114,8 +114,11 @@ class TwoThreeTransform extends Script {
         if (this.enabled) {
             this._progress += deltaTime / 1000;
             let percent = MathUtil.clamp(this._progress * this.speed, 0, 0.999);
-            
-            this._cameraTransform(percent);
+
+            if (percent <= 0.999) {
+                this._projTransform(percent);
+                this._cameraTransform(percent);
+            }
 
             if (percent >= 0.999) {
                 this.enabled = false;
@@ -190,9 +193,7 @@ cameraEntity.transform.setPosition(10, 10, 10);
 cameraEntity.transform.lookAt(new Vector3())
 const cameraTransform = cameraEntity.addComponent(CameraTransform);
 const gridControl = cameraEntity.addComponent(GridControl);
-
 const twoThree = cameraEntity.addComponent(TwoThreeTransform);
-twoThree.enabled = false;
 
 engine.resourceManager
     .load<GLTFResource>("https://gw.alipayobjects.com/os/OasisHub/267000040/9994/%25E5%25BD%2592%25E6%25A1%25A3.gltf")
@@ -221,19 +222,14 @@ function openDebug() {
     });
 
     gui.add(info, "isTwo").onChange((v) => {
+        camera.isOrthographic = !!v;
         if (v) {
             gridControl.is2DGrid = true;
-
-            cameraTransform.isInverse = false;
-            cameraTransform.enabled = true;
 
             twoThree.isInverse = false;
             twoThree.enabled = true;
         } else {
             gridControl.is2DGrid = false;
-
-            cameraTransform.isInverse = true;
-            cameraTransform.enabled = true;
 
             twoThree.isInverse = true;
             twoThree.enabled = true;
