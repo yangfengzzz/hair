@@ -88,7 +88,7 @@ class TwoThreeTransform extends Script {
     /**
      * speed
      */
-    speed = 10;
+    speed = 6;
 
     onAwake() {
         this.enabled = false;
