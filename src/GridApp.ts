@@ -9,7 +9,7 @@ import {
     WebGLEngine,
     Vector3
 } from "oasis-engine";
-import {OrthoControl, OrbitControl} from "oasis-engine-toolkit";
+import {OrthoControl} from "oasis-engine-toolkit";
 import {GridControl} from "./GridMaterial";
 
 const gui = new dat.GUI();
@@ -70,7 +70,6 @@ class TwoThreeTransform extends Script {
     perspectiveMat = new Matrix();
     orthoMat = new Matrix();
 
-    orbitControl: OrbitControl;
     orthoControl: OrthoControl;
     gridControl: GridControl;
 
@@ -102,8 +101,6 @@ class TwoThreeTransform extends Script {
         const height = camera.orthographicSize;
         Matrix.ortho(-width, width, -height, height, camera.nearClipPlane, camera.farClipPlane, this.orthoMat);
 
-        this.orbitControl = this.entity.addComponent(OrbitControl);
-        this.orbitControl.enabled = true;
         this.orthoControl = this.entity.addComponent(OrthoControl);
         this.orthoControl.enabled = false;
         this.gridControl = cameraEntity.addComponent(GridControl);
@@ -130,7 +127,6 @@ class TwoThreeTransform extends Script {
                         this.gridControl = null;
                     }
                 } else {
-                    this.orbitControl.enabled = false;
                     this._cameraTransform(percent);
                     this._projTransform(percent);
                 }
@@ -150,9 +146,7 @@ class TwoThreeTransform extends Script {
 
             if (percent >= 2) {
                 this.enabled = false;
-                if (this.isInverse) {
-                    this.orbitControl.enabled = false;
-                } else {
+                if (!this.isInverse) {
                     this.orthoControl.enabled = true;
                 }
             }
@@ -170,7 +164,7 @@ class TwoThreeTransform extends Script {
         if (!this.isInverse) {
             const rotMat = new Matrix();
             const worldPos = transform.worldPosition.clone();
-            worldPos.z += 10;
+            worldPos.z -= 10;
             worldPos.y -= 0.01;
             Matrix.lookAt(transform.worldPosition, worldPos, new Vector3(0, 1, 0), rotMat);
             rotMat.getRotation(this.targetRot);
@@ -214,7 +208,7 @@ const rootEntity = engine.sceneManager.activeScene.createRootEntity();
 
 const cameraEntity = rootEntity.createChild("camera");
 const camera = cameraEntity.addComponent(Camera);
-cameraEntity.transform.setPosition(3, 3, -3);
+cameraEntity.transform.setPosition(0, 0.01, 5);
 cameraEntity.transform.lookAt(new Vector3())
 const cameraTransform = cameraEntity.addComponent(CameraTransform);
 const twoThree = cameraEntity.addComponent(TwoThreeTransform);
