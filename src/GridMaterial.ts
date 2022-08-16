@@ -46,7 +46,7 @@ export class GridControl extends Script {
     /**
      * Flip speed
      */
-    speed = 1.0;
+    speed = 10.0;
 
     /**
      * Grid Material.

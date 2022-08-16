@@ -4,7 +4,6 @@ import {
     GLTFResource,
     MathUtil,
     Matrix,
-    MeshRenderer,
     Quaternion,
     Script,
     WebGLEngine,
@@ -21,8 +20,12 @@ class CameraTransform extends Script {
     perspectiveMat = new Matrix();
     orthoMat = new Matrix();
     progress = 0;
-    total = 1.0;
     isInverse = false;
+
+    /**
+     * speed
+     */
+    speed = 10;
 
     onAwake() {
         this.enabled = false;
@@ -43,7 +46,7 @@ class CameraTransform extends Script {
     onUpdate(deltaTime: number) {
         if (this.enabled) {
             this.progress += deltaTime / 1000;
-            let percent = MathUtil.clamp(this.progress / this.total, 0, 1);
+            let percent = MathUtil.clamp(this.progress * this.speed, 0, 1);
             if (percent >= 1) {
                 this.enabled = false;
             }
@@ -72,13 +75,17 @@ class TwoThreeTransform extends Script {
     progressRot = new Quaternion();
 
     private _progress = 0;
-    private _total = 1.0;
     isInverse = false;
+
+    /**
+     * speed
+     */
+    speed = 10;
 
     onUpdate(deltaTime: number) {
         if (this.enabled) {
             this._progress += deltaTime / 1000;
-            let percent = MathUtil.clamp(this._progress / this._total, 0, 0.999);
+            let percent = MathUtil.clamp(this._progress * this.speed, 0, 0.999);
             if (percent >= 0.999) {
                 this.enabled = false;
             }
@@ -206,4 +213,7 @@ function openDebug() {
     gui.add(gridControl.material, "gridIntensity", 0, 1);
     gui.add(gridControl.material, "axisIntensity", 0, 1);
     gui.add(gridControl.material, "flipProgress", 0, 1);
+
+    gui.add(cameraTransform, "speed", 0, 10);
+    gui.add(twoThree, "speed", 0, 10);
 }
