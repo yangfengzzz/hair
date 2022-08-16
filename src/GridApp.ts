@@ -170,8 +170,7 @@ function openDebug() {
 
     gui.add(info, "isTwo").onChange((v) => {
         if (v) {
-            gridControl.isInverse = false;
-            gridControl.enabled = true;
+            gridControl.is2DGrid = true;
 
             cameraTransform.isInverse = false;
             cameraTransform.enabled = true;
@@ -182,8 +181,7 @@ function openDebug() {
             twoThree.isInverse = false;
             twoThree.enabled = true;
         } else {
-            gridControl.isInverse = true;
-            gridControl.enabled = true;
+            gridControl.is2DGrid = false;
 
             cameraTransform.isInverse = true;
             cameraTransform.enabled = true;

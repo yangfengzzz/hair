@@ -8,7 +8,8 @@ export class GridControl extends Script {
     private _material: GridMaterial;
     private _progress = 0;
     private _total = 1.0;
-    isInverse = false;
+    private _is2DGrid = false;
+    private _flipGrid = false;
 
     /**
      * Create Mesh with position in clipped space.
@@ -43,41 +44,59 @@ export class GridControl extends Script {
         return mesh;
     }
 
+    /**
+     * Grid Material.
+     */
     get material(): GridMaterial {
         return this._material;
     }
 
+    /**
+     * Is 2D Grid.
+     */
+    get is2DGrid(): boolean {
+        return this._is2DGrid;
+    }
+
+    set is2DGrid(value: boolean) {
+        this._is2DGrid = value;
+        this._progress = 0;
+        this._flipGrid = true;
+    }
+
+    /**
+     * @override
+     */
     onAwake() {
-        const engine = this.engine;
-        const gridRenderer = this.entity.addComponent(MeshRenderer);
+        const {engine: engine, entity: entity} = this;
+        this._camera = entity.getComponent(Camera);
+
+        const gridRenderer = entity.addComponent(MeshRenderer);
         gridRenderer.mesh = GridControl.createGridPlane(engine);
         this._material = new GridMaterial(engine);
         gridRenderer.setMaterial(this._material);
-        this.enabled = false;
-
-        this._camera = this.entity.getComponent(Camera);
     }
 
+    /**
+     * @override
+     */
     onUpdate(deltaTime: number) {
         const {_material: material, _camera: camera} = this;
         material.nearClipPlane = camera.nearClipPlane;
         material.farClipPlane = camera.farClipPlane;
-        if (this.enabled) {
+
+        if (this._flipGrid) {
             this._progress += deltaTime / 1000;
             let percent = MathUtil.clamp(this._progress / this._total, 0, 1);
             if (percent >= 1) {
-                this.enabled = false;
+                this._flipGrid = false;
             }
 
-            if (this.isInverse) {
+            if (!this._is2DGrid) {
                 percent = 1 - percent;
             }
             material.flipProgress = percent
         }
-    }
-
-    onEnable() {
-        this._progress = 0;
     }
 }
 
