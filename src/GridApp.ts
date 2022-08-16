@@ -65,6 +65,11 @@ class CameraTransform extends Script {
 }
 
 class TwoThreeTransform extends Script {
+    protected _camera: Camera = null;
+    projMat = new Matrix();
+    perspectiveMat = new Matrix();
+    orthoMat = new Matrix();
+
     orbitControl: OrbitControl;
     orthoControl: OrthoControl;
 
@@ -86,6 +91,20 @@ class TwoThreeTransform extends Script {
     speed = 10;
 
     onAwake() {
+        this.enabled = false;
+        this._camera = this.entity.getComponent(Camera);
+        const camera = this._camera;
+        Matrix.perspective(
+            MathUtil.degreeToRadian(camera.fieldOfView),
+            camera.aspectRatio,
+            camera.nearClipPlane,
+            camera.farClipPlane,
+            this.perspectiveMat
+        );
+        const width = camera.orthographicSize * camera.aspectRatio;
+        const height = camera.orthographicSize;
+        Matrix.ortho(-width, width, -height, height, camera.nearClipPlane, camera.farClipPlane, this.orthoMat);
+
         this.orbitControl = this.entity.addComponent(OrbitControl);
         this.orthoControl = this.entity.addComponent(OrthoControl);
         this.orthoControl.enabled = false;
@@ -95,6 +114,9 @@ class TwoThreeTransform extends Script {
         if (this.enabled) {
             this._progress += deltaTime / 1000;
             let percent = MathUtil.clamp(this._progress * this.speed, 0, 0.999);
+            
+            this._cameraTransform(percent);
+
             if (percent >= 0.999) {
                 this.enabled = false;
                 if (this.isInverse) {
@@ -105,24 +127,11 @@ class TwoThreeTransform extends Script {
                     this.orthoControl.enabled = true;
                 }
             }
-
-            if (this.isInverse) {
-                percent = 1 - percent;
-            }
-
-            Quaternion.slerp(this.beginRot, this.targetRot, percent, this.progressRot);
-            this.entity.transform.worldRotationQuaternion = this.progressRot;
-
-            if (this.isInverse) {
-                Vector3.lerp(this.beginPos, this.targetPerspPos, percent, this.progressPos);
-            } else {
-                Vector3.lerp(this.beginPos, this.targetOrthoPos, percent, this.progressPos);
-            }
-            this.entity.transform.worldPosition = this.progressPos;
         }
     }
 
     onEnable() {
+        this._progress = 0;
         const transform = this.entity.transform;
         this.beginRot.copyFrom(transform.worldRotationQuaternion);
         this.beginPos.copyFrom(transform.worldPosition);
@@ -142,6 +151,30 @@ class TwoThreeTransform extends Script {
 
             this.targetPerspPos.copyFrom(transform.worldPosition);
         }
+    }
+
+    private _cameraTransform(percent: number) {
+        if (this.isInverse) {
+            percent = 1 - percent;
+        }
+
+        Quaternion.slerp(this.beginRot, this.targetRot, percent, this.progressRot);
+        this.entity.transform.worldRotationQuaternion = this.progressRot;
+
+        if (this.isInverse) {
+            Vector3.lerp(this.beginPos, this.targetPerspPos, percent, this.progressPos);
+        } else {
+            Vector3.lerp(this.beginPos, this.targetOrthoPos, percent, this.progressPos);
+        }
+        this.entity.transform.worldPosition = this.progressPos;
+    }
+
+    private _projTransform(percent: number) {
+        if (this.isInverse) {
+            percent = 1 - percent;
+        }
+        Matrix.lerp(this.perspectiveMat, this.orthoMat, percent, this.projMat);
+        this._camera.projectionMatrix = this.projMat;
     }
 }
 
