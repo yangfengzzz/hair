@@ -165,9 +165,6 @@ class TwoThreeTransform extends Script {
         this.gridControl = this.entity.getComponent(GridControl);
 
         const transform = this.entity.transform;
-        this.beginRot.copyFrom(transform.worldRotationQuaternion);
-        this.beginPos.copyFrom(transform.worldPosition);
-
         if (!this.isInverse) {
             const rotMat = new Matrix();
             const worldPos = transform.worldPosition.clone();
@@ -176,19 +173,18 @@ class TwoThreeTransform extends Script {
             Matrix.lookAt(transform.worldPosition, worldPos, new Vector3(0, 1, 0), rotMat);
             rotMat.getRotation(this.targetRot);
             this.targetPos.set(0, 0.01, Math.sign(this.beginPos.z) * this.beginPos.length());
+        } else {
+            this.targetPos.copyFrom(this.beginPos);
+            this.targetRot.copyFrom(this.beginRot);
         }
+        this.beginPos.copyFrom(transform.worldPosition);
+        this.beginRot.copyFrom(transform.worldRotationQuaternion);
     }
 
     private _cameraTransform(percent: number) {
-        if (this.isInverse) {
-            percent = 1 - percent;
-        }
-
-        if (!this.isInverse) {
-            const worldQuat = this.entity.transform.worldRotationQuaternion;
-            Quaternion.lerp(this.beginRot, this.targetRot, percent, worldQuat);
-            Vector3.lerp(this.beginPos, this.targetPos, percent, this.entity.transform.worldPosition);
-        }
+        const transform = this.entity.transform;
+        Quaternion.lerp(this.beginRot, this.targetRot, percent, transform.worldRotationQuaternion);
+        Vector3.lerp(this.beginPos, this.targetPos, percent, transform.worldPosition);
     }
 
     private _projTransform(percent: number) {
