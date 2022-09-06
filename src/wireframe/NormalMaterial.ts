@@ -173,6 +173,18 @@ export class NormalMaterial extends BaseMaterial {
 
     set mesh(value: ModelMesh) {
         this._modelMesh = value;
+        this._uploadVerticesBuffer(value);
+        this._uploadIndicesBuffer(value);
+    }
+
+    constructor(engine: Engine) {
+        super(engine, Shader.find("normalShader"));
+    }
+
+    private _uploadIndicesBuffer(value: ModelMesh) {
+    }
+
+    private _uploadVerticesBuffer(value: ModelMesh) {
         //@ts-ignore
         const vertexBufferBinding = <VertexBufferBinding>value._vertexBufferBindings[0];
         const vertexCount = value.vertexCount;
@@ -209,15 +221,11 @@ export class NormalMaterial extends BaseMaterial {
                 }
             }
         }
-        this._createMeshTexture(alignBuffer, width / 4, height);
+        this._createVerticesTexture(alignBuffer, width / 4, height);
         NormalMaterial._jointIndexBegin = -1;
     }
 
-    constructor(engine: Engine) {
-        super(engine, Shader.find("normalShader"));
-    }
-
-    private _createMeshTexture(vertexBuffer: ArrayBufferView, width: number, height: number) {
+    private _createVerticesTexture(vertexBuffer: ArrayBufferView, width: number, height: number) {
         this._meshTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);
         this._meshTexture.filterMode = TextureFilterMode.Point;
         this._meshTexture.setPixelBuffer(vertexBuffer);

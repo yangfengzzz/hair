@@ -29,8 +29,8 @@ const rootEntity = scene.createRootEntity("root");
 const cameraEntity = rootEntity.createChild("camera_entity");
 cameraEntity.transform.position = new Vector3(0, 5, 10);
 cameraEntity.transform.lookAt(new Vector3(0, 0, 0));
-cameraEntity.addComponent(OrbitControl);
 cameraEntity.addComponent(Camera);
+cameraEntity.addComponent(OrbitControl);
 
 // Create a entity to add light component
 const lightEntity = rootEntity.createChild("light");
