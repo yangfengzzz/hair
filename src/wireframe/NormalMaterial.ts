@@ -8,9 +8,13 @@ import {
 
 Shader.create("normalShader",
     `
-   uniform sampler2D u_vertexSampler;
-   uniform float u_textureWidth;
-   uniform float u_textureHeight;
+   uniform sampler2D u_verticesSampler;
+   uniform float u_verticesTextureWidth;
+   uniform float u_verticesTextureHeight;
+   
+   uniform sampler2D u_indicesSampler;
+   uniform float u_indicesTextureWidth;
+   uniform float u_indicesTextureHeight;
    
    uniform float u_lineScale;
    uniform mat4 u_VPMat;
@@ -37,7 +41,11 @@ Shader.create("normalShader",
 #endif
    
    vec4 getVertexElement(float row, float col) {
-        return texture2D(u_vertexSampler, vec2((row + 0.5) / u_textureWidth, (col + 0.5) / u_textureHeight ));
+        return texture2D(u_verticesSampler, vec2((row + 0.5) / u_verticesTextureWidth, (col + 0.5) / u_verticesTextureHeight ));
+   }
+   
+   vec3 getIndicesElement(float row, float col) {
+        return texture2D(u_indicesSampler, vec2((row + 0.5) / u_indicesTextureWidth, (col + 0.5) / u_indicesTextureHeight )).xyz;
    }
    
    vec2 getVec2(inout vec4[ELEMENT_COUNT] rows, inout int row_index, inout int value_index) {
@@ -88,8 +96,8 @@ Shader.create("normalShader",
    
    void main() {
         int pointIndex = gl_VertexID / 2;
-        int col = pointIndex % int(u_textureHeight);
-        int row = pointIndex / int(u_textureHeight) + (col > 0? 1 : 0);
+        int col = pointIndex % int(u_verticesTextureHeight);
+        int row = pointIndex / int(u_verticesTextureHeight) + (col > 0? 1 : 0);
         
         vec4 rows[ELEMENT_COUNT];
         for( int i = 0; i < ELEMENT_COUNT; i++ ) {
@@ -152,16 +160,22 @@ export class NormalMaterial extends BaseMaterial {
     private static _jointMacro = Shader.getMacroByName("O3_HAS_JOINT");
     private static _vertexColorMacro = Shader.getMacroByName("O3_HAS_VERTEXCOLOR");
 
-    private static _vertexSamplerProp = Shader.getPropertyByName("u_vertexSampler");
-    private static _textureHeightProp = Shader.getPropertyByName("u_textureHeight");
-    private static _textureWidthProp = Shader.getPropertyByName("u_textureWidth");
-    private static _lineScaleProp = Shader.getPropertyByName("u_lineScale");
-    private static _worldMatrixProp = Shader.getPropertyByName("u_worldMatrix");
     private static _MAX_TEXTURE_ROWS = 4096;
     private static _jointIndexBegin = -1;
 
+    private static _verticesSamplerProp = Shader.getPropertyByName("u_verticesSampler");
+    private static _verticesTextureHeightProp = Shader.getPropertyByName("u_verticesTextureHeight");
+    private static _verticesTextureWidthProp = Shader.getPropertyByName("u_verticesTextureWidth");
+
+    private static _indicesSamplerProp = Shader.getPropertyByName("u_indicesSampler");
+    private static _indicesTextureHeightProp = Shader.getPropertyByName("u_indicesTextureHeight");
+    private static _indicesTextureWidthProp = Shader.getPropertyByName("u_indicesTextureWidth");
+
+    private static _lineScaleProp = Shader.getPropertyByName("u_lineScale");
+    private static _worldMatrixProp = Shader.getPropertyByName("u_worldMatrix");
+
     private _modelMesh: ModelMesh;
-    private _meshTexture: Texture2D;
+    private _verticesTexture: Texture2D;
     private _indicesTexture: Texture2D;
 
     set worldMatrix(value: Matrix) {
@@ -207,6 +221,9 @@ export class NormalMaterial extends BaseMaterial {
                     floatBuffer[i * 4 + 3] = 0;
                 }
                 this._indicesTexture.setPixelBuffer(floatBuffer);
+                this.shaderData.setTexture(NormalMaterial._indicesSamplerProp, this._indicesTexture);
+                this.shaderData.setFloat(NormalMaterial._indicesTextureWidthProp, width);
+                this.shaderData.setFloat(NormalMaterial._indicesTextureHeightProp, height);
                 break;
             }
             case IndexFormat.UInt16: {
@@ -219,11 +236,14 @@ export class NormalMaterial extends BaseMaterial {
                 const floatBuffer = new Float32Array(width * height * 4);
                 for (let i = 0; i < indexCount; i++) {
                     for (let j = 0; j < 3; j++) {
-                        floatBuffer[i * 4 + j] = buffer[i * 3 + j];
+                        floatBuffer[i * 4 + j] = uint16Buffer[i * 3 + j];
                     }
                     floatBuffer[i * 4 + 3] = 0;
                 }
                 this._indicesTexture.setPixelBuffer(floatBuffer);
+                this.shaderData.setTexture(NormalMaterial._indicesSamplerProp, this._indicesTexture);
+                this.shaderData.setFloat(NormalMaterial._indicesTextureWidthProp, width);
+                this.shaderData.setFloat(NormalMaterial._indicesTextureHeightProp, height);
                 break;
             }
             case IndexFormat.UInt32: {
@@ -236,11 +256,14 @@ export class NormalMaterial extends BaseMaterial {
                 const floatBuffer = new Float32Array(width * height * 4);
                 for (let i = 0; i < indexCount; i++) {
                     for (let j = 0; j < 3; j++) {
-                        floatBuffer[i * 4 + j] = buffer[i * 3 + j];
+                        floatBuffer[i * 4 + j] = uint32Buffer[i * 3 + j];
                     }
                     floatBuffer[i * 4 + 3] = 0;
                 }
                 this._indicesTexture.setPixelBuffer(floatBuffer);
+                this.shaderData.setTexture(NormalMaterial._indicesSamplerProp, this._indicesTexture);
+                this.shaderData.setFloat(NormalMaterial._indicesTextureWidthProp, width);
+                this.shaderData.setFloat(NormalMaterial._indicesTextureHeightProp, height);
                 break;
             }
         }
@@ -289,13 +312,13 @@ export class NormalMaterial extends BaseMaterial {
     }
 
     private _createVerticesTexture(vertexBuffer: ArrayBufferView, width: number, height: number) {
-        this._meshTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);
-        this._meshTexture.filterMode = TextureFilterMode.Point;
-        this._meshTexture.setPixelBuffer(vertexBuffer);
+        this._verticesTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);
+        this._verticesTexture.filterMode = TextureFilterMode.Point;
+        this._verticesTexture.setPixelBuffer(vertexBuffer);
 
-        this.shaderData.setTexture(NormalMaterial._vertexSamplerProp, this._meshTexture);
-        this.shaderData.setFloat(NormalMaterial._textureWidthProp, width);
-        this.shaderData.setFloat(NormalMaterial._textureHeightProp, height);
+        this.shaderData.setTexture(NormalMaterial._verticesSamplerProp, this._verticesTexture);
+        this.shaderData.setFloat(NormalMaterial._verticesTextureWidthProp, width);
+        this.shaderData.setFloat(NormalMaterial._verticesTextureHeightProp, height);
     }
 
     private _meshElement(value: ModelMesh): number {
