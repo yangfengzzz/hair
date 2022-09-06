@@ -112,10 +112,7 @@ Shader.create("normalShader",
 #endif
 
 #ifdef O3_HAS_JOINT
-        row_index += (value_index+1)/4;
-        value_index = (value_index+1)%4;
-        uint joint = uint(rows[row_index][value_index]);
-        vec4 JOINTS_0 = vec4(float(joint & 0xffu), float((joint & 0xff00u) >> 8), float((joint & 0xff0000u) >> 16), float((joint & 0xff000000u) >> 24));
+        vec4 JOINTS_0 = getVec4(rows, row_index, value_index);
 #endif
 
 #ifdef O3_HAS_TANGENT
@@ -161,6 +158,7 @@ export class NormalMaterial extends BaseMaterial {
     private static _lineScaleProp = Shader.getPropertyByName("u_lineScale");
     private static _worldMatrixProp = Shader.getPropertyByName("u_worldMatrix");
     private static _MAX_TEXTURE_ROWS = 4096;
+    private static _jointIndexBegin = -1;
 
     private _modelMesh: ModelMesh;
     private _meshTexture: Texture2D;
@@ -179,8 +177,16 @@ export class NormalMaterial extends BaseMaterial {
         const vertexBufferBinding = <VertexBufferBinding>value._vertexBufferBindings[0];
         const vertexCount = value.vertexCount;
         const elementCount = this._meshElement(value);
-        const buffer = new Float32Array(elementCount * vertexCount);
+        const jointIndexBegin = NormalMaterial._jointIndexBegin;
+
+        let buffer: Float32Array;
+        if (jointIndexBegin !== -1) {
+            buffer = new Float32Array((elementCount - 3) * vertexCount);
+        } else {
+            buffer = new Float32Array(elementCount * vertexCount);
+        }
         vertexBufferBinding.buffer.getData(buffer);
+        const uint8Buffer = new Uint8Array(buffer.buffer);
 
         const alignElementCount = Math.ceil(elementCount / 4) * 4;
         this.shaderData.enableMacro("ELEMENT_COUNT", (alignElementCount / 4).toString());
@@ -188,12 +194,24 @@ export class NormalMaterial extends BaseMaterial {
         const width = Math.ceil(vertexCount / NormalMaterial._MAX_TEXTURE_ROWS) * alignElementCount;
         const height = Math.min(vertexCount, NormalMaterial._MAX_TEXTURE_ROWS);
         const alignBuffer = new Float32Array(width * height);
+
         for (let i = 0; i < vertexCount; i++) {
             for (let j = 0; j < elementCount; j++) {
-                alignBuffer[i * alignElementCount + j] = buffer[i * elementCount + j];
+                if (jointIndexBegin !== -1 && j === jointIndexBegin) {
+                    alignBuffer[i * alignElementCount + j] = uint8Buffer[i * elementCount * 4 + jointIndexBegin * 4];
+                } else if (jointIndexBegin !== -1 && j === jointIndexBegin + 1) {
+                    alignBuffer[i * alignElementCount + j] = uint8Buffer[i * elementCount * 4 + jointIndexBegin * 4 + 1];
+                } else if (jointIndexBegin !== -1 && j === jointIndexBegin + 2) {
+                    alignBuffer[i * alignElementCount + j] = uint8Buffer[i * elementCount * 4 + jointIndexBegin * 4 + 2];
+                } else if (jointIndexBegin !== -1 && j === jointIndexBegin + 3) {
+                    alignBuffer[i * alignElementCount + j] = uint8Buffer[i * elementCount * 4 + jointIndexBegin * 4 + 3];
+                } else {
+                    alignBuffer[i * alignElementCount + j] = buffer[i * elementCount + j];
+                }
             }
         }
         this._createMeshTexture(alignBuffer, width / 4, height);
+        NormalMaterial._jointIndexBegin = -1;
     }
 
     constructor(engine: Engine) {
@@ -234,7 +252,8 @@ export class NormalMaterial extends BaseMaterial {
                     shaderData.enableMacro(NormalMaterial._weightMacro);
                     break;
                 case "JOINTS_0":
-                    elementCount += 1;
+                    NormalMaterial._jointIndexBegin = elementCount;
+                    elementCount += 4;
                     shaderData.enableMacro(NormalMaterial._jointMacro);
                     break;
                 case "TANGENT":
