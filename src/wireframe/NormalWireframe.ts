@@ -1,15 +1,26 @@
-import {MeshRenderer, ModelMesh, MeshTopology, Vector3, Script, Matrix} from "oasis-engine";
+import {
+    MeshRenderer,
+    ModelMesh,
+    MeshTopology,
+    Vector3,
+    Script,
+    Matrix,
+    Entity,
+    Color,
+    Skin,
+    SkinnedMeshRenderer
+} from "oasis-engine";
 import {NormalMaterial} from "./NormalMaterial";
 
 export class NormalWireframe extends Script {
-    private _renderers: MeshRenderer[] = [];
-    private _meshes: ModelMesh[] = [];
-    private _worldMatrix: Matrix[] = [];
-
     private _normalRenderers: MeshRenderer[] = [];
     private _normalMaterials: NormalMaterial[] = [];
     private _scale = 0.2;
+    private _color = new Color();
 
+    /**
+     * line length scale.
+     */
     get scale(): number {
         return this._scale;
     }
@@ -22,24 +33,34 @@ export class NormalWireframe extends Script {
         }
     }
 
-    onAwake() {
-        const {_renderers: renderers, _meshes: meshes, _worldMatrix:worldMatrix} = this;
-        this.entity.getComponentsIncludeChildren(MeshRenderer, renderers);
-        for (let i = 0; i < renderers.length; i++) {
-            let renderer = renderers[i];
-            const modelMesh = <ModelMesh>renderer.mesh;
-            if (modelMesh !== null) {
-                meshes.push(modelMesh);
-                worldMatrix.push(renderer.entity.transform.worldMatrix);
-            }
-        }
+    /**
+     * line length color.
+     */
+    get color(): Color {
+        return this._color;
+    }
 
-        for (let i = 0; i < meshes.length; i++) {
-            this._createNormalRenderer(meshes[i], worldMatrix[i]);
+    set color(value: Color) {
+        if (value !== this._color) {
+            this._color.copyFrom(value);
         }
     }
 
-    private _createNormalRenderer(mesh: ModelMesh, worldMatrix: Matrix) {
+    addEntity(entity: Entity) {
+        const renderers: MeshRenderer[] = [];
+        entity.getComponentsIncludeChildren(MeshRenderer, renderers);
+        for (let i = 0; i < renderers.length; i++) {
+            this.addMeshRenderer(renderers[i]);
+        }
+    }
+
+    addMeshRenderer(renderer: MeshRenderer) {
+        const mesh = <ModelMesh>renderer.mesh;
+        if (mesh === null) {
+            throw "Only support ModelMesh.";
+        }
+        const worldMatrix = renderer.entity.transform.worldMatrix;
+
         const engine = this.engine;
         const normalMesh = new ModelMesh(engine);
         const vertexCount = mesh.vertexCount * 2;
@@ -60,10 +81,19 @@ export class NormalWireframe extends Script {
         normalMaterial.worldMatrix = worldMatrix;
         this._normalMaterials.push(normalMaterial);
 
-        const normalRenderer = this.entity.addComponent(MeshRenderer);
-        normalRenderer.setMaterial(normalMaterial);
-        normalRenderer.mesh = normalMesh;
-        this._normalRenderers.push(normalRenderer);
+        const skinMeshRenderer = <SkinnedMeshRenderer>renderer;
+        if (skinMeshRenderer !== null) {
+            const normalRenderer = this.entity.addComponent(SkinnedMeshRenderer);
+            normalRenderer.setMaterial(normalMaterial);
+            normalRenderer.mesh = normalMesh;
+            normalRenderer.skin = skinMeshRenderer.skin;
+            this._normalRenderers.push(normalRenderer);
+        } else {
+            const normalRenderer = this.entity.addComponent(MeshRenderer);
+            normalRenderer.setMaterial(normalMaterial);
+            normalRenderer.mesh = normalMesh;
+            this._normalRenderers.push(normalRenderer);
+        }
     }
 
     onDisable() {
