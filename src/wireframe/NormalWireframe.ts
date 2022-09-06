@@ -7,7 +7,7 @@ export class NormalWireframe extends Script {
 
     private _normalRenderers: MeshRenderer[] = [];
     private _normalMaterials: NormalMaterial[] = [];
-    private _scale = 1;
+    private _scale = 0.2;
 
     get scale(): number {
         return this._scale;

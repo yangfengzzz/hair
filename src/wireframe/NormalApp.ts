@@ -1,4 +1,5 @@
 import {
+    Animator,
     BlinnPhongMaterial,
     Camera,
     Color,
@@ -7,6 +8,7 @@ import {
     PrimitiveMesh,
     Vector3,
     WebGLEngine,
+    GLTFResource
 } from "oasis-engine";
 import {OrbitControl} from "@oasis-engine-toolkit/controls";
 import {NormalWireframe} from "./NormalWireframe";
@@ -41,24 +43,35 @@ directLight.intensity = 0.5;
 // Control light direction by entity's transform
 lightEntity.transform.rotation = new Vector3(45, 45, 45);
 
-// Create Cube
-const sceneEntity = rootEntity.createChild();
-const renderer = sceneEntity.addComponent(MeshRenderer);
-// const mesh = PrimitiveMesh.createCuboid(engine, 2, 2, 2);
-const mesh = PrimitiveMesh.createSphere(engine, 2, 20);
-renderer.setMaterial(new BlinnPhongMaterial(engine));
-renderer.mesh = mesh;
+// // Create Cube
+// const sceneEntity = rootEntity.createChild();
+// const renderer = sceneEntity.addComponent(MeshRenderer);
+// // const mesh = PrimitiveMesh.createCuboid(engine, 2, 2, 2);
+// const mesh = PrimitiveMesh.createSphere(engine, 2, 20);
+// renderer.setMaterial(new BlinnPhongMaterial(engine));
+// renderer.mesh = mesh;
+//
+// const wireframe = sceneEntity.addComponent(NormalWireframe);
 
-const wireframe = sceneEntity.addComponent(NormalWireframe);
-wireframe.scale = 0.2;
+engine.resourceManager
+    .load<GLTFResource>("https://gw.alipayobjects.com/os/bmw-prod/5e3c1e4e-496e-45f8-8e05-f89f2bd5e4a4.glb")
+    .then((gltfResource) => {
+        const {animations, defaultSceneRoot} = gltfResource;
+        rootEntity.addChild(defaultSceneRoot);
+        const wireframe = defaultSceneRoot.addComponent(NormalWireframe);
+        const animator = defaultSceneRoot.getComponent(Animator);
+        const animationNames = animations.filter((clip) => !clip.name.includes("pose")).map((clip) => clip.name);
 
-openDebug();
-engine.run();
+        // animator.play(animationNames[0]);
 
-function openDebug() {
-    const info = {
-        baseColor: [0, 0, 0],
-    };
+        openDebug();
+        engine.run();
 
-    gui.add(wireframe, "scale", 0, 1);
-}
+        function openDebug() {
+            const info = {
+                baseColor: [0, 0, 0],
+            };
+
+            gui.add(wireframe, "scale", 0, 1);
+        }
+    });
