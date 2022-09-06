@@ -9,21 +9,18 @@ import {
 Shader.create("normalShader",
     `
    uniform sampler2D u_vertexSampler;
-   uniform float u_vertexCount;
-   uniform mat4 u_VPMat;
+   uniform float u_textureWidth;
+   uniform float u_textureHeight;
+   
    uniform float u_lineScale;
+   uniform mat4 u_VPMat;
    uniform mat4 u_worldMatrix;
    
    vec4 getVertexElement(float row, float col) {
-        float base = col / u_vertexCount;
-        float hf = 0.5 / u_vertexCount;
-        float v = base + hf;
-        
-        float rowWidth = 1.0 / float(ROW_COUNT);
-        return texture2D(u_vertexSampler, vec2(rowWidth * 0.5 + rowWidth * row, v ));
+        return texture2D(u_vertexSampler, vec2((row + 0.5) / u_textureWidth, (col + 0.5) / u_textureHeight ));
    }
    
-   vec2 getVec2(inout vec4[ROW_COUNT] rows, inout int row_index, inout int value_index) {
+   vec2 getVec2(inout vec4[ELEMENT_COUNT] rows, inout int row_index, inout int value_index) {
         row_index += (value_index+1)/4;
         value_index = (value_index+1)%4;
         float x = rows[row_index][value_index];
@@ -35,7 +32,7 @@ Shader.create("normalShader",
         return vec2(x, y);
    }
    
-   vec3 getVec3(inout vec4[ROW_COUNT] rows, inout int row_index, inout int value_index) {
+   vec3 getVec3(inout vec4[ELEMENT_COUNT] rows, inout int row_index, inout int value_index) {
         row_index += (value_index+1)/4;
         value_index = (value_index+1)%4;
         float x = rows[row_index][value_index];
@@ -50,7 +47,7 @@ Shader.create("normalShader",
         return vec3(x, y, z);
    }
    
-   vec4 getVec4(inout vec4[ROW_COUNT] rows, inout int row_index, inout int value_index) {
+   vec4 getVec4(inout vec4[ELEMENT_COUNT] rows, inout int row_index, inout int value_index) {
         row_index += (value_index+1)/4;
         value_index = (value_index+1)%4;
         float x = rows[row_index][value_index];
@@ -70,10 +67,13 @@ Shader.create("normalShader",
    }
    
    void main() {
-        int col = gl_VertexID / 2;
-        vec4 rows[ROW_COUNT];
-        for( int i = 0; i < ROW_COUNT; i++ ) {
-            rows[i] = getVertexElement(float(i), float(col));
+        int pointIndex = gl_VertexID / 2;
+        int col = pointIndex % int(u_textureHeight);
+        int row = pointIndex / int(u_textureHeight) + (col > 0? 1 : 0);
+        
+        vec4 rows[ELEMENT_COUNT];
+        for( int i = 0; i < ELEMENT_COUNT; i++ ) {
+            rows[i] = getVertexElement(float(row * ELEMENT_COUNT + i), float(col));
         }
         
         vec3 position = vec3(rows[0].x, rows[0].y, rows[0].z);        
@@ -127,9 +127,11 @@ export class NormalMaterial extends BaseMaterial {
     private static _vertexColorMacro = Shader.getMacroByName("O3_HAS_VERTEXCOLOR");
 
     private static _vertexSamplerProp = Shader.getPropertyByName("u_vertexSampler");
-    private static _vertexCountProp = Shader.getPropertyByName("u_vertexCount");
+    private static _textureHeightProp = Shader.getPropertyByName("u_textureHeight");
+    private static _textureWidthProp = Shader.getPropertyByName("u_textureWidth");
     private static _lineScaleProp = Shader.getPropertyByName("u_lineScale");
     private static _worldMatrixProp = Shader.getPropertyByName("u_worldMatrix");
+    private static _MAX_TEXTURE_ROWS = 4096;
 
     private _modelMesh: ModelMesh;
     private _meshTexture: Texture2D;
@@ -232,14 +234,18 @@ export class NormalMaterial extends BaseMaterial {
         return elementCount;
     }
 
-    private _createMeshTexture(vertexBuffer: ArrayBufferView, vertexCount: number, rowCount: number) {
+    private _createMeshTexture(vertexBuffer: ArrayBufferView, vertexCount: number, elementCount: number) {
         const engine = this.engine;
-        this._meshTexture = new Texture2D(engine, rowCount, vertexCount, TextureFormat.R32G32B32A32, false);
+        const width = Math.ceil(vertexCount / NormalMaterial._MAX_TEXTURE_ROWS) * elementCount;
+        const height = Math.min(vertexCount, NormalMaterial._MAX_TEXTURE_ROWS);
+
+        this._meshTexture = new Texture2D(engine, width, height, TextureFormat.R32G32B32A32, false);
         this._meshTexture.filterMode = TextureFilterMode.Point;
         this._meshTexture.setPixelBuffer(vertexBuffer);
 
         this.shaderData.setTexture(NormalMaterial._vertexSamplerProp, this._meshTexture);
-        this.shaderData.setFloat(NormalMaterial._vertexCountProp, vertexCount);
-        this.shaderData.enableMacro("ROW_COUNT", rowCount.toString());
+        this.shaderData.setFloat(NormalMaterial._textureWidthProp, width);
+        this.shaderData.setFloat(NormalMaterial._textureHeightProp, height);
+        this.shaderData.enableMacro("ELEMENT_COUNT", elementCount.toString());
     }
 }
