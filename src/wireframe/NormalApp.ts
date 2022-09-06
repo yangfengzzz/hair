@@ -27,10 +27,10 @@ const rootEntity = scene.createRootEntity("root");
 
 // Init Camera
 const cameraEntity = rootEntity.createChild("camera_entity");
-cameraEntity.transform.position = new Vector3(0, 5, 10);
+cameraEntity.transform.setPosition(0, 1, 3);
 cameraEntity.transform.lookAt(new Vector3(0, 0, 0));
-cameraEntity.addComponent(Camera);
-cameraEntity.addComponent(OrbitControl);
+cameraEntity.addComponent(Camera).enableFrustumCulling = false;
+cameraEntity.addComponent(OrbitControl).target.set(0, 1, 0);
 
 // Create a entity to add light component
 const lightEntity = rootEntity.createChild("light");
@@ -68,12 +68,20 @@ engine.resourceManager
 
         openDebug();
         engine.run();
+
+        function openDebug() {
+            const info = {
+                baseColor: [0, 0, 0],
+                pause: false
+            };
+
+            gui.add(info, "pause").onChange((v) => {
+                if (v) {
+                    animator.speed = 0;
+                } else {
+                    animator.speed = 1;
+                }
+            })
+            gui.add(wireframe, "scale", 0, 1);
+        }
     });
-
-function openDebug() {
-    const info = {
-        baseColor: [0, 0, 0],
-    };
-
-    gui.add(wireframe, "scale", 0, 1);
-}
