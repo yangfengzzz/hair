@@ -6,6 +6,20 @@ export class NormalWireframe extends Script {
     private _meshes: ModelMesh[] = [];
 
     private _normalRenderers: MeshRenderer[] = [];
+    private _normalMaterials: NormalMaterial[] = [];
+    private _scale = 1;
+
+    get scale(): number {
+        return this._scale;
+    }
+
+    set scale(value: number) {
+        this._scale = value;
+        const normalMaterials = this._normalMaterials;
+        for (let i = 0; i < normalMaterials.length; i++) {
+            normalMaterials[i].scale = value;
+        }
+    }
 
     onAwake() {
         const {_renderers: renderers, _meshes: meshes} = this;
@@ -40,6 +54,9 @@ export class NormalWireframe extends Script {
 
         const normalMaterial = new NormalMaterial(engine);
         normalMaterial.mesh = mesh;
+        normalMaterial.scale = this._scale;
+        this._normalMaterials.push(normalMaterial);
+
         const normalRenderer = this.entity.addComponent(MeshRenderer);
         normalRenderer.setMaterial(normalMaterial);
         normalRenderer.mesh = normalMesh;

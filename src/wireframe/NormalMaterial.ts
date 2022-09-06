@@ -11,6 +11,7 @@ Shader.create("normalShader",
    uniform sampler2D u_vertexSampler;
    uniform float u_vertexCount;
    uniform mat4 u_MVPMat;
+   uniform float u_lineScale;
    
    vec4 getVertexElement(float row, float col) {
         float base = col / u_vertexCount;
@@ -104,7 +105,7 @@ Shader.create("normalShader",
 #endif
         
         if (gl_VertexID % 2 == 1) {
-            position += normal;
+            position += normal * u_lineScale;
         }
         gl_Position = u_MVPMat * vec4(position, 1.0); 
    }
@@ -126,9 +127,14 @@ export class NormalMaterial extends BaseMaterial {
 
     protected static _vertexSamplerProp = Shader.getPropertyByName("u_vertexSampler");
     protected static _vertexCountProp = Shader.getPropertyByName("u_vertexCount");
+    protected static _lineScaleProp = Shader.getPropertyByName("u_lineScale");
 
     private _modelMesh: ModelMesh;
     private _meshTexture: Texture2D;
+
+    set scale(value: number) {
+        this.shaderData.setFloat(NormalMaterial._lineScaleProp, value);
+    }
 
     set mesh(value: ModelMesh) {
         this._modelMesh = value;
