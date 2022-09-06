@@ -62,7 +62,10 @@ engine.resourceManager
         const renderer = sceneEntity.addComponent(MeshRenderer);
         // const mesh = PrimitiveMesh.createCuboid(engine, 2, 2, 2);
         const mesh = PrimitiveMesh.createSphere(engine, 2, 20);
-        renderer.setMaterial(new BlinnPhongMaterial(engine));
+        const mtl = new BlinnPhongMaterial(engine);
+        mtl.isTransparent = true;
+        mtl.baseColor.set(1,1,1,0.2);
+        renderer.setMaterial(mtl);
         renderer.mesh = mesh;
         wireframe.addEntity(sceneEntity);
 

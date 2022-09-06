@@ -105,7 +105,7 @@ Shader.create("normalShader",
         int indicesIndex = gl_VertexID / 3;
         int indicesCol = indicesIndex % int(u_indicesTextureHeight);
         int indicesRow = indicesIndex / int(u_indicesTextureHeight) + (indicesCol > 0? 1 : 0);
-        vec3 triangleIndices = getIndicesElement(float(row), float(col));
+        vec3 triangleIndices = getIndicesElement(float(indicesRow), float(indicesCol));
         int subIndex = gl_VertexID % 3;
         v_baryCenter = vec3(0.0);
         v_baryCenter[subIndex] = 1.0;
@@ -178,12 +178,12 @@ Shader.create("normalShader",
     }
 #endif
     void main() {
-#ifdef WIREFRAME_MODE
-    gl_FragColor.rgb = mix(vec3(0.0), vec3(1.0), edgeFactor());
-    gl_FragColor.a = 1.0;
-#else
+//#ifdef WIREFRAME_MODE
+//    gl_FragColor.rgb = mix(vec3(0.0), vec3(1.0), edgeFactor());
+//    gl_FragColor.a = 1.0;
+//#else
     gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-#endif
+//#endif
     }
     `);
 
@@ -241,16 +241,16 @@ export class NormalMaterial extends BaseMaterial {
 
         //@ts-ignore
         const indexFormat = <IndexFormat>value._indicesFormat;
-        let indexCount = 0;
+        let triangleCount = 0;
         switch (indexFormat) {
             case IndexFormat.UInt8: {
-                indexCount = byteLength;
-                const width = Math.ceil(indexCount / NormalMaterial._MAX_TEXTURE_ROWS);
-                const height = Math.min(indexCount, NormalMaterial._MAX_TEXTURE_ROWS);
+                triangleCount = byteLength/3;
+                const width = Math.ceil(triangleCount / NormalMaterial._MAX_TEXTURE_ROWS);
+                const height = Math.min(triangleCount, NormalMaterial._MAX_TEXTURE_ROWS);
                 this._indicesTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);
 
                 const floatBuffer = new Float32Array(width * height * 4);
-                for (let i = 0; i < indexCount; i++) {
+                for (let i = 0; i < triangleCount; i++) {
                     for (let j = 0; j < 3; j++) {
                         floatBuffer[i * 4 + j] = buffer[i * 3 + j];
                     }
@@ -263,14 +263,15 @@ export class NormalMaterial extends BaseMaterial {
                 break;
             }
             case IndexFormat.UInt16: {
-                indexCount = byteLength / 2;
                 const uint16Buffer = new Uint16Array(buffer.buffer);
-                const width = Math.ceil(indexCount / NormalMaterial._MAX_TEXTURE_ROWS);
-                const height = Math.min(indexCount, NormalMaterial._MAX_TEXTURE_ROWS);
+
+                triangleCount = byteLength / 6;
+                const width = Math.ceil(triangleCount / NormalMaterial._MAX_TEXTURE_ROWS);
+                const height = Math.min(triangleCount, NormalMaterial._MAX_TEXTURE_ROWS);
                 this._indicesTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);
 
                 const floatBuffer = new Float32Array(width * height * 4);
-                for (let i = 0; i < indexCount; i++) {
+                for (let i = 0; i < triangleCount; i++) {
                     for (let j = 0; j < 3; j++) {
                         floatBuffer[i * 4 + j] = uint16Buffer[i * 3 + j];
                     }
@@ -283,14 +284,15 @@ export class NormalMaterial extends BaseMaterial {
                 break;
             }
             case IndexFormat.UInt32: {
-                indexCount = byteLength / 4;
                 const uint32Buffer = new Uint32Array(buffer.buffer);
-                const width = Math.ceil(indexCount / NormalMaterial._MAX_TEXTURE_ROWS);
-                const height = Math.min(indexCount, NormalMaterial._MAX_TEXTURE_ROWS);
+
+                triangleCount = byteLength / 12;
+                const width = Math.ceil(triangleCount / NormalMaterial._MAX_TEXTURE_ROWS);
+                const height = Math.min(triangleCount, NormalMaterial._MAX_TEXTURE_ROWS);
                 this._indicesTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);
 
                 const floatBuffer = new Float32Array(width * height * 4);
-                for (let i = 0; i < indexCount; i++) {
+                for (let i = 0; i < triangleCount; i++) {
                     for (let j = 0; j < 3; j++) {
                         floatBuffer[i * 4 + j] = uint32Buffer[i * 3 + j];
                     }
