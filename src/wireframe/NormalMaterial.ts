@@ -131,9 +131,13 @@ Shader.create("normalShader",
     #include <skinning_vert>
         
         if (gl_VertexID % 2 == 1) {
-            position.xyz += NORMAL * u_lineScale;
+            position.xyz += normal * u_lineScale;
         }
-        gl_Position = u_VPMat * u_worldMatrix * position; 
+        
+        #ifndef O3_HAS_SKIN
+            gl_Position = u_worldMatrix * position; 
+        #endif
+        gl_Position = u_VPMat * position; 
    }
    
     `, `

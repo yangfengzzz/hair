@@ -64,7 +64,7 @@ engine.resourceManager
 
         const animator = defaultSceneRoot.getComponent(Animator);
         const animationNames = animations.filter((clip) => !clip.name.includes("pose")).map((clip) => clip.name);
-        animator.play(animationNames[0]);
+        animator.play(animationNames[3]);
 
         openDebug();
         engine.run();
