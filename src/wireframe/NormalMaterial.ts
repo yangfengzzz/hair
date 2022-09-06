@@ -76,39 +76,42 @@ Shader.create("normalShader",
             rows[i] = getVertexElement(float(row * ELEMENT_COUNT + i), float(col));
         }
         
-        vec3 position = vec3(rows[0].x, rows[0].y, rows[0].z);        
+        vec3 POSITION = vec3(rows[0].x, rows[0].y, rows[0].z);        
         int row_index = 0;
         int value_index = 2;
 #ifdef O3_HAS_NORMAL 
-        vec3 normal = getVec3(rows, row_index, value_index);
+        vec3 NORMAL = getVec3(rows, row_index, value_index);
 #endif
 
 #ifdef O3_HAS_VERTEXCOLOR
-        vec3 color = getVec4(rows, row_index, value_index);
+        vec4 COLOR_0 = getVec4(rows, row_index, value_index);
 #endif
 
 #ifdef O3_HAS_WEIGHT
-        vec4 weight = getVec4(rows, row_index, value_index);
+        vec4 WEIGHTS_0 = getVec4(rows, row_index, value_index);
 #endif
 
 #ifdef O3_HAS_JOINT
         row_index += (value_index+1)/4;
         value_index = (value_index+1)%4;
-        float joint = rows[row_index][value_index];
+        int joint = int(rows[row_index][value_index]);
 #endif
 
 #ifdef O3_HAS_TANGENT
-        vec4 tangent = getVec4(rows, row_index, value_index);
+        vec4 TANGENT = getVec4(rows, row_index, value_index);
 #endif
 
 #ifdef O3_HAS_UV
-        vec2 uv = getVec2(rows, row_index, value_index);
+        vec2 TEXCOORD_0 = getVec2(rows, row_index, value_index);
 #endif
+
+    #include <begin_position_vert>
+    //#include <skinning_vert>
         
         if (gl_VertexID % 2 == 1) {
-            position += normal * u_lineScale;
+            position.xyz += NORMAL * u_lineScale;
         }
-        gl_Position = u_VPMat * u_worldMatrix * vec4(position, 1.0); 
+        gl_Position = u_VPMat * u_worldMatrix * position; 
    }
    
     `, `
