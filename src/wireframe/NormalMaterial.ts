@@ -94,8 +94,24 @@ Shader.create("normalShader",
         return vec4(x, y, z, w);
    }
    
+#ifdef WIREFRAME_MODE
+    varying vec3 v_baryCenter;
+#endif
+   
    void main() {
+#ifdef WIREFRAME_MODE
+        int indicesIndex = gl_VertexID / 3;
+        int indicesCol = indicesIndex % int(u_indicesTextureHeight);
+        int indicesRow = indicesIndex / int(u_indicesTextureHeight) + (indicesCol > 0? 1 : 0);
+        vec3 triangleIndices = getIndicesElement(float(row), float(col));
+        int subIndex = gl_VertexID % 3;
+        v_baryCenter = vec3(0.0);
+        v_baryCenter[subIndex] = 1.0;
+        
+        int pointIndex = triangleIndices[subIndex];
+#else
         int pointIndex = gl_VertexID / 2;
+#endif
         int col = pointIndex % int(u_verticesTextureHeight);
         int row = pointIndex / int(u_verticesTextureHeight) + (col > 0? 1 : 0);
         
@@ -135,10 +151,12 @@ Shader.create("normalShader",
     #include <begin_normal_vert>
     #include <skinning_vert>
         
+#ifndef WIREFRAME_MODE
         if (gl_VertexID % 2 == 1) {
             position.xyz += normal * u_lineScale;
         }
-        
+#endif
+
         #ifndef O3_HAS_SKIN
             gl_Position = u_worldMatrix * position; 
         #endif
@@ -146,8 +164,24 @@ Shader.create("normalShader",
    }
    
     `, `
+#ifdef WIREFRAME_MODE
+    #extension GL_OES_standard_derivatives : enable
+
+    varying vec3 v_baryCenter;
+    
+    float edgeFactor(){
+        vec3 d = fwidth(v_Barycentric);
+        vec3 a3 = smoothstep(vec3(0.0), d * 1.5, v_Barycentric);
+        return min(min(a3.x, a3.y), a3.z);
+    }
+#endif
     void main() {
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+#ifdef WIREFRAME_MODE
+    gl_FragColor.rgb = mix(vec3(0.0), vec3(1.0), edgeFactor());
+    gl_FragColor.a = 1.0;
+#else
+    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+#endif
     }
     `);
 
