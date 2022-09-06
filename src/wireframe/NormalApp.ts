@@ -1,5 +1,4 @@
 import {
-    BaseMaterial,
     BlinnPhongMaterial,
     Camera,
     Color,
@@ -8,13 +7,11 @@ import {
     MeshTopology,
     ModelMesh,
     PrimitiveMesh,
-    Shader, Texture2D, TextureFilterMode, TextureFormat,
     Vector3,
-    VertexBufferBinding,
-    WebGLEngine
+    WebGLEngine,
 } from "oasis-engine";
 import {OrbitControl} from "@oasis-engine-toolkit/controls";
-import {Engine} from "_oasis-engine@0.8.0-beta.14@oasis-engine";
+import {NormalMaterial} from "./NormalMaterial";
 
 // Init Engine
 const engine = new WebGLEngine("canvas");
@@ -62,76 +59,6 @@ normalMesh.setPositions(positions);
 normalMesh.setIndices(indices);
 normalMesh.uploadData(true);
 normalMesh.addSubMesh(0, vertexCount, MeshTopology.Lines);
-
-Shader.create("normalShader",
-    `
-   uniform sampler2D u_vertexSampler;
-   uniform float u_vertexCount;
-   uniform float u_rowCount;
-   uniform mat4 u_MVPMat;
-   vec4 getVertexElement(float row, float col) {
-        float base = col / u_vertexCount;
-        float hf = 0.5 / u_vertexCount;
-        float v = base + hf;
-        
-        float rowWidth = 1.0 / u_rowCount;
-        return texture2D(u_vertexSampler, vec2(rowWidth * 0.5 + rowWidth * row, v ));
-   }
-   
-   void main() {
-        int col = gl_VertexID / 2;
-        vec4 row1 = getVertexElement(0.0, float(col));
-        vec4 row2 = getVertexElement(1.0, float(col));
-        
-        vec3 position = vec3(row1.x, row1.y, row1.z);
-        vec3 normal = vec3(row1.w, row2.x, row2.y);
-        if (gl_VertexID % 2 == 1) {
-            position += normal;
-        }
-        gl_Position = u_MVPMat * vec4(position, 1.0); 
-
-   }
-   
-    `, `
-    void main() {
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-    }
-    `);
-
-class NormalMaterial extends BaseMaterial {
-    protected static _vertexSamplerProp = Shader.getPropertyByName("u_vertexSampler");
-    protected static _vertexCountProp = Shader.getPropertyByName("u_vertexCount");
-    protected static _rowCountProp = Shader.getPropertyByName("u_rowCount");
-
-    private _modelMesh: ModelMesh;
-    private _meshTexture: Texture2D;
-
-    set mesh(value: ModelMesh) {
-        this._modelMesh = value;
-        //@ts-ignore
-        const vertexBufferBinding = <VertexBufferBinding>value._vertexBufferBindings[0];
-        const vertexCount = value.vertexCount;
-        const buffer = new Float32Array(8 * vertexCount);
-        vertexBufferBinding.buffer.getData(buffer);
-        this._createJointTexture(buffer, vertexCount);
-    }
-
-    constructor(engine: Engine) {
-        super(engine, Shader.find("normalShader"));
-    }
-
-    private _createJointTexture(vertexBuffer: ArrayBufferView, vertexCount: number) {
-        const engine = this.engine;
-        const rowCount = (3 + 3 + 2) / 4;
-        this._meshTexture = new Texture2D(engine, rowCount, vertexCount, TextureFormat.R32G32B32A32, false);
-        this._meshTexture.filterMode = TextureFilterMode.Point;
-        this._meshTexture.setPixelBuffer(vertexBuffer);
-
-        this.shaderData.setTexture(NormalMaterial._vertexSamplerProp, this._meshTexture);
-        this.shaderData.setFloat(NormalMaterial._vertexCountProp, vertexCount);
-        this.shaderData.setFloat(NormalMaterial._rowCountProp, rowCount);
-    }
-}
 
 const normalMaterial = new NormalMaterial(engine);
 normalMaterial.mesh = cubeMesh;
