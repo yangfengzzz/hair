@@ -45,10 +45,10 @@ lightEntity.transform.rotation = new Vector3(45, 45, 45);
 
 // Create Cube
 const cubeEntity = rootEntity.createChild("cube");
-// const cube = cubeEntity.addComponent(MeshRenderer);
+const cube = cubeEntity.addComponent(MeshRenderer);
 const cubeMesh = PrimitiveMesh.createCuboid(engine, 2, 2, 2);
-// cube.setMaterial(new BlinnPhongMaterial(engine));
-// cube.mesh = cubeMesh;
+cube.setMaterial(new BlinnPhongMaterial(engine));
+cube.mesh = cubeMesh;
 
 const normalMesh = new ModelMesh(engine);
 const vertexCount = cubeMesh.vertexCount * 2;
@@ -80,14 +80,15 @@ Shader.create("normalShader",
    
    void main() {
         int col = gl_VertexID / 2;
-        vec4 row1 = getVertexElement(0, col);
-        vec4 row2 = getVertexElement(1, col);
+        vec4 row1 = getVertexElement(0.0, float(col));
+        vec4 row2 = getVertexElement(1.0, float(col));
         
-        gl_Position = vec4(row1.x, row1.y, row1.z, 1.0);
+        vec3 position = vec3(row1.x, row1.y, row1.z);
+        vec3 normal = vec3(row1.w, row2.x, row2.y);
         if (gl_VertexID % 2 == 1) {
-            gl_Position.y += 1.0;
+            position += normal;
         }
-        gl_Position = u_MVPMat * gl_Position; 
+        gl_Position = u_MVPMat * vec4(position, 1.0); 
 
    }
    
