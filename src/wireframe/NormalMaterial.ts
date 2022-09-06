@@ -114,8 +114,8 @@ Shader.create("normalShader",
 #ifdef O3_HAS_JOINT
         row_index += (value_index+1)/4;
         value_index = (value_index+1)%4;
-        int joint = int(rows[row_index][value_index]);
-        ivec4 JOINTS_0 = ivec4(int(joint & 0xff), int((joint & 0xff00) >> 8), int((joint & 0xff0000) >> 16), int((joint & 0xff000000) >> 24));
+        uint joint = uint(rows[row_index][value_index]);
+        vec4 JOINTS_0 = vec4(float(joint & 0xffu), float((joint & 0xff00u) >> 8), float((joint & 0xff0000u) >> 16), float((joint & 0xff000000u) >> 24));
 #endif
 
 #ifdef O3_HAS_TANGENT
