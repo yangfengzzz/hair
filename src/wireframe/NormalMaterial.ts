@@ -178,17 +178,16 @@ export class NormalMaterial extends BaseMaterial {
         const vertexCount = value.vertexCount;
         const elementCount = this._meshElement(value);
         const jointIndexBegin = NormalMaterial._jointIndexBegin;
-
-        let buffer: Float32Array;
+        let newElementCount = elementCount;
         if (jointIndexBegin !== -1) {
-            buffer = new Float32Array((elementCount - 3) * vertexCount);
-        } else {
-            buffer = new Float32Array(elementCount * vertexCount);
+            newElementCount += 3;
         }
+
+        const buffer = new Float32Array(elementCount * vertexCount);
         vertexBufferBinding.buffer.getData(buffer);
         const uint8Buffer = new Uint8Array(buffer.buffer);
 
-        const alignElementCount = Math.ceil(elementCount / 4) * 4;
+        const alignElementCount = Math.ceil(newElementCount / 4) * 4;
         this.shaderData.enableMacro("ELEMENT_COUNT", (alignElementCount / 4).toString());
 
         const width = Math.ceil(vertexCount / NormalMaterial._MAX_TEXTURE_ROWS) * alignElementCount;
@@ -253,7 +252,7 @@ export class NormalMaterial extends BaseMaterial {
                     break;
                 case "JOINTS_0":
                     NormalMaterial._jointIndexBegin = elementCount;
-                    elementCount += 4;
+                    elementCount += 1;
                     shaderData.enableMacro(NormalMaterial._jointMacro);
                     break;
                 case "TANGENT":
