@@ -154,22 +154,31 @@ export class NormalMaterial extends BaseMaterial {
         vertexBufferBinding.buffer.getData(buffer);
 
         const alignElementCount = Math.ceil(elementCount / 4) * 4;
-        const extraElementCount = alignElementCount - elementCount;
-        if (extraElementCount > 0) {
-            const alignBuffer = new Float32Array(alignElementCount * vertexCount);
-            for (let i = 0; i < vertexCount; i++) {
-                for (let j = 0; j < elementCount; j++) {
-                    alignBuffer[i * alignElementCount + j] = buffer[i * elementCount + j];
-                }
+        this.shaderData.enableMacro("ELEMENT_COUNT", (alignElementCount / 4).toString());
+
+        const width = Math.ceil(vertexCount / NormalMaterial._MAX_TEXTURE_ROWS) * alignElementCount;
+        const height = Math.min(vertexCount, NormalMaterial._MAX_TEXTURE_ROWS);
+        const alignBuffer = new Float32Array(width * height);
+        for (let i = 0; i < vertexCount; i++) {
+            for (let j = 0; j < elementCount; j++) {
+                alignBuffer[i * alignElementCount + j] = buffer[i * elementCount + j];
             }
-            this._createMeshTexture(buffer, vertexCount, alignElementCount / 4);
-        } else {
-            this._createMeshTexture(buffer, vertexCount, elementCount / 4);
         }
+        this._createMeshTexture(alignBuffer, width / 4, height);
     }
 
     constructor(engine: Engine) {
         super(engine, Shader.find("normalShader"));
+    }
+
+    private _createMeshTexture(vertexBuffer: ArrayBufferView, width: number, height: number) {
+        this._meshTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);
+        this._meshTexture.filterMode = TextureFilterMode.Point;
+        this._meshTexture.setPixelBuffer(vertexBuffer);
+
+        this.shaderData.setTexture(NormalMaterial._vertexSamplerProp, this._meshTexture);
+        this.shaderData.setFloat(NormalMaterial._textureWidthProp, width);
+        this.shaderData.setFloat(NormalMaterial._textureHeightProp, height);
     }
 
     private _meshElement(value: ModelMesh): number {
@@ -232,20 +241,5 @@ export class NormalMaterial extends BaseMaterial {
             }
         }
         return elementCount;
-    }
-
-    private _createMeshTexture(vertexBuffer: ArrayBufferView, vertexCount: number, elementCount: number) {
-        const engine = this.engine;
-        const width = Math.ceil(vertexCount / NormalMaterial._MAX_TEXTURE_ROWS) * elementCount;
-        const height = Math.min(vertexCount, NormalMaterial._MAX_TEXTURE_ROWS);
-
-        this._meshTexture = new Texture2D(engine, width, height, TextureFormat.R32G32B32A32, false);
-        this._meshTexture.filterMode = TextureFilterMode.Point;
-        this._meshTexture.setPixelBuffer(vertexBuffer);
-
-        this.shaderData.setTexture(NormalMaterial._vertexSamplerProp, this._meshTexture);
-        this.shaderData.setFloat(NormalMaterial._textureWidthProp, width);
-        this.shaderData.setFloat(NormalMaterial._textureHeightProp, height);
-        this.shaderData.enableMacro("ELEMENT_COUNT", elementCount.toString());
     }
 }
