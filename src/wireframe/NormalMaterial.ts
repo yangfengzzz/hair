@@ -10,29 +10,103 @@ Shader.create("normalShader",
     `
    uniform sampler2D u_vertexSampler;
    uniform float u_vertexCount;
-   uniform float u_rowCount;
    uniform mat4 u_MVPMat;
+   
    vec4 getVertexElement(float row, float col) {
         float base = col / u_vertexCount;
         float hf = 0.5 / u_vertexCount;
         float v = base + hf;
         
-        float rowWidth = 1.0 / u_rowCount;
+        float rowWidth = 1.0 / float(ROW_COUNT);
         return texture2D(u_vertexSampler, vec2(rowWidth * 0.5 + rowWidth * row, v ));
+   }
+   
+   vec2 getVec2(inout vec4[ROW_COUNT] rows, inout int row_index, inout int value_index) {
+        row_index += (value_index+1)/4;
+        value_index = (value_index+1)%4;
+        float x = rows[row_index][value_index];
+        
+        row_index += (value_index+1)/4;
+        value_index = (value_index+1)%4;
+        float y = rows[row_index][value_index];
+        
+        return vec2(x, y);
+   }
+   
+   vec3 getVec3(inout vec4[ROW_COUNT] rows, inout int row_index, inout int value_index) {
+        row_index += (value_index+1)/4;
+        value_index = (value_index+1)%4;
+        float x = rows[row_index][value_index];
+        
+        row_index += (value_index+1)/4;
+        value_index = (value_index+1)%4;
+        float y = rows[row_index][value_index];
+        
+        row_index += (value_index+1)/4;
+        value_index = (value_index+1)%4;
+        float z = rows[row_index][value_index];
+        return vec3(x, y, z);
+   }
+   
+   vec4 getVec4(inout vec4[ROW_COUNT] rows, inout int row_index, inout int value_index) {
+        row_index += (value_index+1)/4;
+        value_index = (value_index+1)%4;
+        float x = rows[row_index][value_index];
+        
+        row_index += (value_index+1)/4;
+        value_index = (value_index+1)%4;
+        float y = rows[row_index][value_index];
+        
+        row_index += (value_index+1)/4;
+        value_index = (value_index+1)%4;
+        float z = rows[row_index][value_index];
+        
+        row_index += (value_index+1)/4;
+        value_index = (value_index+1)%4;
+        float w = rows[row_index][value_index];
+        return vec4(x, y, z, w);
    }
    
    void main() {
         int col = gl_VertexID / 2;
-        vec4 row1 = getVertexElement(0.0, float(col));
-        vec4 row2 = getVertexElement(1.0, float(col));
+        vec4 rows[ROW_COUNT];
+        for( int i = 0; i < ROW_COUNT; i++ ) {
+            rows[i] = getVertexElement(float(i), float(col));
+        }
         
-        vec3 position = vec3(row1.x, row1.y, row1.z);
-        vec3 normal = vec3(row1.w, row2.x, row2.y);
+        vec3 position = vec3(rows[0].x, rows[0].y, rows[0].z);        
+        int row_index = 0;
+        int value_index = 2;
+#ifdef O3_HAS_NORMAL 
+        vec3 normal = getVec3(rows, row_index, value_index);
+#endif
+
+#ifdef O3_HAS_VERTEXCOLOR
+        vec3 color = getVec4(rows, row_index, value_index);
+#endif
+
+#ifdef O3_HAS_WEIGHT
+        vec4 weight = getVec4(rows, row_index, value_index);
+#endif
+
+#ifdef O3_HAS_JOINT
+        row_index += (value_index+1)/4;
+        value_index = (value_index+1)%4;
+        float joint = rows[row_index][value_index];
+#endif
+
+#ifdef O3_HAS_TANGENT
+        vec4 tangent = getVec4(rows, row_index, value_index);
+#endif
+
+#ifdef O3_HAS_UV
+        vec2 uv = getVec2(rows, row_index, value_index);
+#endif
+        
         if (gl_VertexID % 2 == 1) {
             position += normal;
         }
         gl_Position = u_MVPMat * vec4(position, 1.0); 
-
    }
    
     `, `
@@ -42,9 +116,16 @@ Shader.create("normalShader",
     `);
 
 export class NormalMaterial extends BaseMaterial {
+    private static _uvMacro = Shader.getMacroByName("O3_HAS_UV");
+    private static _uv1Macro = Shader.getMacroByName("O3_HAS_UV1");
+    private static _normalMacro = Shader.getMacroByName("O3_HAS_NORMAL");
+    private static _tangentMacro = Shader.getMacroByName("O3_HAS_TANGENT");
+    private static _weightMacro = Shader.getMacroByName("O3_HAS_WEIGHT");
+    private static _jointMacro = Shader.getMacroByName("O3_HAS_JOINT");
+    private static _vertexColorMacro = Shader.getMacroByName("O3_HAS_VERTEXCOLOR");
+
     protected static _vertexSamplerProp = Shader.getPropertyByName("u_vertexSampler");
     protected static _vertexCountProp = Shader.getPropertyByName("u_vertexCount");
-    protected static _rowCountProp = Shader.getPropertyByName("u_rowCount");
 
     private _modelMesh: ModelMesh;
     private _meshTexture: Texture2D;
@@ -78,6 +159,7 @@ export class NormalMaterial extends BaseMaterial {
     }
 
     private _meshElement(value: ModelMesh): number {
+        const shaderData = this.shaderData;
         let elementCount = 0;
         //@ts-ignore
         const vertexElements = <VertexElement[]>value._vertexElements;
@@ -89,23 +171,30 @@ export class NormalMaterial extends BaseMaterial {
                     break;
                 case "NORMAL":
                     elementCount += 3;
+                    shaderData.enableMacro(NormalMaterial._normalMacro);
                     break;
                 case "COLOR_0":
                     elementCount += 4;
+                    shaderData.enableMacro(NormalMaterial._vertexColorMacro);
                     break;
                 case "WEIGHTS_0":
                     elementCount += 4;
+                    shaderData.enableMacro(NormalMaterial._weightMacro);
                     break;
                 case "JOINTS_0":
                     elementCount += 1;
+                    shaderData.enableMacro(NormalMaterial._jointMacro);
                     break;
                 case "TANGENT":
+                    shaderData.enableMacro(NormalMaterial._tangentMacro);
                     elementCount += 4;
                     break;
                 case "TEXCOORD_0":
+                    shaderData.enableMacro(NormalMaterial._uvMacro);
                     elementCount += 2;
                     break;
                 case "TEXCOORD_1":
+                    shaderData.enableMacro(NormalMaterial._uv1Macro);
                     elementCount += 2;
                     break;
                 case "TEXCOORD_2":
@@ -139,6 +228,6 @@ export class NormalMaterial extends BaseMaterial {
 
         this.shaderData.setTexture(NormalMaterial._vertexSamplerProp, this._meshTexture);
         this.shaderData.setFloat(NormalMaterial._vertexCountProp, vertexCount);
-        this.shaderData.setFloat(NormalMaterial._rowCountProp, rowCount);
+        this.shaderData.enableMacro("ROW_COUNT", rowCount.toString());
     }
 }
