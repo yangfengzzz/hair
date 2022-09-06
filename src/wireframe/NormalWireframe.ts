@@ -1,9 +1,10 @@
-import {MeshRenderer, ModelMesh, MeshTopology, Vector3, Script} from "oasis-engine";
+import {MeshRenderer, ModelMesh, MeshTopology, Vector3, Script, Matrix} from "oasis-engine";
 import {NormalMaterial} from "./NormalMaterial";
 
 export class NormalWireframe extends Script {
     private _renderers: MeshRenderer[] = [];
     private _meshes: ModelMesh[] = [];
+    private _worldMatrix: Matrix[] = [];
 
     private _normalRenderers: MeshRenderer[] = [];
     private _normalMaterials: NormalMaterial[] = [];
@@ -22,22 +23,23 @@ export class NormalWireframe extends Script {
     }
 
     onAwake() {
-        const {_renderers: renderers, _meshes: meshes} = this;
+        const {_renderers: renderers, _meshes: meshes, _worldMatrix:worldMatrix} = this;
         this.entity.getComponentsIncludeChildren(MeshRenderer, renderers);
         for (let i = 0; i < renderers.length; i++) {
             let renderer = renderers[i];
             const modelMesh = <ModelMesh>renderer.mesh;
             if (modelMesh !== null) {
                 meshes.push(modelMesh);
+                worldMatrix.push(renderer.entity.transform.worldMatrix);
             }
         }
 
         for (let i = 0; i < meshes.length; i++) {
-            this._createNormalRenderer(meshes[i]);
+            this._createNormalRenderer(meshes[i], worldMatrix[i]);
         }
     }
 
-    private _createNormalRenderer(mesh: ModelMesh) {
+    private _createNormalRenderer(mesh: ModelMesh, worldMatrix: Matrix) {
         const engine = this.engine;
         const normalMesh = new ModelMesh(engine);
         const vertexCount = mesh.vertexCount * 2;
@@ -55,6 +57,7 @@ export class NormalWireframe extends Script {
         const normalMaterial = new NormalMaterial(engine);
         normalMaterial.mesh = mesh;
         normalMaterial.scale = this._scale;
+        normalMaterial.worldMatrix = worldMatrix;
         this._normalMaterials.push(normalMaterial);
 
         const normalRenderer = this.entity.addComponent(MeshRenderer);

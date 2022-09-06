@@ -1,5 +1,5 @@
 import {
-    BaseMaterial, Engine,
+    BaseMaterial, Engine, Matrix,
     ModelMesh,
     Shader,
     Texture2D, TextureFilterMode, TextureFormat,
@@ -10,8 +10,9 @@ Shader.create("normalShader",
     `
    uniform sampler2D u_vertexSampler;
    uniform float u_vertexCount;
-   uniform mat4 u_MVPMat;
+   uniform mat4 u_VPMat;
    uniform float u_lineScale;
+   uniform mat4 u_worldMatrix;
    
    vec4 getVertexElement(float row, float col) {
         float base = col / u_vertexCount;
@@ -107,7 +108,7 @@ Shader.create("normalShader",
         if (gl_VertexID % 2 == 1) {
             position += normal * u_lineScale;
         }
-        gl_Position = u_MVPMat * vec4(position, 1.0); 
+        gl_Position = u_VPMat * u_worldMatrix * vec4(position, 1.0); 
    }
    
     `, `
@@ -125,12 +126,17 @@ export class NormalMaterial extends BaseMaterial {
     private static _jointMacro = Shader.getMacroByName("O3_HAS_JOINT");
     private static _vertexColorMacro = Shader.getMacroByName("O3_HAS_VERTEXCOLOR");
 
-    protected static _vertexSamplerProp = Shader.getPropertyByName("u_vertexSampler");
-    protected static _vertexCountProp = Shader.getPropertyByName("u_vertexCount");
-    protected static _lineScaleProp = Shader.getPropertyByName("u_lineScale");
+    private static _vertexSamplerProp = Shader.getPropertyByName("u_vertexSampler");
+    private static _vertexCountProp = Shader.getPropertyByName("u_vertexCount");
+    private static _lineScaleProp = Shader.getPropertyByName("u_lineScale");
+    private static _worldMatrixProp = Shader.getPropertyByName("u_worldMatrix");
 
     private _modelMesh: ModelMesh;
     private _meshTexture: Texture2D;
+
+    set worldMatrix(value: Matrix) {
+        this.shaderData.setMatrix(NormalMaterial._worldMatrixProp, value);
+    }
 
     set scale(value: number) {
         this.shaderData.setFloat(NormalMaterial._lineScaleProp, value);
