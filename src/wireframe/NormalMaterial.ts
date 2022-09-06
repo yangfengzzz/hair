@@ -20,6 +20,7 @@ Shader.create("normalShader",
    uniform mat4 u_VPMat;
    uniform mat4 u_worldMatrix;
    
+#ifdef O3_HAS_SKIN
 #ifdef O3_USE_JOINT_TEXTURE
     uniform sampler2D u_jointSampler;
     uniform float u_jointCount;
@@ -38,6 +39,7 @@ Shader.create("normalShader",
     }
 #else
     uniform mat4 u_jointMatrix[ O3_JOINTS_NUM ];
+#endif
 #endif
    
    vec4 getVertexElement(float row, float col) {

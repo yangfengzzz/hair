@@ -45,26 +45,26 @@ lightEntity.transform.rotation = new Vector3(45, 45, 45);
 
 // wireframe
 const wireframe = rootEntity.addComponent(NormalWireframe);
-
-// Create Cube
-// const sceneEntity = rootEntity.createChild();
-// const renderer = sceneEntity.addComponent(MeshRenderer);
-// // const mesh = PrimitiveMesh.createCuboid(engine, 2, 2, 2);
-// const mesh = PrimitiveMesh.createSphere(engine, 2, 20);
-// renderer.setMaterial(new BlinnPhongMaterial(engine));
-// renderer.mesh = mesh;
-// wireframe.addEntity(sceneEntity);
+wireframe.wireframeMode = true;
 
 engine.resourceManager
     .load<GLTFResource>("https://gw.alipayobjects.com/os/bmw-prod/5e3c1e4e-496e-45f8-8e05-f89f2bd5e4a4.glb")
     .then((gltfResource) => {
         const {animations, defaultSceneRoot} = gltfResource;
-        rootEntity.addChild(defaultSceneRoot);
-        wireframe.addEntity(defaultSceneRoot);
+        // rootEntity.addChild(defaultSceneRoot);
+        // wireframe.addEntity(defaultSceneRoot);
+        // const animator = defaultSceneRoot.getComponent(Animator);
+        // const animationNames = animations.filter((clip) => !clip.name.includes("pose")).map((clip) => clip.name);
+        // animator.play(animationNames[3]);
 
-        const animator = defaultSceneRoot.getComponent(Animator);
-        const animationNames = animations.filter((clip) => !clip.name.includes("pose")).map((clip) => clip.name);
-        animator.play(animationNames[3]);
+        // Create Cube
+        const sceneEntity = rootEntity.createChild();
+        const renderer = sceneEntity.addComponent(MeshRenderer);
+        // const mesh = PrimitiveMesh.createCuboid(engine, 2, 2, 2);
+        const mesh = PrimitiveMesh.createSphere(engine, 2, 20);
+        renderer.setMaterial(new BlinnPhongMaterial(engine));
+        renderer.mesh = mesh;
+        wireframe.addEntity(sceneEntity);
 
         openDebug();
         engine.run();
@@ -75,13 +75,13 @@ engine.resourceManager
                 pause: false
             };
 
-            gui.add(info, "pause").onChange((v) => {
-                if (v) {
-                    animator.speed = 0;
-                } else {
-                    animator.speed = 1;
-                }
-            })
+            // gui.add(info, "pause").onChange((v) => {
+            //     if (v) {
+            //         animator.speed = 0;
+            //     } else {
+            //         animator.speed = 1;
+            //     }
+            // })
             gui.add(wireframe, "scale", 0, 1);
         }
     });
