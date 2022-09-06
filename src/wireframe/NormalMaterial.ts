@@ -5,6 +5,7 @@ import {
     IndexFormat,
     Matrix,
     ModelMesh,
+    RenderFace,
     Shader,
     Texture2D,
     TextureFilterMode,
@@ -184,8 +185,12 @@ Shader.create("normalShader",
 #endif
     void main() {
 #ifdef WIREFRAME_MODE
-    gl_FragColor.rgb = mix(vec3(0.0), vec3(1.0), edgeFactor());
-    gl_FragColor.a = 1.0;
+    if (gl_FrontFacing) {
+        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0 - edgeFactor());
+    } else {
+        // 淡化背面
+        gl_FragColor = vec4(0.0, 0.0, 0.0, (1.0 - edgeFactor()) * 0.3);
+    }
 #else
     gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 #endif
@@ -235,6 +240,9 @@ export class NormalMaterial extends BaseMaterial {
 
     constructor(engine: Engine) {
         super(engine, Shader.find("normalShader"));
+        // todo
+        this.isTransparent = true;
+        this.renderFace = RenderFace.Double;
     }
 
     private _uploadIndicesBuffer(value: ModelMesh) {

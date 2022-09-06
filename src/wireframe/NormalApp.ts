@@ -51,23 +51,23 @@ engine.resourceManager
     .load<GLTFResource>("https://gw.alipayobjects.com/os/bmw-prod/5e3c1e4e-496e-45f8-8e05-f89f2bd5e4a4.glb")
     .then((gltfResource) => {
         const {animations, defaultSceneRoot} = gltfResource;
-        // rootEntity.addChild(defaultSceneRoot);
-        // wireframe.addEntity(defaultSceneRoot);
-        // const animator = defaultSceneRoot.getComponent(Animator);
-        // const animationNames = animations.filter((clip) => !clip.name.includes("pose")).map((clip) => clip.name);
-        // animator.play(animationNames[3]);
+        rootEntity.addChild(defaultSceneRoot);
+        wireframe.addEntity(defaultSceneRoot);
+        const animator = defaultSceneRoot.getComponent(Animator);
+        const animationNames = animations.filter((clip) => !clip.name.includes("pose")).map((clip) => clip.name);
+        animator.play(animationNames[3]);
 
         // Create Cube
-        const sceneEntity = rootEntity.createChild();
-        const renderer = sceneEntity.addComponent(MeshRenderer);
-        // const mesh = PrimitiveMesh.createCuboid(engine, 2, 2, 2);
-        const mesh = PrimitiveMesh.createSphere(engine, 2, 20);
-        const mtl = new BlinnPhongMaterial(engine);
-        mtl.isTransparent = true;
-        mtl.baseColor.set(1,1,1,0.2);
-        renderer.setMaterial(mtl);
-        renderer.mesh = mesh;
-        wireframe.addEntity(sceneEntity);
+        // const sceneEntity = rootEntity.createChild();
+        // const renderer = sceneEntity.addComponent(MeshRenderer);
+        // // const mesh = PrimitiveMesh.createCuboid(engine, 2, 2, 2);
+        // const mesh = PrimitiveMesh.createSphere(engine, 2, 20);
+        // const mtl = new BlinnPhongMaterial(engine);
+        // mtl.isTransparent = true;
+        // mtl.baseColor.set(1,0.5,0.5,0.2);
+        // renderer.setMaterial(mtl);
+        // renderer.mesh = mesh;
+        // wireframe.addEntity(sceneEntity);
 
         openDebug();
         engine.run();
