@@ -1,9 +1,16 @@
 import {
-    BaseMaterial, Engine, Matrix,
+    BaseMaterial,
+    Engine,
+    IndexBufferBinding,
+    IndexFormat,
+    Matrix,
     ModelMesh,
     Shader,
-    Texture2D, TextureFilterMode, TextureFormat,
-    VertexBufferBinding, VertexElement, IndexBufferBinding, IndexFormat
+    Texture2D,
+    TextureFilterMode,
+    TextureFormat,
+    VertexBufferBinding,
+    VertexElement
 } from "oasis-engine";
 
 Shader.create("normalShader",
@@ -104,18 +111,18 @@ Shader.create("normalShader",
 #ifdef WIREFRAME_MODE
         int indicesIndex = gl_VertexID / 3;
         int indicesCol = indicesIndex % int(u_indicesTextureHeight);
-        int indicesRow = indicesIndex / int(u_indicesTextureHeight) + (indicesCol > 0? 1 : 0);
+        int indicesRow = indicesIndex / int(u_indicesTextureHeight);
         vec3 triangleIndices = getIndicesElement(float(indicesRow), float(indicesCol));
         int subIndex = gl_VertexID % 3;
         v_baryCenter = vec3(0.0);
         v_baryCenter[subIndex] = 1.0;
         
-        int pointIndex = triangleIndices[subIndex];
+        int pointIndex = int(triangleIndices[subIndex]);
 #else
         int pointIndex = gl_VertexID / 2;
 #endif
         int col = pointIndex % int(u_verticesTextureHeight);
-        int row = pointIndex / int(u_verticesTextureHeight) + (col > 0? 1 : 0);
+        int row = pointIndex / int(u_verticesTextureHeight);
         
         vec4 rows[ELEMENT_COUNT];
         for( int i = 0; i < ELEMENT_COUNT; i++ ) {
@@ -167,23 +174,21 @@ Shader.create("normalShader",
    
     `, `
 #ifdef WIREFRAME_MODE
-    #extension GL_OES_standard_derivatives : enable
-
     varying vec3 v_baryCenter;
     
     float edgeFactor(){
-        vec3 d = fwidth(v_Barycentric);
-        vec3 a3 = smoothstep(vec3(0.0), d * 1.5, v_Barycentric);
+        vec3 d = fwidth(v_baryCenter);
+        vec3 a3 = smoothstep(vec3(0.0), d * 1.5, v_baryCenter);
         return min(min(a3.x, a3.y), a3.z);
     }
 #endif
     void main() {
-//#ifdef WIREFRAME_MODE
-//    gl_FragColor.rgb = mix(vec3(0.0), vec3(1.0), edgeFactor());
-//    gl_FragColor.a = 1.0;
-//#else
+#ifdef WIREFRAME_MODE
+    gl_FragColor.rgb = mix(vec3(0.0), vec3(1.0), edgeFactor());
+    gl_FragColor.a = 1.0;
+#else
     gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-//#endif
+#endif
     }
     `);
 
@@ -244,7 +249,7 @@ export class NormalMaterial extends BaseMaterial {
         let triangleCount = 0;
         switch (indexFormat) {
             case IndexFormat.UInt8: {
-                triangleCount = byteLength/3;
+                triangleCount = byteLength / 3;
                 const width = Math.ceil(triangleCount / NormalMaterial._MAX_TEXTURE_ROWS);
                 const height = Math.min(triangleCount, NormalMaterial._MAX_TEXTURE_ROWS);
                 this._indicesTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);

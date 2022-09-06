@@ -94,6 +94,10 @@ export class NormalWireframe extends Script {
         normalMaterial.worldMatrix = worldMatrix;
         this._normalMaterials.push(normalMaterial);
 
+        if (this._wireframeMode) {
+            normalMaterial.shaderData.enableMacro("WIREFRAME_MODE");
+        }
+
         const skinMeshRenderer = <SkinnedMeshRenderer>renderer;
         if (skinMeshRenderer !== null) {
             const normalRenderer = this.entity.addComponent(SkinnedMeshRenderer);
@@ -159,7 +163,7 @@ export class NormalWireframe extends Script {
         normalMesh.setPositions(positions);
         normalMesh.setIndices(indices);
         normalMesh.uploadData(true);
-        normalMesh.addSubMesh(0, triangleCount * 3, MeshTopology.Triangles);
+        normalMesh.addSubMesh(0, triangleCount * 3);
         return normalMesh;
     }
 }
