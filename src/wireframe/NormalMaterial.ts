@@ -3,7 +3,7 @@ import {
     ModelMesh,
     Shader,
     Texture2D, TextureFilterMode, TextureFormat,
-    VertexBufferBinding, VertexElement
+    VertexBufferBinding, VertexElement, IndexBufferBinding, IndexFormat
 } from "oasis-engine";
 
 Shader.create("normalShader",
@@ -162,6 +162,7 @@ export class NormalMaterial extends BaseMaterial {
 
     private _modelMesh: ModelMesh;
     private _meshTexture: Texture2D;
+    private _indicesTexture: Texture2D;
 
     set worldMatrix(value: Matrix) {
         this.shaderData.setMatrix(NormalMaterial._worldMatrixProp, value);
@@ -182,6 +183,68 @@ export class NormalMaterial extends BaseMaterial {
     }
 
     private _uploadIndicesBuffer(value: ModelMesh) {
+        //@ts-ignore
+        const indexBuffer = (<IndexBufferBinding>value._indexBufferBinding).buffer;
+        const byteLength = indexBuffer.byteLength;
+        const buffer = new Uint8Array(byteLength);
+        indexBuffer.getData(buffer);
+
+        //@ts-ignore
+        const indexFormat = <IndexFormat>value._indicesFormat;
+        let indexCount = 0;
+        switch (indexFormat) {
+            case IndexFormat.UInt8: {
+                indexCount = byteLength;
+                const width = Math.ceil(indexCount / NormalMaterial._MAX_TEXTURE_ROWS);
+                const height = Math.min(indexCount, NormalMaterial._MAX_TEXTURE_ROWS);
+                this._indicesTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);
+
+                const floatBuffer = new Float32Array(width * height * 4);
+                for (let i = 0; i < indexCount; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        floatBuffer[i * 4 + j] = buffer[i * 3 + j];
+                    }
+                    floatBuffer[i * 4 + 3] = 0;
+                }
+                this._indicesTexture.setPixelBuffer(floatBuffer);
+                break;
+            }
+            case IndexFormat.UInt16: {
+                indexCount = byteLength / 2;
+                const uint16Buffer = new Uint16Array(buffer.buffer);
+                const width = Math.ceil(indexCount / NormalMaterial._MAX_TEXTURE_ROWS);
+                const height = Math.min(indexCount, NormalMaterial._MAX_TEXTURE_ROWS);
+                this._indicesTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);
+
+                const floatBuffer = new Float32Array(width * height * 4);
+                for (let i = 0; i < indexCount; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        floatBuffer[i * 4 + j] = buffer[i * 3 + j];
+                    }
+                    floatBuffer[i * 4 + 3] = 0;
+                }
+                this._indicesTexture.setPixelBuffer(floatBuffer);
+                break;
+            }
+            case IndexFormat.UInt32: {
+                indexCount = byteLength / 4;
+                const uint32Buffer = new Uint32Array(buffer.buffer);
+                const width = Math.ceil(indexCount / NormalMaterial._MAX_TEXTURE_ROWS);
+                const height = Math.min(indexCount, NormalMaterial._MAX_TEXTURE_ROWS);
+                this._indicesTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);
+
+                const floatBuffer = new Float32Array(width * height * 4);
+                for (let i = 0; i < indexCount; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        floatBuffer[i * 4 + j] = buffer[i * 3 + j];
+                    }
+                    floatBuffer[i * 4 + 3] = 0;
+                }
+                this._indicesTexture.setPixelBuffer(floatBuffer);
+                break;
+            }
+        }
+        this._indicesTexture.filterMode = TextureFilterMode.Point;
     }
 
     private _uploadVerticesBuffer(value: ModelMesh) {
