@@ -4,11 +4,9 @@ import {
     MeshTopology,
     Vector3,
     Script,
-    Matrix,
     Entity,
     Color,
-    Skin,
-    SkinnedMeshRenderer, Pointer
+    SkinnedMeshRenderer
 } from "oasis-engine";
 import {NormalMaterial} from "./NormalMaterial";
 
@@ -98,12 +96,11 @@ export class NormalWireframe extends Script {
             normalMaterial.shaderData.enableMacro("WIREFRAME_MODE");
         }
 
-        const skinMeshRenderer = <SkinnedMeshRenderer>renderer;
-        if (skinMeshRenderer !== null) {
+        if (renderer instanceof SkinnedMeshRenderer) {
             const normalRenderer = this.entity.addComponent(SkinnedMeshRenderer);
             normalRenderer.setMaterial(normalMaterial);
             normalRenderer.mesh = normalMesh;
-            normalRenderer.skin = skinMeshRenderer.skin;
+            normalRenderer.skin = renderer.skin;
             this._normalRenderers.push(normalRenderer);
         } else {
             const normalRenderer = this.entity.addComponent(MeshRenderer);
