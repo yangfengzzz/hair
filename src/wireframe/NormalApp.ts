@@ -66,11 +66,15 @@ engine.resourceManager
             pbr.renderFace = RenderFace.Double;
         }
 
-        // Create Cube
+        // // Create Cube
         // const sceneEntity = rootEntity.createChild();
         // const renderer = sceneEntity.addComponent(MeshRenderer);
         // // const mesh = PrimitiveMesh.createCuboid(engine, 2, 2, 2);
-        // const mesh = PrimitiveMesh.createTorus(engine, 2, 5, 20);
+        // // const mesh = PrimitiveMesh.createCone(engine, 2, 2, 20);
+        // // const mesh = PrimitiveMesh.createSphere(engine, 2, 20);
+        // // const mesh = PrimitiveMesh.createCylinder(engine, 2, 2, 5, 20, 20);
+        // // const mesh = PrimitiveMesh.createTorus(engine);
+        // const mesh = PrimitiveMesh.createCapsule(engine, 2, 5, 20);
         // const mtl = new BlinnPhongMaterial(engine);
         // mtl.isTransparent = true;
         // mtl.baseColor.set(1,0.5,0.5,0.2);
