@@ -51,11 +51,11 @@ Shader.create("normalShader",
 #endif
    
    vec4 getVertexElement(float row, float col) {
-        return texture2D(u_verticesSampler, vec2((row + 0.5) / u_verticesTextureWidth, (col + 0.5) / u_verticesTextureHeight ));
+        return texture2D(u_verticesSampler, vec2((col + 0.5) / u_verticesTextureWidth, (row + 0.5) / u_verticesTextureHeight));
    }
    
    vec3 getIndicesElement(float row, float col) {
-        return texture2D(u_indicesSampler, vec2((row + 0.5) / u_indicesTextureWidth, (col + 0.5) / u_indicesTextureHeight )).xyz;
+        return texture2D(u_indicesSampler, vec2((col + 0.5) / u_indicesTextureWidth, (row + 0.5) / u_indicesTextureHeight )).xyz;
    }
    
    vec2 getVec2(inout vec4[ELEMENT_COUNT] rows, inout int row_index, inout int value_index) {
@@ -111,8 +111,8 @@ Shader.create("normalShader",
    void main() {
 #ifdef WIREFRAME_MODE
         int indicesIndex = gl_VertexID / 3;
-        int indicesCol = indicesIndex % int(u_indicesTextureHeight);
-        int indicesRow = indicesIndex / int(u_indicesTextureHeight);
+        int indicesRow = indicesIndex / int(u_indicesTextureWidth);
+        int indicesCol = indicesIndex % int(u_indicesTextureWidth);
         vec3 triangleIndices = getIndicesElement(float(indicesRow), float(indicesCol));
         int subIndex = gl_VertexID % 3;
         v_baryCenter = vec3(0.0);
@@ -122,12 +122,12 @@ Shader.create("normalShader",
 #else
         int pointIndex = gl_VertexID / 2;
 #endif
-        int col = pointIndex % int(u_verticesTextureHeight);
-        int row = pointIndex / int(u_verticesTextureHeight);
+        int row = pointIndex * ELEMENT_COUNT / int(u_verticesTextureWidth);
+        int col = pointIndex * ELEMENT_COUNT % int(u_verticesTextureWidth);
         
         vec4 rows[ELEMENT_COUNT];
         for( int i = 0; i < ELEMENT_COUNT; i++ ) {
-            rows[i] = getVertexElement(float(row * ELEMENT_COUNT + i), float(col));
+            rows[i] = getVertexElement(float(row), float(col + i));
         }
         
         vec3 POSITION = vec3(rows[0].x, rows[0].y, rows[0].z);        
@@ -207,7 +207,7 @@ export class NormalMaterial extends BaseMaterial {
     private static _jointMacro = Shader.getMacroByName("O3_HAS_JOINT");
     private static _vertexColorMacro = Shader.getMacroByName("O3_HAS_VERTEXCOLOR");
 
-    private static _MAX_TEXTURE_ROWS = 4096;
+    private static _MAX_TEXTURE_ROWS = 512;
     private static _jointIndexBegin = -1;
 
     private static _verticesSamplerProp = Shader.getPropertyByName("u_verticesSampler");
@@ -259,8 +259,8 @@ export class NormalMaterial extends BaseMaterial {
         switch (indexFormat) {
             case IndexFormat.UInt8: {
                 triangleCount = byteLength / 3;
-                const width = Math.ceil(triangleCount / NormalMaterial._MAX_TEXTURE_ROWS);
-                const height = Math.min(triangleCount, NormalMaterial._MAX_TEXTURE_ROWS);
+                const width = Math.min(triangleCount, NormalMaterial._MAX_TEXTURE_ROWS);
+                const height =  Math.ceil(triangleCount / NormalMaterial._MAX_TEXTURE_ROWS);
                 this._indicesTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);
 
                 const floatBuffer = new Float32Array(width * height * 4);
@@ -280,8 +280,8 @@ export class NormalMaterial extends BaseMaterial {
                 const uint16Buffer = new Uint16Array(buffer.buffer);
 
                 triangleCount = byteLength / 6;
-                const width = Math.ceil(triangleCount / NormalMaterial._MAX_TEXTURE_ROWS);
-                const height = Math.min(triangleCount, NormalMaterial._MAX_TEXTURE_ROWS);
+                const width = Math.min(triangleCount, NormalMaterial._MAX_TEXTURE_ROWS);
+                const height =  Math.ceil(triangleCount / NormalMaterial._MAX_TEXTURE_ROWS);
                 this._indicesTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);
 
                 const floatBuffer = new Float32Array(width * height * 4);
@@ -301,8 +301,8 @@ export class NormalMaterial extends BaseMaterial {
                 const uint32Buffer = new Uint32Array(buffer.buffer);
 
                 triangleCount = byteLength / 12;
-                const width = Math.ceil(triangleCount / NormalMaterial._MAX_TEXTURE_ROWS);
-                const height = Math.min(triangleCount, NormalMaterial._MAX_TEXTURE_ROWS);
+                const width = Math.min(triangleCount, NormalMaterial._MAX_TEXTURE_ROWS);
+                const height =  Math.ceil(triangleCount / NormalMaterial._MAX_TEXTURE_ROWS);
                 this._indicesTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);
 
                 const floatBuffer = new Float32Array(width * height * 4);
@@ -340,12 +340,12 @@ export class NormalMaterial extends BaseMaterial {
         const alignElementCount = Math.ceil(newElementCount / 4) * 4;
         this.shaderData.enableMacro("ELEMENT_COUNT", (alignElementCount / 4).toString());
 
-        const width = Math.ceil(vertexCount / NormalMaterial._MAX_TEXTURE_ROWS) * alignElementCount;
-        const height = Math.min(vertexCount, NormalMaterial._MAX_TEXTURE_ROWS);
+        const width = Math.min(vertexCount, NormalMaterial._MAX_TEXTURE_ROWS) * alignElementCount;
+        const height = Math.ceil(vertexCount / NormalMaterial._MAX_TEXTURE_ROWS);
         const alignBuffer = new Float32Array(width * height);
 
         for (let i = 0; i < vertexCount; i++) {
-            for (let j = 0; j < elementCount; j++) {
+            for (let j = 0; j < newElementCount; j++) {
                 if (jointIndexBegin !== -1 && j === jointIndexBegin) {
                     alignBuffer[i * alignElementCount + j] = uint8Buffer[i * elementCount * 4 + jointIndexBegin * 4];
                 } else if (jointIndexBegin !== -1 && j === jointIndexBegin + 1) {
@@ -355,7 +355,11 @@ export class NormalMaterial extends BaseMaterial {
                 } else if (jointIndexBegin !== -1 && j === jointIndexBegin + 3) {
                     alignBuffer[i * alignElementCount + j] = uint8Buffer[i * elementCount * 4 + jointIndexBegin * 4 + 3];
                 } else {
-                    alignBuffer[i * alignElementCount + j] = buffer[i * elementCount + j];
+                    if (j > jointIndexBegin + 3) {
+                        alignBuffer[i * alignElementCount + j] = buffer[i * elementCount + j - 3];
+                    } else {
+                        alignBuffer[i * alignElementCount + j] = buffer[i * elementCount + j];
+                    }
                 }
             }
         }

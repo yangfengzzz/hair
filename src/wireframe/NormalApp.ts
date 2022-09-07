@@ -1,10 +1,10 @@
 import {
-    AmbientLight, AssetType,
+    AmbientLight, AssetType, BlinnPhongMaterial,
     Camera,
     Color,
     DirectLight,
-    GLTFResource,
-    PBRMaterial,
+    GLTFResource, MeshRenderer,
+    PBRMaterial, PrimitiveMesh,
     RenderFace,
     Vector3,
     WebGLEngine
