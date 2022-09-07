@@ -1,5 +1,5 @@
 import {
-    AmbientLight, AssetType, BlinnPhongMaterial,
+    AmbientLight, Animator, AssetType, BlinnPhongMaterial,
     Camera,
     Color,
     DirectLight,

@@ -2,7 +2,6 @@ import {
     MeshRenderer,
     ModelMesh,
     MeshTopology,
-    Vector3,
     Script,
     Entity,
     Color,
@@ -127,15 +126,6 @@ export class NormalWireframe extends Script {
     private _createLineMesh(mesh: ModelMesh): ModelMesh {
         const normalMesh = new ModelMesh(this.engine);
         const vertexCount = mesh.vertexCount * 2;
-        const indices = new Uint32Array(vertexCount);
-        const positions: Vector3[] = new Array(vertexCount);
-        for (let i = 0; i < vertexCount; i++) {
-            indices[i] = i;
-            positions[i] = new Vector3();
-        }
-        normalMesh.setPositions(positions);
-        normalMesh.setIndices(indices);
-        normalMesh.uploadData(true);
         normalMesh.addSubMesh(0, vertexCount, MeshTopology.Lines);
         return normalMesh;
     }
@@ -149,17 +139,6 @@ export class NormalWireframe extends Script {
             const subMesh = subMeshes[i];
             triangleCount += subMesh.count / 3;
         }
-        const indices = new Uint32Array(triangleCount * 3);
-        const positions: Vector3[] = new Array(triangleCount * 3);
-        for (let i = 0; i < triangleCount; i++) {
-            for (let j = 0; j < 3; j++) {
-                positions[i * 3 + j] = new Vector3();
-                indices[i * 3 + j] = i * 3 + j;
-            }
-        }
-        normalMesh.setPositions(positions);
-        normalMesh.setIndices(indices);
-        normalMesh.uploadData(true);
         normalMesh.addSubMesh(0, triangleCount * 3);
         return normalMesh;
     }

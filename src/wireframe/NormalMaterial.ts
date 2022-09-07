@@ -49,6 +49,17 @@ Shader.create("normalShader",
     uniform mat4 u_jointMatrix[ O3_JOINTS_NUM ];
 #endif
 #endif
+
+uniform mat4 u_localMat;
+uniform mat4 u_modelMat;
+uniform mat4 u_viewMat;
+uniform mat4 u_projMat;
+uniform mat4 u_MVMat;
+uniform mat4 u_MVPMat;
+uniform mat4 u_normalMat;
+uniform vec3 u_cameraPos;
+uniform vec4 u_tilingOffset;
+#include <normal_share>
    
    vec4 getVertexElement(float row, float col) {
         return texture2D(u_verticesSampler, vec2((col + 0.5) / u_verticesTextureWidth, (row + 0.5) / u_verticesTextureHeight));
@@ -160,10 +171,11 @@ Shader.create("normalShader",
     #include <begin_position_vert>
     #include <begin_normal_vert>
     #include <skinning_vert>
-        
+    #include <normal_vert>
+    
 #ifndef WIREFRAME_MODE
         if (gl_VertexID % 2 == 1) {
-            position.xyz += normal * u_lineScale;
+            position.xyz += v_normal * u_lineScale;
         }
 #endif
 
