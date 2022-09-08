@@ -86,7 +86,7 @@ class SketchSelection extends Script {
 
                             const renderer = renderElement.component;
                             sketch.targetMesh = renderElement.mesh;
-                            sketch.worldMatrix = renderer.entity.transform.worldMatrix;
+                            sketch.worldTransform = renderer.entity.transform;
                             sketch.skin = null;
                             sketch.shaderData.disableMacro("O3_HAS_SKIN");
                             if (renderer instanceof SkinnedMeshRenderer) {

@@ -5,7 +5,8 @@ Shader.create("tbnShader", `
    uniform float u_lineScale;
    uniform mat4 u_VPMat;
    uniform mat4 u_worldMatrix;
-   
+   uniform mat4 u_worldNormal;
+
 #ifdef O3_HAS_SKIN
 #ifdef O3_USE_JOINT_TEXTURE
     uniform sampler2D u_jointSampler;
@@ -28,17 +29,6 @@ Shader.create("tbnShader", `
 #endif
 #endif
 
-uniform mat4 u_localMat;
-uniform mat4 u_modelMat;
-uniform mat4 u_viewMat;
-uniform mat4 u_projMat;
-uniform mat4 u_MVMat;
-uniform mat4 u_MVPMat;
-uniform mat4 u_normalMat;
-uniform vec3 u_cameraPos;
-uniform vec4 u_tilingOffset;
-#include <normal_share>
-
 ${geometryTextureDefine}
 
 void main() {
@@ -48,12 +38,6 @@ void main() {
     #include <begin_position_vert>
     #include <begin_normal_vert>
     #include <skinning_vert>
-
-#if defined(SHOW_NORMAL) && defined(O3_HAS_NORMAL)
-    if (gl_VertexID % 2 == 1) {
-        position.xyz += normalize(normal) * u_lineScale;
-    }
-#endif
 
 #if defined(SHOW_TANGENT) && defined(O3_HAS_TANGENT)
     if (gl_VertexID % 2 == 1) {
@@ -72,6 +56,14 @@ void main() {
     #ifndef O3_HAS_SKIN
         gl_Position = u_worldMatrix * gl_Position; 
     #endif
+    
+#if defined(SHOW_NORMAL) && defined(O3_HAS_NORMAL)
+    if (gl_VertexID % 2 == 1) {
+        vec3 normalW = normalize( mat3(u_worldNormal) * normal.xyz );
+        gl_Position.xyz += normalize(normalW) * u_lineScale;
+    }
+#endif
+    
     gl_Position = u_VPMat * gl_Position; 
 }
 `, `

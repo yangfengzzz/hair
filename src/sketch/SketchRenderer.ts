@@ -11,8 +11,9 @@ import {
     Texture2D,
     TextureFilterMode,
     TextureFormat,
+    Transform,
     VertexBufferBinding,
-    VertexElement
+    VertexElement,
 } from "oasis-engine";
 import {SketchMode} from "./SketchMode";
 import {BiTangentMaterial, NormalMaterial, TangentMaterial, WireframeMaterial} from "./material";
@@ -37,7 +38,10 @@ export class SketchRenderer extends SkinnedMeshRenderer {
 
     private static _lineScaleProp = Shader.getPropertyByName("u_lineScale");
     private static _worldMatrixProp = Shader.getPropertyByName("u_worldMatrix");
+    private static _worldNormalProp = Shader.getPropertyByName("u_worldNormal");
 
+    private _worldNormalMatrix = new Matrix();
+    private _worldTransform: Transform = null;
     private _targetMesh: ModelMesh = null;
     private _verticesTexture: Texture2D = null;
     private _indicesTexture: Texture2D = null;
@@ -65,8 +69,11 @@ export class SketchRenderer extends SkinnedMeshRenderer {
     /**
      * World matrix
      */
-    set worldMatrix(value: Matrix) {
-        this.shaderData.setMatrix(SketchRenderer._worldMatrixProp, value);
+    set worldTransform(value: Transform) {
+        if (value !== this._worldTransform) {
+            this._worldTransform = value;
+            this.shaderData.setMatrix(SketchRenderer._worldMatrixProp, value.worldMatrix);
+        }
     }
 
     /**
@@ -183,6 +190,22 @@ export class SketchRenderer extends SkinnedMeshRenderer {
         this.setMaterial(1, null);
         this.setMaterial(2, null);
         this.setMaterial(3, null);
+    }
+
+    /**
+     * @override
+     * @param deltaTime - The delta-time
+     */
+    update(deltaTime: number) {
+        super.update(deltaTime);
+        const worldTransform = this._worldTransform;
+        if (worldTransform) {
+            //@ts-ignore
+            const worldNormalMatrix = this._worldNormalMatrix;
+            Matrix.invert(worldTransform.worldMatrix, worldNormalMatrix);
+            worldNormalMatrix.transpose();
+            this.shaderData.setMatrix(SketchRenderer._worldNormalProp, worldNormalMatrix);
+        }
     }
 
     private _uploadIndicesBuffer(value: ModelMesh) {

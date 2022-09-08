@@ -5,7 +5,8 @@ Shader.create("wireframeShader", `
    uniform float u_lineScale;
    uniform mat4 u_VPMat;
    uniform mat4 u_worldMatrix;
-   
+   uniform mat4 u_worldNormal;
+
 #ifdef O3_HAS_SKIN
 #ifdef O3_USE_JOINT_TEXTURE
     uniform sampler2D u_jointSampler;
@@ -28,17 +29,6 @@ Shader.create("wireframeShader", `
 #endif
 #endif
 
-uniform mat4 u_localMat;
-uniform mat4 u_modelMat;
-uniform mat4 u_viewMat;
-uniform mat4 u_projMat;
-uniform mat4 u_MVMat;
-uniform mat4 u_MVPMat;
-uniform mat4 u_normalMat;
-uniform vec3 u_cameraPos;
-uniform vec4 u_tilingOffset;
-#include <normal_share>
-
 ${geometryTextureDefine}
 
 varying vec3 v_baryCenter;
@@ -58,7 +48,6 @@ void main() {
     #include <begin_position_vert>
     #include <begin_normal_vert>
     #include <skinning_vert>
-    #include <normal_vert>
     
     gl_Position = position;
     #ifndef O3_HAS_SKIN
