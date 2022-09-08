@@ -14,7 +14,7 @@ import {
     Vector3,
     WebGLEngine
 } from "oasis-engine";
-import {OrbitControl} from "@oasis-engine-toolkit/controls";
+import {FreeControl} from "@oasis-engine-toolkit/controls";
 import {FramebufferPicker} from "@oasis-engine-toolkit/framebuffer-picker";
 import {SketchRenderer} from "./SketchRenderer";
 import {SketchMode} from "./SketchMode";
@@ -52,9 +52,9 @@ class SketchSelection extends Script {
     }
 
     onAwake(): void {
-        this.sketch = this.entity.addComponent(SketchRenderer);
         this._framebufferPicker = this.entity.addComponent(FramebufferPicker);
-
+        this.sketch = this.entity.addComponent(SketchRenderer);
+        this.sketch.setSketchMode(SketchMode.Wireframe, true);
     }
 
     onUpdate(): void {
@@ -104,11 +104,12 @@ const rootEntity = scene.createRootEntity("root");
 
 // Init Camera
 const cameraEntity = rootEntity.createChild("camera_entity");
-cameraEntity.transform.setPosition(3, 6, 0);
+cameraEntity.transform.setPosition(6, 5, 0);
+cameraEntity.transform.lookAt(new Vector3(0, 3, 0));
 const camera = cameraEntity.addComponent(Camera);
 camera.enableFrustumCulling = false;
 camera.farClipPlane = 1000;
-cameraEntity.addComponent(OrbitControl).target.set(0, 4, 0);
+cameraEntity.addComponent(FreeControl).floorMock = false;
 
 // Create an entity to add light component
 const lightEntity = rootEntity.createChild("light");
@@ -128,16 +129,15 @@ sketchSelection.camera = camera;
 function openDebug() {
     const info = {
         pause: false,
-        baseColor: [0, 0, 0],
-        wireframeMode: false,
+        wireframeMode: true,
         normalMode: false,
     };
 
     gui.add(sketchSelection.sketch, "scale", 0, 1);
-    gui.add(info, "wireframeMode").onChange((v)=>{
+    gui.add(info, "wireframeMode").onChange((v) => {
         sketchSelection.sketch.setSketchMode(SketchMode.Wireframe, v);
     });
-    gui.add(info, "normalMode").onChange((v)=>{
+    gui.add(info, "normalMode").onChange((v) => {
         sketchSelection.sketch.setSketchMode(SketchMode.Normal, v);
     });
 }
