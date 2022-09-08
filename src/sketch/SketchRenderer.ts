@@ -15,7 +15,7 @@ import {
     VertexElement
 } from "oasis-engine";
 import {SketchMode} from "./SketchMode";
-import {NormalMaterial, TangentMaterial, BiTangentMaterial, WireframeMaterial} from "./material";
+import {BiTangentMaterial, NormalMaterial, TangentMaterial, WireframeMaterial} from "./material";
 
 /**
  * Sketch Renderer
@@ -42,6 +42,7 @@ export class SketchRenderer extends SkinnedMeshRenderer {
     private _verticesTexture: Texture2D = null;
     private _indicesTexture: Texture2D = null;
 
+    private _showState = [false, false, false, false];
     private readonly _wireframeMaterial: WireframeMaterial;
     private readonly _normalMaterial: NormalMaterial;
     private readonly _tangentMaterial: TangentMaterial;
@@ -80,6 +81,9 @@ export class SketchRenderer extends SkinnedMeshRenderer {
 
             this._updateTriangleSubMesh(value)
             this._updateLineSubMesh(value);
+            for (let i = 0; i < 4; i++) {
+                this.setSketchMode(i, this._showState[i]);
+            }
         }
     }
 
@@ -137,30 +141,38 @@ export class SketchRenderer extends SkinnedMeshRenderer {
         switch (mode) {
             case SketchMode.Wireframe:
                 if (isShow) {
-                    this.setMaterial(0, this._wireframeMaterial);
+                    this._targetMesh && this.setMaterial(0, this._wireframeMaterial);
+                    this._showState[0] = true;
                 } else {
                     this.setMaterial(0, null);
+                    this._showState[0] = false;
                 }
                 break;
             case SketchMode.Normal:
                 if (isShow) {
-                    this.setMaterial(1, this._normalMaterial);
+                    this._targetMesh && this.setMaterial(1, this._normalMaterial);
+                    this._showState[1] = true;
                 } else {
                     this.setMaterial(1, null);
+                    this._showState[1] = false;
                 }
                 break;
             case SketchMode.Tangent:
                 if (isShow) {
-                    this.setMaterial(2, this._tangentMaterial);
+                    this._targetMesh && this.setMaterial(2, this._tangentMaterial);
+                    this._showState[2] = true;
                 } else {
                     this.setMaterial(2, null);
+                    this._showState[2] = false;
                 }
                 break;
             case SketchMode.BiTangent:
                 if (isShow) {
-                    this.setMaterial(3, this._biTangentMaterial);
+                    this._targetMesh && this.setMaterial(3, this._biTangentMaterial);
+                    this._showState[3] = true;
                 } else {
                     this.setMaterial(3, null);
+                    this._showState[3] = false;
                 }
                 break;
         }
@@ -169,8 +181,8 @@ export class SketchRenderer extends SkinnedMeshRenderer {
     clear() {
         this.setMaterial(0, null);
         this.setMaterial(1, null);
-        // this.setMaterial(2, null);
-        // this.setMaterial(3, null);
+        this.setMaterial(2, null);
+        this.setMaterial(3, null);
     }
 
     private _uploadIndicesBuffer(value: ModelMesh) {
