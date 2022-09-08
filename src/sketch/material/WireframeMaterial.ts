@@ -1,5 +1,5 @@
 import {BaseMaterial, Color, Engine, RenderFace, Shader} from "oasis-engine";
-import {geometryTextureDefine, geometryTextureVert} from "./GeometryMaterial";
+import {geometryTextureDefine, geometryTextureVert} from "./GeometryShader";
 
 Shader.create("wireframeShader", `
    uniform float u_lineScale;

@@ -15,7 +15,7 @@ import {
     VertexElement
 } from "oasis-engine";
 import {SketchMode} from "./SketchMode";
-import {NormalMaterial, WireframeMaterial} from "./material";
+import {NormalMaterial, TangentMaterial, BiTangentMaterial, WireframeMaterial} from "./material";
 
 /**
  * Sketch Renderer
@@ -44,6 +44,9 @@ export class SketchRenderer extends SkinnedMeshRenderer {
 
     private readonly _wireframeMaterial: WireframeMaterial;
     private readonly _normalMaterial: NormalMaterial;
+    private readonly _tangentMaterial: TangentMaterial;
+    private readonly _biTangentMaterial: BiTangentMaterial;
+
     private readonly _triangleSubMesh = new SubMesh();
     private readonly _lineSubMesh = new SubMesh(0, 0, MeshTopology.Lines);
 
@@ -94,12 +97,29 @@ export class SketchRenderer extends SkinnedMeshRenderer {
         return this._normalMaterial;
     }
 
+    /**
+     * Material for tangent shading
+     */
+    get tangentMaterial(): TangentMaterial {
+        return this._normalMaterial;
+    }
+
+    /**
+     * Material for biTangent shading
+     */
+    get biTangentMaterial(): BiTangentMaterial {
+        return this._normalMaterial;
+    }
+
     constructor(entity: Entity) {
         super(entity);
         const engine = this.engine;
         this.mesh = new ModelMesh(engine);
         this._wireframeMaterial = new WireframeMaterial(engine);
         this._normalMaterial = new NormalMaterial(engine);
+        this._tangentMaterial = new TangentMaterial(engine);
+        this._biTangentMaterial = new BiTangentMaterial(engine);
+
         this.mesh.addSubMesh(this._triangleSubMesh); // wireframe
         this.mesh.addSubMesh(this._lineSubMesh); // normal
         this.mesh.addSubMesh(this._lineSubMesh); // tangent
@@ -130,8 +150,18 @@ export class SketchRenderer extends SkinnedMeshRenderer {
                 }
                 break;
             case SketchMode.Tangent:
+                if (isShow) {
+                    this.setMaterial(2, this._tangentMaterial);
+                } else {
+                    this.setMaterial(2, null);
+                }
                 break;
             case SketchMode.BiTangent:
+                if (isShow) {
+                    this.setMaterial(3, this._biTangentMaterial);
+                } else {
+                    this.setMaterial(3, null);
+                }
                 break;
         }
     }

@@ -141,7 +141,13 @@ function openDebug() {
     const info = {
         pause: false,
         wireframeMode: true,
+        wireframeBaseColor: [0, 0, 0],
         normalMode: false,
+        normalColor: [255, 0, 0],
+        tangentMode: false,
+        tangentColor: [0, 255, 0],
+        bitangentMode: false,
+        bitangentColor: [0, 0, 255],
     };
 
     gui.add(info, "pause").onChange((v) => {
@@ -155,8 +161,29 @@ function openDebug() {
     gui.add(info, "wireframeMode").onChange((v) => {
         sketchSelection.sketch.setSketchMode(SketchMode.Wireframe, v);
     });
+    gui.addColor(info, "wireframeBaseColor").onChange((v) => {
+        sketchSelection.sketch.wireframeMaterial.baseColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1.0);
+    });
+
     gui.add(info, "normalMode").onChange((v) => {
         sketchSelection.sketch.setSketchMode(SketchMode.Normal, v);
+    });
+    gui.addColor(info, "normalColor").onChange((v) => {
+        sketchSelection.sketch.normalMaterial.baseColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1.0);
+    });
+
+    gui.add(info, "tangentMode").onChange((v) => {
+        sketchSelection.sketch.setSketchMode(SketchMode.Tangent, v);
+    });
+    gui.addColor(info, "tangentColor").onChange((v) => {
+        sketchSelection.sketch.tangentMaterial.baseColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1.0);
+    });
+
+    gui.add(info, "bitangentMode").onChange((v) => {
+        sketchSelection.sketch.setSketchMode(SketchMode.BiTangent, v);
+    });
+    gui.addColor(info, "bitangentColor").onChange((v) => {
+        sketchSelection.sketch.biTangentMaterial.baseColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1.0);
     });
 }
 
