@@ -1,5 +1,5 @@
 import {
-    BaseMaterial,
+    BaseMaterial, Color,
     Engine,
     IndexBufferBinding,
     IndexFormat,
@@ -210,7 +210,7 @@ uniform vec4 u_tilingOffset;
     }
     `);
 
-export class NormalMaterial extends BaseMaterial {
+export class GeometryMaterial extends BaseMaterial {
     private static _uvMacro = Shader.getMacroByName("O3_HAS_UV");
     private static _uv1Macro = Shader.getMacroByName("O3_HAS_UV1");
     private static _normalMacro = Shader.getMacroByName("O3_HAS_NORMAL");
@@ -238,11 +238,15 @@ export class NormalMaterial extends BaseMaterial {
     private _indicesTexture: Texture2D;
 
     set worldMatrix(value: Matrix) {
-        this.shaderData.setMatrix(NormalMaterial._worldMatrixProp, value);
+        this.shaderData.setMatrix(GeometryMaterial._worldMatrixProp, value);
     }
 
     set scale(value: number) {
-        this.shaderData.setFloat(NormalMaterial._lineScaleProp, value);
+        this.shaderData.setFloat(GeometryMaterial._lineScaleProp, value);
+    }
+
+    set baseColor(value: Color) {
+        this.shaderData.setColor(GeometryMaterial._baseColorProp, value);
     }
 
     set mesh(value: ModelMesh) {
@@ -271,8 +275,8 @@ export class NormalMaterial extends BaseMaterial {
         switch (indexFormat) {
             case IndexFormat.UInt8: {
                 triangleCount = byteLength / 3;
-                const width = Math.min(triangleCount, NormalMaterial._MAX_TEXTURE_ROWS);
-                const height =  Math.ceil(triangleCount / NormalMaterial._MAX_TEXTURE_ROWS);
+                const width = Math.min(triangleCount, GeometryMaterial._MAX_TEXTURE_ROWS);
+                const height = Math.ceil(triangleCount / GeometryMaterial._MAX_TEXTURE_ROWS);
                 this._indicesTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);
 
                 const floatBuffer = new Float32Array(width * height * 4);
@@ -283,17 +287,17 @@ export class NormalMaterial extends BaseMaterial {
                     floatBuffer[i * 4 + 3] = 0;
                 }
                 this._indicesTexture.setPixelBuffer(floatBuffer);
-                this.shaderData.setTexture(NormalMaterial._indicesSamplerProp, this._indicesTexture);
-                this.shaderData.setFloat(NormalMaterial._indicesTextureWidthProp, width);
-                this.shaderData.setFloat(NormalMaterial._indicesTextureHeightProp, height);
+                this.shaderData.setTexture(GeometryMaterial._indicesSamplerProp, this._indicesTexture);
+                this.shaderData.setFloat(GeometryMaterial._indicesTextureWidthProp, width);
+                this.shaderData.setFloat(GeometryMaterial._indicesTextureHeightProp, height);
                 break;
             }
             case IndexFormat.UInt16: {
                 const uint16Buffer = new Uint16Array(buffer.buffer);
 
                 triangleCount = byteLength / 6;
-                const width = Math.min(triangleCount, NormalMaterial._MAX_TEXTURE_ROWS);
-                const height =  Math.ceil(triangleCount / NormalMaterial._MAX_TEXTURE_ROWS);
+                const width = Math.min(triangleCount, GeometryMaterial._MAX_TEXTURE_ROWS);
+                const height = Math.ceil(triangleCount / GeometryMaterial._MAX_TEXTURE_ROWS);
                 this._indicesTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);
 
                 const floatBuffer = new Float32Array(width * height * 4);
@@ -304,17 +308,17 @@ export class NormalMaterial extends BaseMaterial {
                     floatBuffer[i * 4 + 3] = 0;
                 }
                 this._indicesTexture.setPixelBuffer(floatBuffer);
-                this.shaderData.setTexture(NormalMaterial._indicesSamplerProp, this._indicesTexture);
-                this.shaderData.setFloat(NormalMaterial._indicesTextureWidthProp, width);
-                this.shaderData.setFloat(NormalMaterial._indicesTextureHeightProp, height);
+                this.shaderData.setTexture(GeometryMaterial._indicesSamplerProp, this._indicesTexture);
+                this.shaderData.setFloat(GeometryMaterial._indicesTextureWidthProp, width);
+                this.shaderData.setFloat(GeometryMaterial._indicesTextureHeightProp, height);
                 break;
             }
             case IndexFormat.UInt32: {
                 const uint32Buffer = new Uint32Array(buffer.buffer);
 
                 triangleCount = byteLength / 12;
-                const width = Math.min(triangleCount, NormalMaterial._MAX_TEXTURE_ROWS);
-                const height =  Math.ceil(triangleCount / NormalMaterial._MAX_TEXTURE_ROWS);
+                const width = Math.min(triangleCount, GeometryMaterial._MAX_TEXTURE_ROWS);
+                const height = Math.ceil(triangleCount / GeometryMaterial._MAX_TEXTURE_ROWS);
                 this._indicesTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);
 
                 const floatBuffer = new Float32Array(width * height * 4);
@@ -325,9 +329,9 @@ export class NormalMaterial extends BaseMaterial {
                     floatBuffer[i * 4 + 3] = 0;
                 }
                 this._indicesTexture.setPixelBuffer(floatBuffer);
-                this.shaderData.setTexture(NormalMaterial._indicesSamplerProp, this._indicesTexture);
-                this.shaderData.setFloat(NormalMaterial._indicesTextureWidthProp, width);
-                this.shaderData.setFloat(NormalMaterial._indicesTextureHeightProp, height);
+                this.shaderData.setTexture(GeometryMaterial._indicesSamplerProp, this._indicesTexture);
+                this.shaderData.setFloat(GeometryMaterial._indicesTextureWidthProp, width);
+                this.shaderData.setFloat(GeometryMaterial._indicesTextureHeightProp, height);
                 break;
             }
         }
@@ -339,7 +343,7 @@ export class NormalMaterial extends BaseMaterial {
         const vertexBufferBinding = <VertexBufferBinding>value._vertexBufferBindings[0];
         const vertexCount = value.vertexCount;
         const elementCount = this._meshElement(value);
-        const jointIndexBegin = NormalMaterial._jointIndexBegin;
+        const jointIndexBegin = GeometryMaterial._jointIndexBegin;
         let newElementCount = elementCount;
         if (jointIndexBegin !== -1) {
             newElementCount += 3;
@@ -352,8 +356,8 @@ export class NormalMaterial extends BaseMaterial {
         const alignElementCount = Math.ceil(newElementCount / 4) * 4;
         this.shaderData.enableMacro("ELEMENT_COUNT", (alignElementCount / 4).toString());
 
-        const width = Math.min(vertexCount, NormalMaterial._MAX_TEXTURE_ROWS) * alignElementCount;
-        const height = Math.ceil(vertexCount / NormalMaterial._MAX_TEXTURE_ROWS);
+        const width = Math.min(vertexCount, GeometryMaterial._MAX_TEXTURE_ROWS) * alignElementCount;
+        const height = Math.ceil(vertexCount / GeometryMaterial._MAX_TEXTURE_ROWS);
         const alignBuffer = new Float32Array(width * height);
 
         for (let i = 0; i < vertexCount; i++) {
@@ -376,7 +380,7 @@ export class NormalMaterial extends BaseMaterial {
             }
         }
         this._createVerticesTexture(alignBuffer, width / 4, height);
-        NormalMaterial._jointIndexBegin = -1;
+        GeometryMaterial._jointIndexBegin = -1;
     }
 
     private _createVerticesTexture(vertexBuffer: ArrayBufferView, width: number, height: number) {
@@ -384,9 +388,9 @@ export class NormalMaterial extends BaseMaterial {
         this._verticesTexture.filterMode = TextureFilterMode.Point;
         this._verticesTexture.setPixelBuffer(vertexBuffer);
 
-        this.shaderData.setTexture(NormalMaterial._verticesSamplerProp, this._verticesTexture);
-        this.shaderData.setFloat(NormalMaterial._verticesTextureWidthProp, width);
-        this.shaderData.setFloat(NormalMaterial._verticesTextureHeightProp, height);
+        this.shaderData.setTexture(GeometryMaterial._verticesSamplerProp, this._verticesTexture);
+        this.shaderData.setFloat(GeometryMaterial._verticesTextureWidthProp, width);
+        this.shaderData.setFloat(GeometryMaterial._verticesTextureHeightProp, height);
     }
 
     private _meshElement(value: ModelMesh): number {
@@ -402,31 +406,31 @@ export class NormalMaterial extends BaseMaterial {
                     break;
                 case "NORMAL":
                     elementCount += 3;
-                    shaderData.enableMacro(NormalMaterial._normalMacro);
+                    shaderData.enableMacro(GeometryMaterial._normalMacro);
                     break;
                 case "COLOR_0":
                     elementCount += 4;
-                    shaderData.enableMacro(NormalMaterial._vertexColorMacro);
+                    shaderData.enableMacro(GeometryMaterial._vertexColorMacro);
                     break;
                 case "WEIGHTS_0":
                     elementCount += 4;
-                    shaderData.enableMacro(NormalMaterial._weightMacro);
+                    shaderData.enableMacro(GeometryMaterial._weightMacro);
                     break;
                 case "JOINTS_0":
-                    NormalMaterial._jointIndexBegin = elementCount;
+                    GeometryMaterial._jointIndexBegin = elementCount;
                     elementCount += 1;
-                    shaderData.enableMacro(NormalMaterial._jointMacro);
+                    shaderData.enableMacro(GeometryMaterial._jointMacro);
                     break;
                 case "TANGENT":
-                    shaderData.enableMacro(NormalMaterial._tangentMacro);
+                    shaderData.enableMacro(GeometryMaterial._tangentMacro);
                     elementCount += 4;
                     break;
                 case "TEXCOORD_0":
-                    shaderData.enableMacro(NormalMaterial._uvMacro);
+                    shaderData.enableMacro(GeometryMaterial._uvMacro);
                     elementCount += 2;
                     break;
                 case "TEXCOORD_1":
-                    shaderData.enableMacro(NormalMaterial._uv1Macro);
+                    shaderData.enableMacro(GeometryMaterial._uv1Macro);
                     elementCount += 2;
                     break;
                 case "TEXCOORD_2":

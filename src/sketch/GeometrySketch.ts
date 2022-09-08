@@ -7,17 +7,17 @@ import {
     Color,
     SkinnedMeshRenderer
 } from "oasis-engine";
-import {NormalMaterial} from "./NormalMaterial";
+import {GeometryMaterial} from "./GeometryMaterial";
 
-export class NormalWireframe extends Script {
+export class GeometrySketch extends Script {
     private _normalRenderers: MeshRenderer[] = [];
-    private _normalMaterials: NormalMaterial[] = [];
+    private _normalMaterials: GeometryMaterial[] = [];
     private _scale = 0.02;
     private _color = new Color();
     private _wireframeMode = false;
 
     /**
-     * wireframe mode.
+     * sketch mode.
      */
     get wireframeMode(): boolean {
         return this._wireframeMode;
@@ -85,7 +85,7 @@ export class NormalWireframe extends Script {
             normalMesh = this._createLineMesh(mesh);
         }
 
-        const normalMaterial = new NormalMaterial(this.engine);
+        const normalMaterial = new GeometryMaterial(this.engine);
         normalMaterial.mesh = mesh;
         normalMaterial.scale = this._scale;
         normalMaterial.worldMatrix = worldMatrix;

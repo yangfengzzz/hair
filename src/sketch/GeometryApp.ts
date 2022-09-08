@@ -10,7 +10,7 @@ import {
     WebGLEngine
 } from "oasis-engine";
 import {OrbitControl} from "@oasis-engine-toolkit/controls";
-import {NormalWireframe} from "./NormalWireframe";
+import {GeometrySketch} from "./GeometrySketch";
 import * as dat from "dat.gui";
 
 const gui = new dat.GUI();
@@ -45,8 +45,8 @@ directLight.intensity = 0.5;
 // Control light direction by entity's transform
 lightEntity.transform.rotation = new Vector3(45, 45, 45);
 
-// wireframe
-const wireframe = rootEntity.addComponent(NormalWireframe);
+// sketch
+const wireframe = rootEntity.addComponent(GeometrySketch);
 wireframe.wireframeMode = true;
 
 engine.resourceManager
@@ -80,7 +80,7 @@ engine.resourceManager
         // mtl.baseColor.set(1,0.5,0.5,0.2);
         // renderer.setMaterial(mtl);
         // renderer.mesh = mesh;
-        // wireframe.addEntity(sceneEntity);
+        // sketch.addEntity(sceneEntity);
 
         openDebug();
 
@@ -108,5 +108,6 @@ engine.resourceManager
             //     }
             // })
             gui.add(wireframe, "scale", 0, 1);
+            gui.add(wireframe, "wireframeMode", );
         }
     });
