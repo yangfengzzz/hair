@@ -9,7 +9,7 @@ import {
     PBRMaterial,
     PointerButton,
     RenderFace,
-    Script,
+    Script, SkinnedMeshRenderer,
     Vector3,
     WebGLEngine
 } from "oasis-engine";
@@ -42,7 +42,6 @@ class SketchSelection extends Script {
         this._sketch = this.entity.addComponent(SketchRenderer);
         this._framebufferPicker = this.entity.addComponent(FramebufferPicker);
 
-        this._sketch.setSketchMode(SketchMode.Wireframe, true);
     }
 
     onUpdate(): void {
@@ -52,10 +51,19 @@ class SketchSelection extends Script {
             this._framebufferPicker.pick(pointerPosition.x, pointerPosition.y).then((renderElement) => {
                 if (renderElement) {
                     if (renderElement.mesh instanceof ModelMesh) {
+                        const renderer = renderElement.component;
                         this._sketch.targetMesh = renderElement.mesh;
-                        this._sketch.worldMatrix = renderElement.component.entity.transform.worldMatrix;
+                        this._sketch.worldMatrix = renderer.entity.transform.worldMatrix;
+                        this._sketch.setSketchMode(SketchMode.Wireframe, true);
+                        this._sketch.wireframeMaterial.baseColor.set(0, 0, 0, 1);
+                        if (renderer instanceof SkinnedMeshRenderer) {
+                            // @ts-ignore
+                            this._sketch._hasInitJoints = false;
+                            this._sketch.skin = renderer.skin;
+                        }
                     }
                 } else {
+                    this._sketch.skin = null;
                     this._sketch.clear();
                 }
             });

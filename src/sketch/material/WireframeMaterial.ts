@@ -1,4 +1,4 @@
-import {BaseMaterial, Color, Engine, Shader} from "oasis-engine";
+import {BaseMaterial, Color, Engine, RenderFace, Shader} from "oasis-engine";
 import {geometryTextureDefine, geometryTextureVert} from "./GeometryMaterial";
 
 Shader.create("wireframeShader", `
@@ -103,6 +103,8 @@ export class WireframeMaterial extends BaseMaterial {
 
     constructor(engine: Engine) {
         super(engine, Shader.find("wireframeShader"));
-        this.shaderData.setColor(WireframeMaterial._baseColorProp, new Color(1, 1, 1, 1));
+        this.shaderData.setColor(WireframeMaterial._baseColorProp, new Color(0, 0, 0, 1));
+        this.isTransparent = true;
+        this.renderFace = RenderFace.Double;
     }
 }
