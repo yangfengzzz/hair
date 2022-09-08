@@ -2,10 +2,12 @@ import {
     Entity,
     IndexBufferBinding,
     IndexFormat,
-    Matrix, MeshTopology,
+    Matrix,
+    MeshTopology,
     ModelMesh,
     Shader,
-    SkinnedMeshRenderer, SubMesh,
+    SkinnedMeshRenderer,
+    SubMesh,
     Texture2D,
     TextureFilterMode,
     TextureFormat,
@@ -42,6 +44,8 @@ export class SketchRenderer extends SkinnedMeshRenderer {
 
     private readonly _wireframeMaterial: WireframeMaterial;
     private readonly _normalMaterial: NormalMaterial;
+    private readonly _triangleSubMesh = new SubMesh();
+    private readonly _lineSubMesh = new SubMesh(0, 0, MeshTopology.Lines);
 
     /**
      * Line scale
@@ -71,10 +75,8 @@ export class SketchRenderer extends SkinnedMeshRenderer {
             this._uploadVerticesBuffer(value);
             this._uploadIndicesBuffer(value);
 
-            const mesh = this.mesh;
-            mesh.clearSubMesh();
-            mesh.addSubMesh(this._createTriangleSubMesh(value)); // wireframe
-            mesh.addSubMesh(this._createLineSubMesh(value)); // normal
+            this._updateTriangleSubMesh(value)
+            this._updateLineSubMesh(value);
         }
     }
 
@@ -98,6 +100,10 @@ export class SketchRenderer extends SkinnedMeshRenderer {
         this.mesh = new ModelMesh(engine);
         this._wireframeMaterial = new WireframeMaterial(engine);
         this._normalMaterial = new NormalMaterial(engine);
+        this.mesh.addSubMesh(this._triangleSubMesh); // wireframe
+        this.mesh.addSubMesh(this._lineSubMesh); // normal
+        this.mesh.addSubMesh(this._lineSubMesh); // tangent
+        this.mesh.addSubMesh(this._lineSubMesh); // bi-tangent
 
         this.scale = 0.02;
     }
@@ -336,18 +342,18 @@ export class SketchRenderer extends SkinnedMeshRenderer {
         return elementCount;
     }
 
-    private _createLineSubMesh(mesh: ModelMesh): SubMesh {
-        return new SubMesh(0, mesh.vertexCount * 2, MeshTopology.Lines);
+    private _updateLineSubMesh(mesh: ModelMesh) {
+        this._lineSubMesh.count = mesh.vertexCount * 2;
     }
 
-    private _createTriangleSubMesh(mesh: ModelMesh): SubMesh {
+    private _updateTriangleSubMesh(mesh: ModelMesh) {
         let triangleCount = 0;
         const subMeshes = mesh.subMeshes;
         for (let i = 0; i < subMeshes.length; i++) {
             const subMesh = subMeshes[i];
-            triangleCount += subMesh.count / 3;
+            triangleCount += subMesh.count;
         }
-        return new SubMesh(0, triangleCount * 3);
+        this._triangleSubMesh.count = triangleCount;
     }
 
     private _destroy() {
