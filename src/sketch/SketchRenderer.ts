@@ -253,7 +253,7 @@ export class SketchRenderer extends SkinnedMeshRenderer {
         //@ts-ignore
         const vertexBufferBinding = <VertexBufferBinding>value._vertexBufferBindings[0];
         const vertexCount = value.vertexCount;
-        const elementCount = this._meshElement(value);
+        const elementCount = this._updateMeshElement(value);
         const jointIndexBegin = SketchRenderer._jointIndexBegin;
         let newElementCount = elementCount;
         if (jointIndexBegin !== -1) {
@@ -304,8 +304,21 @@ export class SketchRenderer extends SkinnedMeshRenderer {
         this.shaderData.setFloat(SketchRenderer._verticesTextureHeightProp, height);
     }
 
-    private _meshElement(value: ModelMesh): number {
+    private _updateMeshElement(value: ModelMesh): number {
         const shaderData = this.shaderData;
+        //@ts-ignore
+        shaderData.disableMacro(SketchRenderer._normalMacro);
+        //@ts-ignore
+        shaderData.disableMacro(SketchRenderer._vertexColorMacro);
+        //@ts-ignore
+        shaderData.disableMacro(SketchRenderer._tangentMacro);
+        //@ts-ignore
+        shaderData.disableMacro(SketchRenderer._uvMacro);
+        //@ts-ignore
+        shaderData.disableMacro(SketchRenderer._uv1Macro);
+        shaderData.disableMacro(SketchRenderer._weightMacro);
+        shaderData.disableMacro(SketchRenderer._jointMacro);
+
         let elementCount = 0;
         //@ts-ignore
         const vertexElements = <VertexElement[]>value._vertexElements;

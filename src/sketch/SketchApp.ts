@@ -122,14 +122,9 @@ cameraEntity.addComponent(FreeControl).floorMock = false;
 
 // Create an entity to add light component
 const lightEntity = rootEntity.createChild("light");
-
-// Create light component
+lightEntity.transform.setRotation(45, 45, 45);
 const directLight = lightEntity.addComponent(DirectLight);
 directLight.color = new Color(1.0, 1.0, 1.0);
-directLight.intensity = 0.5;
-
-// Control light direction by entity's transform
-lightEntity.transform.rotation = new Vector3(45, 45, 45);
 
 // sketch selection
 const sketchSelection = rootEntity.addComponent(SketchSelection);
