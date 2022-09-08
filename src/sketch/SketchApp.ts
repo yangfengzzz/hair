@@ -116,8 +116,8 @@ const rootEntity = scene.createRootEntity("root");
 
 // Init Camera
 const cameraEntity = rootEntity.createChild("camera_entity");
-cameraEntity.transform.setPosition(7, 2, -0.5);
-cameraEntity.transform.lookAt(new Vector3(0, 2, -0.5));
+cameraEntity.transform.setPosition(3, 2, 0.5);
+cameraEntity.transform.lookAt(new Vector3(0, 2, 0.5));
 const camera = cameraEntity.addComponent(Camera);
 camera.enableFrustumCulling = false;
 camera.farClipPlane = 1000;
@@ -158,7 +158,7 @@ function openDebug() {
             rotation && (rotation.pause = false);
         }
     });
-    gui.add(sketchSelection.sketch, "scale", 0, 2);
+    gui.add(sketchSelection.sketch, "scale", 0, 1);
     gui.add(info, "wireframeMode").onChange((v) => {
         sketchSelection.sketch.setSketchMode(SketchMode.Wireframe, v);
     });

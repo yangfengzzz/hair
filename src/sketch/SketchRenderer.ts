@@ -136,7 +136,7 @@ export class SketchRenderer extends SkinnedMeshRenderer {
         this.mesh.addSubMesh(this._lineSubMesh); // tangent
         this.mesh.addSubMesh(this._lineSubMesh); // bi-tangent
 
-        this.scale = 0.02;
+        this.scale = 0.1;
     }
 
     /**

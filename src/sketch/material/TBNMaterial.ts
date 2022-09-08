@@ -39,19 +39,6 @@ void main() {
     #include <begin_normal_vert>
     #include <skinning_vert>
 
-#if defined(SHOW_TANGENT) && defined(O3_HAS_TANGENT)
-    if (gl_VertexID % 2 == 1) {
-        position.xyz += normalize(tangent.xyz) * u_lineScale;
-    }
-#endif
-
-#if defined(SHOW_BITANGENT) && defined(O3_HAS_TANGENT) && defined(O3_HAS_NORMAL)
-    if (gl_VertexID % 2 == 1) {
-        vec3 bitangent = cross( normal, tangent.xyz ) * tangent.w;
-        position.xyz += normalize(bitangent) * u_lineScale;
-    }
-#endif
-
     gl_Position = position;
     #ifndef O3_HAS_SKIN
         gl_Position = u_worldMatrix * gl_Position; 
@@ -61,6 +48,22 @@ void main() {
     if (gl_VertexID % 2 == 1) {
         vec3 normalW = normalize( mat3(u_worldNormal) * normal.xyz );
         gl_Position.xyz += normalize(normalW) * u_lineScale;
+    }
+#endif
+
+#if defined(SHOW_TANGENT) && defined(O3_HAS_TANGENT)
+    if (gl_VertexID % 2 == 1) {
+        vec3 tangentW = normalize( mat3(u_worldNormal) * tangent.xyz );
+        gl_Position.xyz += normalize(tangentW) * u_lineScale;
+    }
+#endif
+
+#if defined(SHOW_BITANGENT) && defined(O3_HAS_TANGENT) && defined(O3_HAS_NORMAL)
+    if (gl_VertexID % 2 == 1) {
+        vec3 normalW = normalize( mat3(u_worldNormal) * normal.xyz );
+        vec3 tangentW = normalize( mat3(u_worldNormal) * tangent.xyz );
+        vec3 bitangentW = cross( normalW, tangentW ) * tangent.w;
+        gl_Position.xyz += normalize(bitangentW) * u_lineScale;
     }
 #endif
     
