@@ -94,7 +94,7 @@ export class SketchRenderer extends SkinnedMeshRenderer {
         this.mesh = new ModelMesh(engine);
         this._wireframeMaterial = new WireframeMaterial(engine);
         this._normalMaterial = new NormalMaterial(engine);
-        
+
         this.scale = 0.02;
     }
 

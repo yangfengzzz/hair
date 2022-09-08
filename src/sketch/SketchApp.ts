@@ -1,6 +1,6 @@
 import {
     AmbientLight,
-    AssetType,
+    AssetType, BlinnPhongMaterial,
     Camera,
     Color,
     DirectLight,
@@ -8,7 +8,6 @@ import {
     ModelMesh,
     PBRMaterial,
     PointerButton,
-    RenderFace,
     Script, SkinnedMeshRenderer,
     Vector3,
     WebGLEngine
@@ -19,9 +18,30 @@ import {SketchRenderer} from "./SketchRenderer";
 import * as dat from "dat.gui";
 import {SketchMode} from "./SketchMode";
 
+class SelectionInfo {
+    mesh: ModelMesh;
+
+    private _material: PBRMaterial | BlinnPhongMaterial;
+    private _alpha: number;
+    private _isTransparent: boolean;
+
+    set material(value: PBRMaterial | BlinnPhongMaterial) {
+        this._material = value;
+        this._alpha = value.baseColor.r;
+        this._isTransparent = value.isTransparent;
+    }
+
+    restore() {
+        const material = this._material;
+        material && (material.baseColor.a = this._alpha);
+        material && (material.isTransparent = this._isTransparent);
+    }
+}
+
 class SketchSelection extends Script {
     private _sketch: SketchRenderer;
     private _framebufferPicker: FramebufferPicker;
+    private _selection: SelectionInfo = new SelectionInfo();
 
     private _scale: number = 0.02;
 
@@ -45,26 +65,33 @@ class SketchSelection extends Script {
     }
 
     onUpdate(): void {
+        const selection = this._selection;
         const inputManager = this.engine.inputManager;
         if (inputManager.isPointerDown(PointerButton.Primary)) {
             const pointerPosition = inputManager.pointerPosition;
             this._framebufferPicker.pick(pointerPosition.x, pointerPosition.y).then((renderElement) => {
                 if (renderElement) {
                     if (renderElement.mesh instanceof ModelMesh) {
-                        const renderer = renderElement.component;
-                        this._sketch.targetMesh = renderElement.mesh;
-                        this._sketch.worldMatrix = renderer.entity.transform.worldMatrix;
-                        this._sketch.setSketchMode(SketchMode.Normal, true);
-                        this._sketch.wireframeMaterial.baseColor.set(0, 0, 0, 1);
-                        if (renderer instanceof SkinnedMeshRenderer) {
-                            // @ts-ignore
-                            this._sketch._hasInitJoints = false;
-                            this._sketch.skin = renderer.skin;
+                        if (selection.mesh !== renderElement.mesh) {
+                            selection.restore();
+                            selection.mesh = renderElement.mesh;
+
+                            const mtl = <PBRMaterial>renderElement.material;
+                            selection.material = mtl;
+                            mtl.baseColor.a = 0.2;
+                            mtl.isTransparent = true;
+
+                            const renderer = renderElement.component;
+                            this._sketch.targetMesh = renderElement.mesh;
+                            this._sketch.worldMatrix = renderer.entity.transform.worldMatrix;
+                            this._sketch.setSketchMode(SketchMode.Wireframe, true);
+                            if (renderer instanceof SkinnedMeshRenderer) {
+                                // @ts-ignore
+                                this._sketch._hasInitJoints = false;
+                                this._sketch.skin = renderer.skin;
+                            }
                         }
                     }
-                } else {
-                    this._sketch.skin = null;
-                    this._sketch.clear();
                 }
             });
         }
@@ -85,12 +112,11 @@ const rootEntity = scene.createRootEntity("root");
 
 // Init Camera
 const cameraEntity = rootEntity.createChild("camera_entity");
-cameraEntity.transform.setPosition(0, 1, 3);
-cameraEntity.transform.lookAt(new Vector3(0, 0, 0));
+cameraEntity.transform.setPosition(3, 6, 0);
 const camera = cameraEntity.addComponent(Camera);
 camera.enableFrustumCulling = false;
 camera.farClipPlane = 1000;
-cameraEntity.addComponent(OrbitControl).target.set(0, 1, 0);
+cameraEntity.addComponent(OrbitControl).target.set(0, 4, 0);
 
 // Create an entity to add light component
 const lightEntity = rootEntity.createChild("light");
@@ -117,36 +143,25 @@ function openDebug() {
 }
 
 engine.resourceManager
-    .load<GLTFResource>("https://gw.alipayobjects.com/os/bmw-prod/5e3c1e4e-496e-45f8-8e05-f89f2bd5e4a4.glb")
-    .then((gltfResource) => {
-        const {animations, defaultSceneRoot} = gltfResource;
-        rootEntity.addChild(defaultSceneRoot);
-        // const animator = defaultSceneRoot.getComponent(Animator);
-        // const animationNames = animations.filter((clip) => !clip.name.includes("pose")).map((clip) => clip.name);
-        // animator.play(animationNames[3]);
-
-        for (let i = 0; i < gltfResource.materials.length; i++) {
-            const pbr = <PBRMaterial>(gltfResource.materials[i]);
-            pbr.baseColor.a = 0.2;
-            pbr.isTransparent = true;
-            pbr.renderFace = RenderFace.Double;
+    .load([
+        {
+            url: "https://gw.alipayobjects.com/os/bmw-prod/ca50859b-d736-4a3e-9fc3-241b0bd2afef.gltf",
+            type: AssetType.Prefab
+        },
+        {
+            url: "https://gw.alipayobjects.com/os/bmw-prod/5e3c1e4e-496e-45f8-8e05-f89f2bd5e4a4.glb",
+            type: AssetType.Prefab
         }
+    ])
+    .then((resources: Object[]) => {
+        const sponza = <GLTFResource>resources[0];
+        rootEntity.addChild(sponza.defaultSceneRoot);
 
-        // // Create Cube
-        // const sceneEntity = rootEntity.createChild();
-        // const renderer = sceneEntity.addComponent(MeshRenderer);
-        // // const mesh = PrimitiveMesh.createCuboid(engine, 2, 2, 2);
-        // // const mesh = PrimitiveMesh.createCone(engine, 2, 2, 20);
-        // // const mesh = PrimitiveMesh.createSphere(engine, 2, 20);
-        // // const mesh = PrimitiveMesh.createCylinder(engine, 2, 2, 5, 20, 20);
-        // // const mesh = PrimitiveMesh.createTorus(engine);
-        // const mesh = PrimitiveMesh.createCapsule(engine, 2, 5, 20);
-        // const mtl = new BlinnPhongMaterial(engine);
-        // mtl.isTransparent = true;
-        // mtl.baseColor.set(1,0.5,0.5,0.2);
-        // renderer.setMaterial(mtl);
-        // renderer.mesh = mesh;
-        // sketch.addEntity(sceneEntity);
+        const human = <GLTFResource>resources[1];
+        const {animations, defaultSceneRoot} = human;
+        human.defaultSceneRoot.transform.setPosition(-3, 0, 0);
+        human.defaultSceneRoot.transform.setRotation(0, 90, 0);
+        rootEntity.addChild(human.defaultSceneRoot);
 
         engine.resourceManager
             .load<AmbientLight>({
@@ -158,6 +173,37 @@ engine.resourceManager
                 openDebug();
                 engine.run();
             })
-
-
     });
+
+// engine.resourceManager
+//     .load<GLTFResource>("https://gw.alipayobjects.com/os/bmw-prod/5e3c1e4e-496e-45f8-8e05-f89f2bd5e4a4.glb")
+//     .then((gltfResource) => {
+//         const {animations, defaultSceneRoot} = gltfResource;
+//         rootEntity.addChild(defaultSceneRoot);
+// const animator = defaultSceneRoot.getComponent(Animator);
+// const animationNames = animations.filter((clip) => !clip.name.includes("pose")).map((clip) => clip.name);
+// animator.play(animationNames[3]);
+
+// for (let i = 0; i < gltfResource.materials.length; i++) {
+//     const pbr = <PBRMaterial>(gltfResource.materials[i]);
+//     pbr.baseColor.a = 0.2;
+//     pbr.isTransparent = true;
+//     pbr.renderFace = RenderFace.Double;
+// }
+
+// // Create Cube
+// const sceneEntity = rootEntity.createChild();
+// const renderer = sceneEntity.addComponent(MeshRenderer);
+// // const mesh = PrimitiveMesh.createCuboid(engine, 2, 2, 2);
+// // const mesh = PrimitiveMesh.createCone(engine, 2, 2, 20);
+// // const mesh = PrimitiveMesh.createSphere(engine, 2, 20);
+// // const mesh = PrimitiveMesh.createCylinder(engine, 2, 2, 5, 20, 20);
+// // const mesh = PrimitiveMesh.createTorus(engine);
+// const mesh = PrimitiveMesh.createCapsule(engine, 2, 5, 20);
+// const mtl = new BlinnPhongMaterial(engine);
+// mtl.isTransparent = true;
+// mtl.baseColor.set(1,0.5,0.5,0.2);
+// renderer.setMaterial(mtl);
+// renderer.mesh = mesh;
+// sketch.addEntity(sceneEntity);
+// });
