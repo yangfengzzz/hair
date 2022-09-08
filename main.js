@@ -9,4 +9,4 @@
 
 // import "./src/GridApp";
 
-import "./src/sketch/GeometryApp"
+import "./src/sketch/SketchApp"
