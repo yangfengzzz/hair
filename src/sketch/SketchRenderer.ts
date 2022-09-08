@@ -46,6 +46,10 @@ export class SketchRenderer extends SkinnedMeshRenderer {
     /**
      * Line scale
      */
+    get scale(): number {
+        return this.shaderData.getFloat(SketchRenderer._lineScaleProp);
+    }
+
     set scale(value: number) {
         this.shaderData.setFloat(SketchRenderer._lineScaleProp, value);
     }

@@ -1,6 +1,7 @@
 import {
     AmbientLight,
-    AssetType, BlinnPhongMaterial,
+    AssetType,
+    BlinnPhongMaterial,
     Camera,
     Color,
     DirectLight,
@@ -8,15 +9,16 @@ import {
     ModelMesh,
     PBRMaterial,
     PointerButton,
-    Script, SkinnedMeshRenderer,
+    Script,
+    SkinnedMeshRenderer,
     Vector3,
     WebGLEngine
 } from "oasis-engine";
 import {OrbitControl} from "@oasis-engine-toolkit/controls";
 import {FramebufferPicker} from "@oasis-engine-toolkit/framebuffer-picker";
 import {SketchRenderer} from "./SketchRenderer";
-import * as dat from "dat.gui";
 import {SketchMode} from "./SketchMode";
+import * as dat from "dat.gui";
 
 class SelectionInfo {
     mesh: ModelMesh;
@@ -39,7 +41,7 @@ class SelectionInfo {
 }
 
 class SketchSelection extends Script {
-    private _sketch: SketchRenderer;
+    sketch: SketchRenderer;
     private _framebufferPicker: FramebufferPicker;
     private _selection: SelectionInfo = new SelectionInfo();
 
@@ -49,23 +51,14 @@ class SketchSelection extends Script {
         this._framebufferPicker.camera = camera;
     }
 
-    get scale(): number {
-        return this._scale;
-    }
-
-    set scale(value: number) {
-        this._scale = value;
-        this._sketch.scale = value;
-    }
-
     onAwake(): void {
-        this._sketch = this.entity.addComponent(SketchRenderer);
+        this.sketch = this.entity.addComponent(SketchRenderer);
         this._framebufferPicker = this.entity.addComponent(FramebufferPicker);
 
     }
 
     onUpdate(): void {
-        const selection = this._selection;
+        const {_selection: selection, sketch} = this;
         const inputManager = this.engine.inputManager;
         if (inputManager.isPointerDown(PointerButton.Primary)) {
             const pointerPosition = inputManager.pointerPosition;
@@ -78,17 +71,16 @@ class SketchSelection extends Script {
 
                             const mtl = <PBRMaterial>renderElement.material;
                             selection.material = mtl;
-                            mtl.baseColor.a = 0.2;
+                            mtl.baseColor.a = 0.4;
                             mtl.isTransparent = true;
 
                             const renderer = renderElement.component;
-                            this._sketch.targetMesh = renderElement.mesh;
-                            this._sketch.worldMatrix = renderer.entity.transform.worldMatrix;
-                            this._sketch.setSketchMode(SketchMode.Wireframe, true);
+                            sketch.targetMesh = renderElement.mesh;
+                            sketch.worldMatrix = renderer.entity.transform.worldMatrix;
                             if (renderer instanceof SkinnedMeshRenderer) {
                                 // @ts-ignore
-                                this._sketch._hasInitJoints = false;
-                                this._sketch.skin = renderer.skin;
+                                sketch._hasInitJoints = false;
+                                sketch.skin = renderer.skin;
                             }
                         }
                     }
@@ -135,11 +127,19 @@ sketchSelection.camera = camera;
 
 function openDebug() {
     const info = {
+        pause: false,
         baseColor: [0, 0, 0],
-        pause: false
+        wireframeMode: false,
+        normalMode: false,
     };
 
-    gui.add(sketchSelection, "scale", 0, 1);
+    gui.add(sketchSelection.sketch, "scale", 0, 1);
+    gui.add(info, "wireframeMode").onChange((v)=>{
+        sketchSelection.sketch.setSketchMode(SketchMode.Wireframe, v);
+    });
+    gui.add(info, "normalMode").onChange((v)=>{
+        sketchSelection.sketch.setSketchMode(SketchMode.Normal, v);
+    });
 }
 
 engine.resourceManager
@@ -174,36 +174,3 @@ engine.resourceManager
                 engine.run();
             })
     });
-
-// engine.resourceManager
-//     .load<GLTFResource>("https://gw.alipayobjects.com/os/bmw-prod/5e3c1e4e-496e-45f8-8e05-f89f2bd5e4a4.glb")
-//     .then((gltfResource) => {
-//         const {animations, defaultSceneRoot} = gltfResource;
-//         rootEntity.addChild(defaultSceneRoot);
-// const animator = defaultSceneRoot.getComponent(Animator);
-// const animationNames = animations.filter((clip) => !clip.name.includes("pose")).map((clip) => clip.name);
-// animator.play(animationNames[3]);
-
-// for (let i = 0; i < gltfResource.materials.length; i++) {
-//     const pbr = <PBRMaterial>(gltfResource.materials[i]);
-//     pbr.baseColor.a = 0.2;
-//     pbr.isTransparent = true;
-//     pbr.renderFace = RenderFace.Double;
-// }
-
-// // Create Cube
-// const sceneEntity = rootEntity.createChild();
-// const renderer = sceneEntity.addComponent(MeshRenderer);
-// // const mesh = PrimitiveMesh.createCuboid(engine, 2, 2, 2);
-// // const mesh = PrimitiveMesh.createCone(engine, 2, 2, 20);
-// // const mesh = PrimitiveMesh.createSphere(engine, 2, 20);
-// // const mesh = PrimitiveMesh.createCylinder(engine, 2, 2, 5, 20, 20);
-// // const mesh = PrimitiveMesh.createTorus(engine);
-// const mesh = PrimitiveMesh.createCapsule(engine, 2, 5, 20);
-// const mtl = new BlinnPhongMaterial(engine);
-// mtl.isTransparent = true;
-// mtl.baseColor.set(1,0.5,0.5,0.2);
-// renderer.setMaterial(mtl);
-// renderer.mesh = mesh;
-// sketch.addEntity(sceneEntity);
-// });
