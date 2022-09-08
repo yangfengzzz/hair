@@ -5,10 +5,10 @@ import {
     Camera,
     Color,
     DirectLight,
-    GLTFResource,
+    GLTFResource, MeshRenderer,
     ModelMesh,
     PBRMaterial,
-    PointerButton,
+    PointerButton, PrimitiveMesh,
     Script,
     SkinnedMeshRenderer,
     Vector3,
@@ -19,6 +19,15 @@ import {FramebufferPicker} from "@oasis-engine-toolkit/framebuffer-picker";
 import {SketchRenderer} from "./SketchRenderer";
 import {SketchMode} from "./SketchMode";
 import * as dat from "dat.gui";
+
+class Rotation extends Script {
+    private _total = 0;
+
+    onUpdate(deltaTime: number) {
+        this._total += deltaTime / 10;
+        this.entity.transform.setRotation(this._total, this._total / 4, -this._total / 2);
+    }
+}
 
 class SelectionInfo {
     mesh: ModelMesh;
@@ -104,8 +113,8 @@ const rootEntity = scene.createRootEntity("root");
 
 // Init Camera
 const cameraEntity = rootEntity.createChild("camera_entity");
-cameraEntity.transform.setPosition(6, 5, 0);
-cameraEntity.transform.lookAt(new Vector3(0, 3, 0));
+cameraEntity.transform.setPosition(7, 1, -0.5);
+cameraEntity.transform.lookAt(new Vector3(0, 1, -0.5));
 const camera = cameraEntity.addComponent(Camera);
 camera.enableFrustumCulling = false;
 camera.farClipPlane = 1000;
@@ -163,6 +172,23 @@ engine.resourceManager
         }
     ])
     .then((resources: Object[]) => {
+        const primitiveEntity = rootEntity.createChild();
+        primitiveEntity.addComponent(Rotation);
+        primitiveEntity.transform.setPosition(-7, 4, 0);
+        const renderer = primitiveEntity.addComponent(MeshRenderer);
+        // const mesh = PrimitiveMesh.createCuboid(engine, 2, 2, 2);
+        // const mesh = PrimitiveMesh.createCone(engine, 2, 2, 20);
+        // const mesh = PrimitiveMesh.createSphere(engine, 2, 20);
+        const mesh = PrimitiveMesh.createCylinder(engine, 0.5, 0.5, 1, 20, 20);
+        // const mesh = PrimitiveMesh.createTorus(engine);
+        // const mesh = PrimitiveMesh.createCapsule(engine, 0.5, 1, 20);
+        const mtl = new PBRMaterial(engine);
+        mtl.baseColor.set(1, 1, 1, 1.0);
+        mtl.metallic = 0.5;
+        mtl.roughness = 0.5;
+        renderer.setMaterial(mtl);
+        renderer.mesh = mesh;
+
         const sponza = <GLTFResource>resources[0];
         rootEntity.addChild(sponza.defaultSceneRoot);
 
