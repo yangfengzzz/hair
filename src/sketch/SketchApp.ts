@@ -22,10 +22,13 @@ import * as dat from "dat.gui";
 
 class Rotation extends Script {
     private _total = 0;
+    pause = false;
 
     onUpdate(deltaTime: number) {
-        this._total += deltaTime / 10;
-        this.entity.transform.setRotation(this._total, this._total / 4, -this._total / 2);
+        if (!this.pause) {
+            this._total += deltaTime / 10;
+            this.entity.transform.setRotation(this._total, this._total / 4, -this._total / 2);
+        }
     }
 }
 
@@ -131,6 +134,7 @@ const sketchSelection = rootEntity.addComponent(SketchSelection);
 sketchSelection.camera = camera;
 
 let animator: Animator = null;
+let rotation: Rotation = null;
 
 function openDebug() {
     const info = {
@@ -148,8 +152,10 @@ function openDebug() {
     gui.add(info, "pause").onChange((v) => {
         if (v) {
             animator && (animator.speed = 0);
+            rotation && (rotation.pause = true);
         } else {
             animator && (animator.speed = 1);
+            rotation && (rotation.pause = false);
         }
     });
     gui.add(sketchSelection.sketch, "scale", 0, 2);
@@ -194,7 +200,7 @@ engine.resourceManager
     ])
     .then((resources: Object[]) => {
         const primitiveEntity = rootEntity.createChild();
-        primitiveEntity.addComponent(Rotation);
+        rotation = primitiveEntity.addComponent(Rotation);
         primitiveEntity.transform.setPosition(-7, 4, 0);
         const renderer = primitiveEntity.addComponent(MeshRenderer);
         // const mesh = PrimitiveMesh.createCuboid(engine, 2, 2, 2);

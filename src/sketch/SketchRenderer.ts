@@ -294,7 +294,7 @@ export class SketchRenderer extends SkinnedMeshRenderer {
                 } else if (jointIndexBegin !== -1 && j === jointIndexBegin + 3) {
                     alignBuffer[i * alignElementCount + j] = uint8Buffer[i * elementCount * 4 + jointIndexBegin * 4 + 3];
                 } else {
-                    if (j > jointIndexBegin + 3) {
+                    if (jointIndexBegin !== -1 && j > jointIndexBegin + 3) {
                         alignBuffer[i * alignElementCount + j] = buffer[i * elementCount + j - 3];
                     } else {
                         alignBuffer[i * alignElementCount + j] = buffer[i * elementCount + j];
