@@ -54,10 +54,8 @@ class SketchSelection extends Script {
     private _framebufferPicker: FramebufferPicker;
     private _selection: SelectionInfo = new SelectionInfo();
 
-    private _scale: number = 0.02;
-
     set camera(value: Camera) {
-        this._framebufferPicker.camera = camera;
+        this._framebufferPicker.camera = value;
     }
 
     onAwake(): void {
@@ -80,12 +78,14 @@ class SketchSelection extends Script {
 
                             const mtl = <PBRMaterial>renderElement.material;
                             selection.material = mtl;
-                            mtl.baseColor.a = 0.4;
+                            mtl.baseColor.a = 0.6;
                             mtl.isTransparent = true;
 
                             const renderer = renderElement.component;
                             sketch.targetMesh = renderElement.mesh;
                             sketch.worldMatrix = renderer.entity.transform.worldMatrix;
+                            sketch.skin = null;
+                            sketch.shaderData.disableMacro("O3_HAS_SKIN");
                             if (renderer instanceof SkinnedMeshRenderer) {
                                 // @ts-ignore
                                 sketch._hasInitJoints = false;
@@ -113,8 +113,8 @@ const rootEntity = scene.createRootEntity("root");
 
 // Init Camera
 const cameraEntity = rootEntity.createChild("camera_entity");
-cameraEntity.transform.setPosition(7, 1, -0.5);
-cameraEntity.transform.lookAt(new Vector3(0, 1, -0.5));
+cameraEntity.transform.setPosition(7, 2, -0.5);
+cameraEntity.transform.lookAt(new Vector3(0, 2, -0.5));
 const camera = cameraEntity.addComponent(Camera);
 camera.enableFrustumCulling = false;
 camera.farClipPlane = 1000;

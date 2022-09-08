@@ -48,10 +48,9 @@ void main() {
     #include <begin_position_vert>
     #include <begin_normal_vert>
     #include <skinning_vert>
-    #include <normal_vert>
 
     if (gl_VertexID % 2 == 1) {
-        position.xyz += v_normal * u_lineScale;
+        position.xyz += normal * u_lineScale;
     }
     
     gl_Position = position;
