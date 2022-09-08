@@ -1,5 +1,5 @@
 import {
-    AmbientLight,
+    AmbientLight, Animator,
     AssetType,
     BlinnPhongMaterial,
     Camera,
@@ -126,6 +126,8 @@ lightEntity.transform.rotation = new Vector3(45, 45, 45);
 const sketchSelection = rootEntity.addComponent(SketchSelection);
 sketchSelection.camera = camera;
 
+let animator: Animator = null;
+
 function openDebug() {
     const info = {
         pause: false,
@@ -133,6 +135,13 @@ function openDebug() {
         normalMode: false,
     };
 
+    gui.add(info, "pause").onChange((v) => {
+        if (v) {
+            animator && (animator.speed = 0);
+        } else {
+            animator && (animator.speed = 1);
+        }
+    });
     gui.add(sketchSelection.sketch, "scale", 0, 1);
     gui.add(info, "wireframeMode").onChange((v) => {
         sketchSelection.sketch.setSketchMode(SketchMode.Wireframe, v);
@@ -162,6 +171,10 @@ engine.resourceManager
         human.defaultSceneRoot.transform.setPosition(-3, 0, 0);
         human.defaultSceneRoot.transform.setRotation(0, 90, 0);
         rootEntity.addChild(human.defaultSceneRoot);
+
+        animator = defaultSceneRoot.getComponent(Animator);
+        const animationNames = animations.filter((clip) => !clip.name.includes("pose")).map((clip) => clip.name);
+        animator.play(animationNames[3]);
 
         engine.resourceManager
             .load<AmbientLight>({
