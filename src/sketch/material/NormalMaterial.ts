@@ -84,6 +84,6 @@ export class NormalMaterial extends BaseMaterial {
 
     constructor(engine: Engine) {
         super(engine, Shader.find("normalShader"));
-        this.shaderData.setColor(NormalMaterial._baseColorProp, new Color(1, 1, 1, 1));
+        this.shaderData.setColor(NormalMaterial._baseColorProp, new Color(1, 0, 0, 1));
     }
 }

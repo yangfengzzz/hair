@@ -94,6 +94,8 @@ export class SketchRenderer extends SkinnedMeshRenderer {
         this.mesh = new ModelMesh(engine);
         this._wireframeMaterial = new WireframeMaterial(engine);
         this._normalMaterial = new NormalMaterial(engine);
+        
+        this.scale = 0.02;
     }
 
     /**
@@ -112,7 +114,7 @@ export class SketchRenderer extends SkinnedMeshRenderer {
                 break;
             case SketchMode.Normal:
                 if (isShow) {
-                    this.setMaterial(1, this._wireframeMaterial);
+                    this.setMaterial(1, this._normalMaterial);
                 } else {
                     this.setMaterial(1, null);
                 }

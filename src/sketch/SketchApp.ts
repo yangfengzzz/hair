@@ -54,7 +54,7 @@ class SketchSelection extends Script {
                         const renderer = renderElement.component;
                         this._sketch.targetMesh = renderElement.mesh;
                         this._sketch.worldMatrix = renderer.entity.transform.worldMatrix;
-                        this._sketch.setSketchMode(SketchMode.Wireframe, true);
+                        this._sketch.setSketchMode(SketchMode.Normal, true);
                         this._sketch.wireframeMaterial.baseColor.set(0, 0, 0, 1);
                         if (renderer instanceof SkinnedMeshRenderer) {
                             // @ts-ignore
