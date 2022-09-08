@@ -51,19 +51,20 @@ void main() {
 
 #if defined(SHOW_NORMAL) && defined(O3_HAS_NORMAL)
     if (gl_VertexID % 2 == 1) {
-        position.xyz += normal * u_lineScale;
+        position.xyz += normalize(normal) * u_lineScale;
     }
 #endif
 
 #if defined(SHOW_TANGENT) && defined(O3_HAS_TANGENT)
     if (gl_VertexID % 2 == 1) {
-        position.xyz += normal * u_lineScale;
+        position.xyz += normalize(tangent.xyz) * u_lineScale;
     }
 #endif
 
 #if defined(SHOW_BITANGENT) && defined(O3_HAS_TANGENT) && defined(O3_HAS_NORMAL)
     if (gl_VertexID % 2 == 1) {
-        position.xyz += normal * u_lineScale;
+        vec3 bitangent = cross( normal, tangent.xyz ) * tangent.w;
+        position.xyz += normalize(bitangent) * u_lineScale;
     }
 #endif
 
