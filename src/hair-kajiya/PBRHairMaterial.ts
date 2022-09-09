@@ -177,7 +177,12 @@ export class PBRHairMaterial extends PBRBaseMaterial {
         const shaderData = this.shaderData;
         shaderData.setColor(PBRHairMaterial._primaryColorProp, new Color(1, 1, 1, 1));
         shaderData.setColor(PBRHairMaterial._secondaryColorProp, new Color(1, 1, 1, 1));
-        shaderData.setFloat(PBRHairMaterial._specPowerProp, 16);
+        shaderData.setFloat(PBRHairMaterial._specPowerProp, 64);
+        shaderData.setFloat(PBRHairMaterial._specularScaleProp, 1);
+        shaderData.setFloat(PBRHairMaterial._specularWidthProp, 1);
+        shaderData.setFloat(PBRHairMaterial._specularShiftProp, 0);
+        shaderData.setFloat(PBRHairMaterial._primaryShiftProp, 0);
+        shaderData.setFloat(PBRHairMaterial._secondaryShiftProp, 0);
 
         shaderData.setFloat(PBRHairMaterial._metallicProp, 1);
         shaderData.setFloat(PBRHairMaterial._roughnessProp, 1);

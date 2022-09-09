@@ -55,7 +55,7 @@ export class ViewerTest extends ViewerBase {
 
     rotate: RotateY = null;
     specularShiftTexture: Texture2D = null;
-    hairMaterial: PBRHairMaterial = null;
+    hairMaterial = new PBRHairMaterial(this.engine);
     hairFolder = null;
 
     onAwake() {
@@ -63,9 +63,6 @@ export class ViewerTest extends ViewerBase {
         this.sketchSelection = this.entity.addComponent(SketchSelection);
         this.sketchSelection.camera = this.camera;
         this._addSketchGUI();
-
-        this.hairMaterial = new PBRHairMaterial(this.engine);
-        this._addHairGUI();
     }
 
     /**
@@ -103,6 +100,7 @@ export class ViewerTest extends ViewerBase {
             hairMaterial.secondaryColor.set(1, 1, 1, 1);
             hairMaterial.secondaryShift = 0.25;
             renderer.setMaterial(hairMaterial);
+            this._addHairGUI();
         } else {
             console.log("dont' find hair entity")
         }
@@ -178,6 +176,7 @@ export class ViewerTest extends ViewerBase {
             .then((shift) => {
                 this.specularShiftTexture = shift;
                 this.textures["defaultHairShift"] = shift;
+                this._addHairGUI();
             })
     }
 
@@ -211,20 +210,20 @@ export class ViewerTest extends ViewerBase {
 
         const hairMaterial = this.hairMaterial;
         const folder = (this.hairFolder = gui.addFolder("Hair"));
-        const folderName = {};
-        if (!hairMaterial.name) {
-            hairMaterial.name = "default";
-        }
 
         const state = {
+            primaryColor: ViewerBase.colorToGui(hairMaterial.primaryColor),
+            secondaryColor: ViewerBase.colorToGui(hairMaterial.secondaryColor),
+            shiftTexture: hairMaterial.specularShiftTexture ? "defaultHairShift" : "",
+
             opacity: hairMaterial.baseColor.a,
             baseColor: ViewerBase.colorToGui(hairMaterial.baseColor),
             emissiveColor: ViewerBase.colorToGui(hairMaterial.emissiveColor),
             baseTexture: hairMaterial.baseTexture ? "origin" : "",
             roughnessMetallicTexture: hairMaterial.roughnessMetallicTexture ? "origin" : "",
-            normalTexture: (hairMaterial as PBRBaseMaterial).normalTexture ? "origin" : "",
-            emissiveTexture: (hairMaterial as PBRBaseMaterial).emissiveTexture ? "origin" : "",
-            occlusionTexture: (hairMaterial as PBRBaseMaterial).occlusionTexture ? "origin" : "",
+            normalTexture: hairMaterial.normalTexture ? "origin" : "",
+            emissiveTexture: hairMaterial.emissiveTexture ? "origin" : "",
+            occlusionTexture: hairMaterial.occlusionTexture ? "origin" : "",
         };
 
         const originTexture = {
@@ -235,14 +234,8 @@ export class ViewerTest extends ViewerBase {
             occlusionTexture: hairMaterial.occlusionTexture,
         };
 
-        const f = folder.addFolder(
-            folderName[hairMaterial.name] ? `${hairMaterial.name}_${folderName[hairMaterial.name] + 1}` : hairMaterial.name
-        );
-
-        folderName[hairMaterial.name] = folderName[hairMaterial.name] == null ? 1 : folderName[hairMaterial.name] + 1;
-
         // metallic
-        const mode1 = f.addFolder("Metallic-Roughness props");
+        const mode1 = folder.addFolder("Metallic-Roughness props");
         mode1.add(hairMaterial, "metallic", 0, 1).step(0.01);
         mode1.add(hairMaterial, "roughness", 0, 1).step(0.01);
         mode1
@@ -251,11 +244,10 @@ export class ViewerTest extends ViewerBase {
                 hairMaterial.roughnessMetallicTexture =
                     v === "None" ? null : this.textures[v] || originTexture.roughnessMetallicTexture;
             });
-        mode1.open();
 
 
         // common
-        const common = f.addFolder("Common props");
+        const common = folder.addFolder("Common props");
         common
             .add(state, "opacity", 0, 1)
             .step(0.01)
@@ -283,7 +275,24 @@ export class ViewerTest extends ViewerBase {
         common.add(state, "occlusionTexture", ["None", "origin", ...Object.keys(this.textures)]).onChange((v) => {
             hairMaterial.occlusionTexture = v === "None" ? null : this.textures[v] || originTexture.occlusionTexture;
         });
-        common.open();
+
+        // common
+        const specularFolder = folder.addFolder("Specular props");
+        specularFolder.add(hairMaterial, "specularWidth", 0, 1);
+        specularFolder.add(hairMaterial, "specularScale", 0, 1);
+        specularFolder.add(hairMaterial, "specularPower", 0, 100);
+        specularFolder.add(hairMaterial, "primaryShift", -1, 1);
+        specularFolder.addColor(state, "primaryColor").onChange((v) => {
+            hairMaterial.primaryColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
+        });
+        specularFolder.add(hairMaterial, "secondaryShift", -1, 1);
+        specularFolder.addColor(state, "secondaryColor").onChange((v) => {
+            hairMaterial.secondaryColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
+        });
+        specularFolder.add(state, "shiftTexture", ["None", "defaultHairShift", ...Object.keys(this.textures)]).onChange((v) => {
+            hairMaterial.specularShiftTexture = v === "None" ? null : this.textures[v] || originTexture.occlusionTexture;
+        });
+        specularFolder.open();
 
         folder.open();
     }
