@@ -8,7 +8,7 @@ import {
     PBRSpecularMaterial, Renderer,
     Script, SkyBoxMaterial,
     Texture2D,
-    UnlitMaterial, Vector3
+    UnlitMaterial, Vector3, WebGLEngine
 } from "oasis-engine";
 import * as dat from "dat.gui";
 import {OrbitControl} from "@oasis-engine-toolkit/controls";
@@ -81,6 +81,9 @@ export abstract class ViewerBase extends Script {
 
         this.initScene();
         this._addSceneGUI();
+        window.onresize = () => {
+            (<WebGLEngine>this.engine).canvas.resizeByClientSize();
+        };
     }
 
     private _loadFileMaps(files: Map<string, File>) {
