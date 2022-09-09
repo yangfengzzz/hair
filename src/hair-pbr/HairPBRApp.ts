@@ -131,16 +131,16 @@ function openDebug() {
         rotate.pause = !!v;
     });
 
-    gui.add(hairMaterial, "anisotropy", -1, 1);
-    gui.add(info, "anisotropyDirectionX").onChange((v) => {
-        hairMaterial.anisotropyDirection.x = v;
-    });
-    gui.add(info, "anisotropyDirectionY").onChange((v) => {
-        hairMaterial.anisotropyDirection.y = v;
-    });
-    gui.add(info, "anisotropyDirectionZ").onChange((v) => {
-        hairMaterial.anisotropyDirection.z = v;
-    });
+    // gui.add(hairMaterial, "anisotropy", -1, 1);
+    // gui.add(info, "anisotropyDirectionX").onChange((v) => {
+    //     hairMaterial.anisotropyDirection.x = v;
+    // });
+    // gui.add(info, "anisotropyDirectionY").onChange((v) => {
+    //     hairMaterial.anisotropyDirection.y = v;
+    // });
+    // gui.add(info, "anisotropyDirectionZ").onChange((v) => {
+    //     hairMaterial.anisotropyDirection.z = v;
+    // });
     gui.addColor(info, "baseColor").onChange((v) => {
         hairMaterial.baseColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1);
     });

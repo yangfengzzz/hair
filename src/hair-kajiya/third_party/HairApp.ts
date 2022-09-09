@@ -81,13 +81,13 @@ Promise.all([
             ambientLight.diffuseIntensity = 0.1;
         }),
     engine.resourceManager
-        .load<Texture2D>("http://30.46.128.43:8000/shift.png")
+        .load<Texture2D>("http://30.46.128.39:8000/shift.png")
         .then((shift) => {
             engine.resourceManager
                 .load<Texture2D>("https://gw.alipayobjects.com/zos/OasisHub/676000145/7692/Hair_01_Gray.png")
                 .then((hair) => {
                     engine.resourceManager
-                        .load<Texture2D>("http://30.46.128.43:8000/Hair_01N.png")
+                        .load<Texture2D>("http://30.46.128.39:8000/Hair_01N.png")
                         .then((normal) => {
                             hairMaterial.isTransparent = true;
                             hairMaterial.tilingOffset.set(1, 1, 0, -0.015);
