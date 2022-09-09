@@ -52,7 +52,7 @@ export abstract class ViewerBase extends Script {
     };
 
     // resource
-    skyMaterial: SkyBoxMaterial;
+    skyMaterial: SkyBoxMaterial = new SkyBoxMaterial(this.engine);
     materials: Material[] = [];
     textures: Record<string, Texture2D> = {};
     env: Record<string, AmbientLight> = {};
@@ -81,6 +81,7 @@ export abstract class ViewerBase extends Script {
             this._loadFileMaps(files);
         });
 
+        this._loadEnv(this.state.env);
         this.initScene();
         this._addSceneGUI();
         window.onresize = () => {
