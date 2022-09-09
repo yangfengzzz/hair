@@ -39,9 +39,18 @@ class SelectionInfo {
 
 export class SketchSelection extends Script {
     sketch: SketchRenderer;
-    specificEntity: Entity = null;
+    private _specificEntity: Entity = null;
     private _framebufferPicker: FramebufferPicker;
     private _selection: SelectionInfo = new SelectionInfo();
+
+    get specificEntity(): Entity {
+        return this._specificEntity;
+    }
+
+    set specificEntity(value: Entity) {
+        this._specificEntity = value;
+        this.sketch.targetMesh = null;
+    }
 
     set camera(value: Camera) {
         this._framebufferPicker.camera = value;

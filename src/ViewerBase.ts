@@ -388,8 +388,6 @@ export abstract class ViewerBase extends Script {
                 common.open();
             }
         });
-
-        folder.open();
     }
 
     private _addAnimationGUI(animations: AnimationClip[]) {

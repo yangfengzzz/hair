@@ -80,6 +80,13 @@ export class SketchRenderer extends SkinnedMeshRenderer {
      * Target mesh
      */
     set targetMesh(value: ModelMesh) {
+        if (value == null) {
+            this._targetMesh = null;
+            this._triangleSubMesh.count = 0;
+            this._lineSubMesh.count = 0;
+            return;
+        }
+
         if (value !== this._targetMesh) {
             this._destroy();
             this._targetMesh = value;

@@ -42,7 +42,7 @@ export class ViewerTest extends ViewerBase {
 
     sketchSelection: SketchSelection = null;
     sketchState = {
-        wireframeMode: true,
+        wireframeMode: false,
         wireframeBaseColor: [0, 0, 0],
         normalMode: false,
         normalColor: [255, 0, 0],
@@ -219,6 +219,7 @@ export class ViewerTest extends ViewerBase {
         const folder = (this.hairFolder = gui.addFolder("Hair"));
 
         const state = {
+            pause: true,
             primaryColor: ViewerBase.colorToGui(hairMaterial.primaryColor),
             secondaryColor: ViewerBase.colorToGui(hairMaterial.secondaryColor),
             shiftTexture: hairMaterial.specularShiftTexture ? "defaultHairShift" : "",
@@ -285,6 +286,9 @@ export class ViewerTest extends ViewerBase {
 
         // common
         const specularFolder = folder.addFolder("Specular props");
+        specularFolder.add(state, "pause").onChange((v) => {
+            this.rotate.pause = !!v;
+        });
         specularFolder.add(hairMaterial, "specularWidth", 0, 1);
         specularFolder.add(hairMaterial, "specularScale", 0, 1);
         specularFolder.add(hairMaterial, "specularPower", 0, 100);
@@ -339,7 +343,7 @@ export class ViewerTest extends ViewerBase {
         this.sketchFolder.addColor(this.sketchState, "bitangentColor").onChange((v) => {
             this.sketchSelection.sketch.biTangentMaterial.baseColor.set(v[0] / 255, v[1] / 255, v[2] / 255, 1.0);
         });
-
+        this.sketchFolder.open();
     }
 }
 
