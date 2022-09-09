@@ -1,5 +1,5 @@
+import {BackgroundMode, Color, DirectLight, Entity, PrimitiveMesh, WebGLEngine} from "oasis-engine";
 import {ViewerBase} from "./ViewerBase";
-import {WebGLEngine, Color, BackgroundMode, PrimitiveMesh, DirectLight, Entity} from "oasis-engine";
 import {SketchMode, SketchSelection} from "./sketch";
 
 export class ViewerTest extends ViewerBase {
@@ -35,6 +35,9 @@ export class ViewerTest extends ViewerBase {
         this._addSketchGUI();
     }
 
+    /**
+     * @override
+     */
     initScene() {
         (<WebGLEngine>this.engine).canvas.resizeByClientSize();
         this.controller.minDistance = 0;
@@ -54,6 +57,9 @@ export class ViewerTest extends ViewerBase {
         this.scene.background.sky.mesh = PrimitiveMesh.createCuboid(this.engine, 1, 1, 1);
     }
 
+    /**
+     * @override
+     */
     sceneGUI(lightFolder) {
         this.lightFolder.add(this.lightState, "lights").onChange((v) => {
             this.light1.enabled = this.light2.enabled = v;
@@ -109,3 +115,12 @@ export class ViewerTest extends ViewerBase {
 
     }
 }
+
+const engine = new WebGLEngine("canvas");
+engine.canvas.resizeByClientSize();
+
+const scene = engine.sceneManager.activeScene;
+const rootEntity = scene.createRootEntity();
+rootEntity.addComponent(ViewerTest);
+
+engine.run();

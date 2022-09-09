@@ -72,6 +72,8 @@ export abstract class ViewerBase extends Script {
 
     abstract sceneGUI(lightFolder);
 
+    gltfProcess(gltf: GLTFResource) {}
+
     //------------------------------------------------------------------------------------------------------------------
     onAwake() {
         this.gltfRootEntity = this.entity.createChild("gltf");
@@ -207,6 +209,8 @@ export abstract class ViewerBase extends Script {
         console.log(asset);
         this.gltfRootEntity = defaultSceneRoot;
         this.entity.addChild(defaultSceneRoot);
+
+        this.gltfProcess(asset);
 
         const meshRenderers = [];
         defaultSceneRoot.getComponentsIncludeChildren(MeshRenderer, meshRenderers);
