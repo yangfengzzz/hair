@@ -75,6 +75,7 @@ export class ViewerTest extends ViewerBase {
         const hairMaterial = this.hairMaterial;
         const hair = this._findHair(gltfRootEntity);
         if (hair) {
+            this.sketchSelection.specificEntity = hair;
             const renderer = hair.getComponent(MeshRenderer);
             const material = <PBRMaterial>renderer.getMaterial();
 

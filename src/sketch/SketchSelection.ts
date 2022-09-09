@@ -1,6 +1,7 @@
 import {
     BlinnPhongMaterial,
     Camera,
+    Entity,
     ModelMesh,
     PBRMaterial,
     PointerButton,
@@ -24,7 +25,13 @@ class SelectionInfo {
         this._isTransparent = value.isTransparent;
     }
 
-    restore() {
+    setSelectedState() {
+        const material = this._material;
+        material && (material.baseColor.a = 0.6);
+        material && (material.isTransparent = true);
+    }
+
+    setOriginState() {
         const material = this._material;
         material && (material.baseColor.a = this._alpha);
         material && (material.isTransparent = this._isTransparent);
@@ -33,6 +40,7 @@ class SelectionInfo {
 
 export class SketchSelection extends Script {
     sketch: SketchRenderer;
+    specificEntity: Entity = null;
     private _framebufferPicker: FramebufferPicker;
     private _selection: SelectionInfo = new SelectionInfo();
 
@@ -53,15 +61,16 @@ export class SketchSelection extends Script {
             const pointerPosition = inputManager.pointerPosition;
             this._framebufferPicker.pick(pointerPosition.x, pointerPosition.y).then((renderElement) => {
                 if (renderElement) {
+                    if (this.specificEntity !== null && renderElement.component.entity !== this.specificEntity) {
+                        return;
+                    }
                     if (renderElement.mesh instanceof ModelMesh) {
                         if (selection.mesh !== renderElement.mesh) {
-                            selection.restore();
+                            selection.setOriginState();
                             selection.mesh = renderElement.mesh;
 
-                            const mtl = <PBRMaterial>renderElement.material;
-                            selection.material = mtl;
-                            mtl.baseColor.a = 0.6;
-                            mtl.isTransparent = true;
+                            selection.material = <PBRMaterial>renderElement.material;
+                            selection.setSelectedState();
 
                             const renderer = renderElement.component;
                             sketch.targetMesh = renderElement.mesh;
@@ -73,8 +82,12 @@ export class SketchSelection extends Script {
                                 sketch._hasInitJoints = false;
                                 sketch.skin = renderer.skin;
                             }
+                        } else {
+                            selection.setSelectedState();
                         }
                     }
+                } else {
+                    selection.setOriginState();
                 }
             });
         }
