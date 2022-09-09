@@ -1,12 +1,11 @@
 import {WebGLEngine} from "oasis-engine";
-import {Viewer} from "./Viewer";
+import {ViewerTest} from "./ViewerTest";
 
 const engine = new WebGLEngine("canvas");
 engine.canvas.resizeByClientSize();
 
 const scene = engine.sceneManager.activeScene;
 const rootEntity = scene.createRootEntity();
-
-const viewer = rootEntity.addComponent(Viewer);
+rootEntity.addComponent(ViewerTest);
 
 engine.run();
