@@ -7,7 +7,6 @@ import {
     Logger,
     MeshRenderer,
     Script,
-    Shader,
     Texture2D,
     WebGLEngine,
     AmbientLight,
@@ -22,10 +21,6 @@ import {SimpleDropzone} from "simple-dropzone";
 
 Logger.enable();
 const gui = new dat.GUI();
-
-const dropEl = document.querySelector('#dropzone');
-const inputEl = document.querySelector('#input');
-const dropCtrl = new SimpleDropzone(dropEl, inputEl);
 
 //-- create engine object
 const engine = new WebGLEngine("canvas");
@@ -83,6 +78,9 @@ let specularShiftTexture: Texture2D = null;
 let rotate: RotateY = null;
 let gltfRootEntity: Entity = null;
 
+const dropEl = document.querySelector('#dropzone');
+const inputEl = document.querySelector('#input');
+const dropCtrl = new SimpleDropzone(dropEl, inputEl);
 dropCtrl.on('drop', ({files}) => {
     loadFileMaps(files);
 });
@@ -153,7 +151,7 @@ function addTexture(name: string, url: string) {
 }
 
 function loadModel(url: string, filesMap: Record<string, string>, type: "gltf" | "glb") {
-    destoryGLTF();
+    destroyGLTF();
 
     // replace relative path
     if (type.toLowerCase() === "gltf") {
@@ -205,7 +203,7 @@ function loadModel(url: string, filesMap: Record<string, string>, type: "gltf" |
     }
 }
 
-function destoryGLTF() {
+function destroyGLTF() {
     if (gltfRootEntity) {
         gltfRootEntity.destroy();
     }
