@@ -1,14 +1,16 @@
 import {
+    AssetType,
     BackgroundMode,
     Color,
-    DirectLight,
-    MeshRenderer,
-    PrimitiveMesh, Script,
+    DirectLight, Entity, GLTFResource,
+    MeshRenderer, PBRMaterial,
+    PrimitiveMesh, Script, Texture2D,
     UnlitMaterial,
     WebGLEngine
 } from "oasis-engine";
 import {ViewerBase} from "./ViewerBase";
 import {SketchMode, SketchSelection} from "./sketch";
+import {PBRHairMaterial} from "./hair-kajiya/PBRHairMaterial";
 
 class RotateY extends Script {
     pause = true;
@@ -51,11 +53,84 @@ export class ViewerTest extends ViewerBase {
     };
     sketchFolder = null;
 
+    specularShiftTexture: Texture2D;
+    hairMaterial = new PBRHairMaterial(this.engine);
+    rotate: RotateY = null;
+
     onAwake() {
         super.onAwake();
         this.sketchSelection = this.entity.addComponent(SketchSelection);
         this.sketchSelection.camera = this.camera;
         this._addSketchGUI();
+    }
+
+    /**
+     * @override
+     */
+    gltfProcess(gltf: GLTFResource) {
+        const gltfRootEntity = gltf.defaultSceneRoot;
+        this.rotate = gltfRootEntity.addComponent(RotateY);
+        gltfRootEntity.transform.setPosition(0, -1.5, 0);
+
+        const hairMaterial = this.hairMaterial;
+        const hair = this._findHair(gltfRootEntity);
+        if (hair) {
+            const renderer = hair.getComponent(MeshRenderer);
+            const material = <PBRMaterial>renderer.getMaterial();
+
+            hairMaterial.roughness = material.roughness;
+            hairMaterial.metallic = material.metallic;
+            hairMaterial.baseColor = material.baseColor;
+            hairMaterial.baseTexture = material.baseTexture;
+            hairMaterial.normalTexture = material.normalTexture;
+            hairMaterial.normalTextureIntensity = material.normalTextureIntensity;
+            hairMaterial.occlusionTexture = material.occlusionTexture;
+            hairMaterial.occlusionTextureIntensity = material.occlusionTextureIntensity;
+            hairMaterial.occlusionTextureCoord = material.occlusionTextureCoord;
+
+            hairMaterial.specularShiftTexture = this.specularShiftTexture;
+            hairMaterial.specularWidth = 1.0;
+            hairMaterial.specularScale = 0.15;
+            hairMaterial.specularPower = 64.0;
+
+            hairMaterial.primaryColor.set(1, 1, 1, 1);
+            hairMaterial.primaryShift = 0.25;
+            hairMaterial.secondaryColor.set(1, 1, 1, 1);
+            hairMaterial.secondaryShift = 0.25;
+            renderer.setMaterial(hairMaterial);
+        } else {
+            console.log("dont' find hair entity")
+        }
+    }
+
+    private _findHair(gltfRootEntity: Entity): Entity {
+        if (gltfRootEntity.name == "hair"
+            || gltfRootEntity.name == "Hair"
+            || gltfRootEntity.name == "hair_16"
+            || gltfRootEntity.name == "Hair_16") {
+            return gltfRootEntity;
+        }
+
+        let hair = gltfRootEntity.findByName("hair");
+        if (hair) {
+            return hair;
+        }
+
+        hair = gltfRootEntity.findByName("Hair");
+        if (hair) {
+            return hair;
+        }
+
+        hair = gltfRootEntity.findByName("hair_16");
+        if (hair) {
+            return hair;
+        }
+
+        hair = gltfRootEntity.findByName("Hair_16");
+        if (hair) {
+            return hair;
+        }
+        return null;
     }
 
     /**
@@ -89,6 +164,16 @@ export class ViewerTest extends ViewerBase {
         const purpleLightRenderer = this.purpleLightEntity.addComponent(MeshRenderer);
         purpleLightRenderer.mesh = PrimitiveMesh.createCuboid(engine, 0.01, 0.01, 0.01);
         purpleLightRenderer.setMaterial(new UnlitMaterial(engine));
+
+        engine.resourceManager
+            .load<Texture2D>({
+                type: AssetType.Texture2D,
+                url: 'https://gw.alipayobjects.com/mdn/rms_7c464e/afts/img/A*c0I7QbEzqYoAAAAAAAAAAAAAARQnAQ'
+            })
+            .then((shift) => {
+                this.specularShiftTexture = shift;
+                this.textures["default hair shift"] = shift;
+            })
     }
 
     /**
