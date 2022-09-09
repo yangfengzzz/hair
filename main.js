@@ -7,7 +7,9 @@
 // import "./src/PBRHairApp"
 // import "./src/IndirectApp";
 
-// import "./src/GridApp";
+/**---------------- Grid App --------------------------------------------------*/
+import "./src/grid/GridApp";
 
-import "./src/sketch/SketchApp"
+/**---------------- Sketch App ------------------------------------------------*/
+// import "./src/sketch/SketchApp"
 // import "./src/sketch/SketchHairApp"
