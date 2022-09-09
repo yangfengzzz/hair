@@ -3,7 +3,7 @@ import {
     BackgroundMode,
     Color,
     DirectLight, Entity, GLTFResource,
-    MeshRenderer, PBRMaterial,
+    MeshRenderer, PBRBaseMaterial, PBRMaterial,
     PrimitiveMesh, Script, Texture2D,
     UnlitMaterial,
     WebGLEngine
@@ -53,15 +53,19 @@ export class ViewerTest extends ViewerBase {
     };
     sketchFolder = null;
 
-    specularShiftTexture: Texture2D;
-    hairMaterial = new PBRHairMaterial(this.engine);
     rotate: RotateY = null;
+    specularShiftTexture: Texture2D = null;
+    hairMaterial: PBRHairMaterial = null;
+    hairFolder = null;
 
     onAwake() {
         super.onAwake();
         this.sketchSelection = this.entity.addComponent(SketchSelection);
         this.sketchSelection.camera = this.camera;
         this._addSketchGUI();
+
+        this.hairMaterial = new PBRHairMaterial(this.engine);
+        this._addHairGUI();
     }
 
     /**
@@ -173,7 +177,7 @@ export class ViewerTest extends ViewerBase {
             })
             .then((shift) => {
                 this.specularShiftTexture = shift;
-                this.textures["default hair shift"] = shift;
+                this.textures["defaultHairShift"] = shift;
             })
     }
 
@@ -197,6 +201,93 @@ export class ViewerTest extends ViewerBase {
             this.purpleLight.intensity = v;
         });
     }
+
+    private _addHairGUI() {
+        const {gui} = this;
+        if (this.hairFolder) {
+            gui.removeFolder(this.hairFolder);
+            this.hairFolder = null;
+        }
+
+        const hairMaterial = this.hairMaterial;
+        const folder = (this.hairFolder = gui.addFolder("Hair"));
+        const folderName = {};
+        if (!hairMaterial.name) {
+            hairMaterial.name = "default";
+        }
+
+        const state = {
+            opacity: hairMaterial.baseColor.a,
+            baseColor: ViewerBase.colorToGui(hairMaterial.baseColor),
+            emissiveColor: ViewerBase.colorToGui(hairMaterial.emissiveColor),
+            baseTexture: hairMaterial.baseTexture ? "origin" : "",
+            roughnessMetallicTexture: hairMaterial.roughnessMetallicTexture ? "origin" : "",
+            normalTexture: (hairMaterial as PBRBaseMaterial).normalTexture ? "origin" : "",
+            emissiveTexture: (hairMaterial as PBRBaseMaterial).emissiveTexture ? "origin" : "",
+            occlusionTexture: (hairMaterial as PBRBaseMaterial).occlusionTexture ? "origin" : "",
+        };
+
+        const originTexture = {
+            baseTexture: hairMaterial.baseTexture,
+            roughnessMetallicTexture: hairMaterial.roughnessMetallicTexture,
+            normalTexture: hairMaterial.normalTexture,
+            emissiveTexture: hairMaterial.emissiveTexture,
+            occlusionTexture: hairMaterial.occlusionTexture,
+        };
+
+        const f = folder.addFolder(
+            folderName[hairMaterial.name] ? `${hairMaterial.name}_${folderName[hairMaterial.name] + 1}` : hairMaterial.name
+        );
+
+        folderName[hairMaterial.name] = folderName[hairMaterial.name] == null ? 1 : folderName[hairMaterial.name] + 1;
+
+        // metallic
+        const mode1 = f.addFolder("Metallic-Roughness props");
+        mode1.add(hairMaterial, "metallic", 0, 1).step(0.01);
+        mode1.add(hairMaterial, "roughness", 0, 1).step(0.01);
+        mode1
+            .add(state, "roughnessMetallicTexture", ["None", "origin", ...Object.keys(this.textures)])
+            .onChange((v) => {
+                hairMaterial.roughnessMetallicTexture =
+                    v === "None" ? null : this.textures[v] || originTexture.roughnessMetallicTexture;
+            });
+        mode1.open();
+
+
+        // common
+        const common = f.addFolder("Common props");
+        common
+            .add(state, "opacity", 0, 1)
+            .step(0.01)
+            .onChange((v) => {
+                hairMaterial.baseColor.a = v;
+            });
+        common.add(hairMaterial, "isTransparent");
+        common.add(hairMaterial, "alphaCutoff", 0, 1).step(0.01);
+
+        common.addColor(state, "baseColor").onChange((v) => {
+            ViewerBase.guiToColor(v, hairMaterial.baseColor);
+        });
+        common.addColor(state, "emissiveColor").onChange((v) => {
+            ViewerBase.guiToColor(v, hairMaterial.emissiveColor);
+        });
+        common.add(state, "baseTexture", ["None", "origin", ...Object.keys(this.textures)]).onChange((v) => {
+            hairMaterial.baseTexture = v === "None" ? null : this.textures[v] || originTexture.baseTexture;
+        });
+        common.add(state, "normalTexture", ["None", "origin", ...Object.keys(this.textures)]).onChange((v) => {
+            hairMaterial.normalTexture = v === "None" ? null : this.textures[v] || originTexture.normalTexture;
+        });
+        common.add(state, "emissiveTexture", ["None", "origin", ...Object.keys(this.textures)]).onChange((v) => {
+            hairMaterial.emissiveTexture = v === "None" ? null : this.textures[v] || originTexture.emissiveTexture;
+        });
+        common.add(state, "occlusionTexture", ["None", "origin", ...Object.keys(this.textures)]).onChange((v) => {
+            hairMaterial.occlusionTexture = v === "None" ? null : this.textures[v] || originTexture.occlusionTexture;
+        });
+        common.open();
+
+        folder.open();
+    }
+
 
     private _addSketchGUI() {
         const {gui} = this;

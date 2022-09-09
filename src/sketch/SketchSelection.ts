@@ -10,7 +10,6 @@ import {
 } from "oasis-engine";
 import {SketchRenderer} from "./SketchRenderer";
 import {FramebufferPicker} from "@oasis-engine-toolkit/framebuffer-picker";
-import {SketchMode} from "./SketchMode";
 
 class SelectionInfo {
     mesh: ModelMesh;
@@ -51,7 +50,7 @@ export class SketchSelection extends Script {
     onAwake(): void {
         this._framebufferPicker = this.entity.addComponent(FramebufferPicker);
         this.sketch = this.entity.addComponent(SketchRenderer);
-        this.sketch.setSketchMode(SketchMode.Wireframe, true);
+        this.sketch.scale = 0.02;
     }
 
     onUpdate(): void {
