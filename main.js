@@ -1,4 +1,4 @@
-// import "./src/hair-kajiya/IndirectApp";
+import "./src/hair-kajiya/App";
 
 /**---------------- Hair App --------------------------------------------------*/
 // import "./src/hair-manual/HairManualApp"
@@ -13,7 +13,7 @@
 // import "./src/hair-kajiya/no-ibl/AnisoHairGUIApp";
 
 /**---------------- Grid App --------------------------------------------------*/
-import "./src/grid/GridApp";
+// import "./src/grid/GridApp";
 
 /**---------------- Sketch App ------------------------------------------------*/
 // import "./src/sketch/SketchApp"
