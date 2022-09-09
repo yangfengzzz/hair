@@ -34,19 +34,19 @@ export class Viewer extends ViewerBase {
     }
 
     sceneGUI(lightFolder) {
-        this.lightFolder.add(this.state, "lights").onChange((v) => {
+        this.lightFolder.add(this.lightState, "lights").onChange((v) => {
             this.light1.enabled = this.light2.enabled = v;
         });
-        this.lightFolder.addColor(this.state, "lightColor1").onChange((v) => {
+        this.lightFolder.addColor(this.lightState, "lightColor1").onChange((v) => {
             Viewer.guiToColor(v, this.light1.color);
         });
-        this.lightFolder.addColor(this.state, "lightColor2").onChange((v) => {
+        this.lightFolder.addColor(this.lightState, "lightColor2").onChange((v) => {
             Viewer.guiToColor(v, this.light2.color);
         });
-        this.lightFolder.add(this.state, "lightIntensity1", 0, 2).onChange((v) => {
+        this.lightFolder.add(this.lightState, "lightIntensity1", 0, 2).onChange((v) => {
             this.light1.intensity = v;
         });
-        this.lightFolder.add(this.state, "lightIntensity2", 0, 2).onChange((v) => {
+        this.lightFolder.add(this.lightState, "lightIntensity2", 0, 2).onChange((v) => {
             this.light2.intensity = v;
         });
     }

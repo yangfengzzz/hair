@@ -2,7 +2,7 @@ import {SimpleDropzone} from "simple-dropzone";
 import {
     AmbientLight,
     AnimationClip, Animator,
-    AssetType, BackgroundMode, BoundingBox, Color, Entity, GLTFResource,
+    AssetType, BackgroundMode, BoundingBox, Camera, Color, Entity, GLTFResource,
     Material, MeshRenderer,
     PBRBaseMaterial, PBRMaterial,
     PBRSpecularMaterial, Renderer,
@@ -58,8 +58,10 @@ export abstract class ViewerBase extends Script {
     env: Record<string, AmbientLight> = {};
 
     // entity
-    gltfRootEntity: Entity = null;
-    controller: OrbitControl;
+    cameraEntity: Entity = this.entity.createChild("camera");
+    gltfRootEntity: Entity = this.entity.createChild("gltf");
+    camera: Camera = this.cameraEntity.addComponent(Camera);
+    controller: OrbitControl = this.cameraEntity.addComponent(OrbitControl);
 
     // bounds
     boundingBox: BoundingBox = new BoundingBox();
