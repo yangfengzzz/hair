@@ -13,7 +13,7 @@ import {
     AmbientLight,
     AssetType, Mesh, PrimitiveMesh, UnlitMaterial
 } from "oasis-engine";
-import {HairMaterial} from "../HairMaterial";
+import {HairMaterial} from "./HairMaterial";
 
 Logger.enable();
 //-- create engine object
