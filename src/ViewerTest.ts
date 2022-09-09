@@ -79,7 +79,7 @@ export class ViewerTest extends ViewerBase {
             gui.removeFolder(this.sketchFolder);
         }
         this.sketchFolder = gui.addFolder("Sketch");
-        this.sketchFolder.add(this.sketchSelection.sketch, "scale", 0, 1);
+        this.sketchFolder.add(this.sketchSelection.sketch, "scale", 0, 0.3);
         this.sketchFolder.add(this.sketchInfo, "wireframeMode").onChange((v) => {
             this.sketchSelection.sketch.setSketchMode(SketchMode.Wireframe, v);
         });

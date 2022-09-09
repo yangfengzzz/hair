@@ -126,6 +126,10 @@ export class SketchRenderer extends SkinnedMeshRenderer {
         super(entity);
         const engine = this.engine;
         this.mesh = new ModelMesh(engine);
+        const { bounds } = this.mesh;
+        bounds.min.set(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+        bounds.max.set(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+
         this._wireframeMaterial = new WireframeMaterial(engine);
         this._normalMaterial = new NormalMaterial(engine);
         this._tangentMaterial = new TangentMaterial(engine);

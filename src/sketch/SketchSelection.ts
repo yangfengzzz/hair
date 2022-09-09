@@ -61,7 +61,6 @@ export class SketchSelection extends Script {
                             const mtl = <PBRMaterial>renderElement.material;
                             selection.material = mtl;
                             mtl.baseColor.a = 0.6;
-                            mtl.baseColor.set(1,1,1,0.6);
                             mtl.isTransparent = true;
 
                             const renderer = renderElement.component;
