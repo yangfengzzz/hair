@@ -72,6 +72,8 @@ export abstract class ViewerBase extends Script {
 
     abstract sceneGUI(lightFolder);
 
+    laterOnTextureLoader() {}
+
     gltfProcess(gltf: GLTFResource) {}
 
     //------------------------------------------------------------------------------------------------------------------
@@ -146,6 +148,7 @@ export abstract class ViewerBase extends Script {
             })
             .then((texture) => {
                 this.textures[name] = texture;
+                this.laterOnTextureLoader();
                 this._addMaterialGUI();
                 console.log("图片上传成功！", name);
             });

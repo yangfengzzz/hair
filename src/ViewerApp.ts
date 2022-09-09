@@ -3,7 +3,7 @@ import {
     BackgroundMode,
     Color,
     DirectLight, Entity, GLTFResource,
-    MeshRenderer, PBRBaseMaterial, PBRMaterial,
+    MeshRenderer, PBRMaterial,
     PrimitiveMesh, Script, Texture2D,
     UnlitMaterial,
     WebGLEngine
@@ -178,6 +178,13 @@ export class ViewerTest extends ViewerBase {
                 this.textures["defaultHairShift"] = shift;
                 this._addHairGUI();
             })
+    }
+
+    /**
+     * @override
+     */
+    laterOnTextureLoader() {
+        this._addHairGUI();
     }
 
     /**
