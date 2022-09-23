@@ -13,7 +13,7 @@ export class TBoundingBox extends BoundingBox {
    * @param result - The result vector.
    * @return The result vector.
    */
-  clampPoint(point: Vector3, result: TVector3) {
+  clampPoint(point: Vector3, result: TVector3): TVector3 {
     (<TVector3>result.copyFrom(point)).clamp(this.min, this.max);
     return result;
   }
@@ -60,7 +60,7 @@ export class TBoundingBox extends BoundingBox {
     result.set(0, 0, 0);
 
     let distance;
-    let minDistance = Infinity;
+    let minDistance = Number.MAX_VALUE;
 
     this.getCenter(center);
     this.getExtent(size);

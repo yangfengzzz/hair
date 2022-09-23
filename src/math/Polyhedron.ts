@@ -18,7 +18,7 @@ export class Polyhedron {
   /** @internal */
   vertices: Vector3[] = [];
   /** @internal */
-  centroid = new TVector3();
+  centroid: TVector3 = new TVector3();
 
   /**
    * Computes the centroid of this polyhedron. Assumes its faces

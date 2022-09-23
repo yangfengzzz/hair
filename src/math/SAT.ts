@@ -1,6 +1,7 @@
 import { Polyhedron } from "./Polyhedron";
 import { CollisionUtil, Vector3 } from "oasis-engine";
 import { TVector3 } from "./TVector3";
+import { HalfEdge } from "./HalfEdge";
 
 /**
  * Implementation of the separating axis theorem (SAT). Used to detect intersections
@@ -162,17 +163,17 @@ export class SAT {
   }
 
   // use gauss map to compute the distance between two edges
-
   private static _distanceBetweenEdges(
-    edgeA,
-    directionA,
-    edgeB,
-    directionB,
-    polyhedronA
+    edgeA: HalfEdge,
+    directionA: Vector3,
+    edgeB: HalfEdge,
+    directionB: Vector3,
+    polyhedronA: Polyhedron
   ) {
     const { v, normal } = SAT;
     // skip parallel edges
-    if (Math.abs(directionA.dot(directionB)) === 1) return -Infinity;
+    if (Math.abs(Vector3.dot(directionA, directionB)) === 1)
+      return -Number.MAX_VALUE;
 
     // build plane through one edge
     Vector3.cross(directionA, directionB, normal);

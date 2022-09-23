@@ -28,6 +28,10 @@ export class HalfEdge {
     return this._prev;
   }
 
+  set prev(value: HalfEdge) {
+    this._prev = value;
+  }
+
   get twin(): HalfEdge {
     return this._twin;
   }

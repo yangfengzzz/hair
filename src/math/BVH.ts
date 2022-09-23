@@ -346,7 +346,7 @@ export class BVHNode {
 
     if (this.isRoot === true) {
       if (intersections.length > 0) {
-        let minDistance = Infinity;
+        let minDistance = Number.MAX_VALUE;
 
         for (let i = 0, l = intersections.length; i < l; i++) {
           const squaredDistance = Vector3.distanceSquared(
@@ -421,7 +421,7 @@ class SortedPrimitive {
   index: number;
   p: number;
 
-  static sort(a: SortedPrimitive, b: SortedPrimitive) {
+  static sort(a: SortedPrimitive, b: SortedPrimitive): number {
     return a.p - b.p;
   }
 }

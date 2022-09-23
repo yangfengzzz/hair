@@ -15,7 +15,7 @@ export class TRay extends Ray {
   /**
    * Computes a position on the ray according to the given t value
    * and stores the result in the given 3D vector. The t value has a range of
-   * [0, Infinity] where 0 means the position is equal with the origin of the ray.
+   * [0, Number.MAX_VALUE] where 0 means the position is equal with the origin of the ray.
    *
    * @param {Number} t - A scalar value representing a position on the ray.
    * @param {Vector3} result - The result vector.
