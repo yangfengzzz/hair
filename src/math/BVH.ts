@@ -1,11 +1,21 @@
 import { TBoundingBox } from "./TBoundingBox";
-import { Ray, Vector3 } from "oasis-engine";
+import { Vector3 } from "oasis-engine";
+import { Triangle } from "./Triangle";
+import { TRay } from "./TRay";
+import { TVector3 } from "./TVector3";
 
 export class BVH {
   private _branchingFactor: number;
   private _primitivesPerNode: number;
   private _depth: number;
-  private _root: BVHNode = null;
+  private readonly _root: BVHNode = null;
+
+  /**
+   * Root node
+   */
+  get root(): BVHNode {
+    return this._root;
+  }
 
   /**
    * Constructs a new BVH.
@@ -36,31 +46,18 @@ export class BVH {
   }
 }
 
-class SortedPrimitive {
-  index: number;
-  p: number;
-
-  static sort(a: SortedPrimitive, b: SortedPrimitive) {
-    return a.p - b.p;
-  }
-}
-
 /**
  * A single node in a bounding volume hierarchy (BVH).
  */
-class BVHNode {
+export class BVHNode {
   private static v1 = new Vector3();
   private static v2 = new Vector3();
   private static v3 = new Vector3();
   private static xAxis = new Vector3(1, 0, 0);
   private static yAxis = new Vector3(0, 1, 0);
   private static zAxis = new Vector3(0, 0, 1);
-  private static triangle = {
-    a: new Vector3(),
-    b: new Vector3(),
-    c: new Vector3(),
-  };
-  private static intersection = new Vector3();
+  private static triangle = new Triangle();
+  private static intersection = new TVector3();
   private static intersections: Vector3[] = [];
 
   private _parent: BVHNode = null;
@@ -318,11 +315,11 @@ class BVHNode {
    * @param result - The result vector.
    * @return The result vector.
    */
-  intersectRay(ray: Ray, result: Vector3): Vector3 {
+  intersectRay(ray: TRay, result: TVector3): TVector3 {
     const { triangle, intersections } = BVHNode;
 
     // gather all intersection points along the hierarchy
-    if (ray.intersectAABB(this._boundingVolume, result) !== null) {
+    if (ray.intersectBox(this._boundingVolume) !== -1) {
       if (this.isLeaf === true) {
         const vertices = this._primitives;
 
@@ -385,10 +382,10 @@ class BVHNode {
    * @param ray - The ray.
    * @return Whether there is an intersection or not.
    */
-  intersectsRay(ray: Ray): boolean {
+  intersectsRay(ray: TRay): boolean {
     const { triangle, intersection } = BVHNode;
 
-    if (ray.intersectAABB(this._boundingVolume, intersection) !== null) {
+    if (ray.intersectBox(this._boundingVolume) !== -1) {
       if (this.isLeaf === true) {
         const vertices = this._primitives;
 
@@ -417,5 +414,14 @@ class BVHNode {
     } else {
       return false;
     }
+  }
+}
+
+class SortedPrimitive {
+  index: number;
+  p: number;
+
+  static sort(a: SortedPrimitive, b: SortedPrimitive) {
+    return a.p - b.p;
   }
 }
