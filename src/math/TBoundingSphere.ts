@@ -26,7 +26,7 @@ export class TBoundingSphere extends BoundingSphere {
    * Returns true if the given point is inside this bounding sphere.
    *
    * @param point - A point in 3D space.
-   * @return The result of the containments test.
+   * @return The result of the containment test.
    */
   containsPoint(point: Vector3): boolean {
     return (

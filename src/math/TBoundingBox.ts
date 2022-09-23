@@ -1,7 +1,7 @@
 import { BoundingBox, Vector3 } from "oasis-engine";
 import { TVector3 } from "./TVector3";
 
-class TBoundingBox extends BoundingBox {
+export class TBoundingBox extends BoundingBox {
   private static vector = new Vector3();
   private static center = new Vector3();
   private static size = new Vector3();
