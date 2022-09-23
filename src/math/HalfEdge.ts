@@ -24,6 +24,14 @@ export class HalfEdge {
     return this._vertex;
   }
 
+  get prev(): HalfEdge {
+    return this._prev;
+  }
+
+  get twin(): HalfEdge {
+    return this._twin;
+  }
+
   /**
    * Returns the tail of this half-edge. That's a reference to the previous
    * half-edge vertex.
