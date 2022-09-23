@@ -9,8 +9,12 @@ import { HalfEdge } from "./HalfEdge";
  * respective methods.
  */
 export class Polyhedron {
-  protected _faces: Polygon[] = [];
-  protected _edges: HalfEdge[] = [];
-  protected _vertices: Vector3[] = [];
-  protected _centroid = new Vector3();
+  /** @internal */
+  faces: Polygon[] = [];
+  /** @internal */
+  edges: HalfEdge[] = [];
+  /** @internal */
+  vertices: Vector3[] = [];
+  /** @internal */
+  centroid = new Vector3();
 }
