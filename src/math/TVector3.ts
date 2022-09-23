@@ -1,4 +1,6 @@
 import { MathUtil, Vector3 } from "oasis-engine";
+import { TMatrix3x3 } from "./TMatrix3x3";
+import { TMatrix } from "./TMatrix";
 
 /**
  * Class representing a 3D vector, extent from @oasis-engine/math.
@@ -157,6 +159,27 @@ export class TVector3 extends Vector3 {
       dz = this.z - v.z;
 
     return Math.abs(dx) + Math.abs(dy) + Math.abs(dz);
+  }
+
+  /**
+   * Sets the components of this 3D vector from a column of a 3x3 matrix.
+   * @param m - A 3x3 matrix.
+   * @param i - The index of the column.
+   * @return A reference to this vector.
+   */
+  fromMatrix3Column(m: TMatrix3x3, i: number): TVector3 {
+    return <TVector3>this.copyFromArray(m.elements, i * 3);
+  }
+
+  /**
+   * Sets the components of this 3D vector from a column of a 4x4 matrix.
+   *
+   * @param m - A 4x4 matrix.
+   * @param i - The index of the column.
+   * @return A reference to this vector.
+   */
+  fromMatrix4Column(m: TMatrix, i: number): TVector3 {
+    return <TVector3>this.copyFromArray(m.elements, i * 4);
   }
 
   /**
