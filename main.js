@@ -1,4 +1,4 @@
-import "./src/ViewerApp"
+import "./src/ViewerApp";
 // import "./src/ViewerTestApp";
 
 /**---------------- Hair App --------------------------------------------------*/
