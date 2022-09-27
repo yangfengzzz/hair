@@ -1,7 +1,9 @@
-import {BaseMaterial, Color, Engine, Shader} from "oasis-engine";
-import {geometryTextureDefine, geometryTextureVert} from "./GeometryShader";
+import { BaseMaterial, Color, Engine, Shader } from "oasis-engine";
+import { geometryTextureDefine, geometryTextureVert } from "./GeometryShader";
 
-Shader.create("tbnShader", `
+Shader.create(
+  "tbnShader",
+  `
    uniform float u_lineScale;
    uniform mat4 u_VPMat;
    uniform mat4 u_worldMatrix;
@@ -69,84 +71,97 @@ void main() {
     
     gl_Position = u_VPMat * gl_Position; 
 }
-`, `
+`,
+  `
 uniform vec4 u_baseColor;
 void main() {
     gl_FragColor = u_baseColor;
 }
-`);
+`
+);
 
 /**
  * Material for normal shading
  */
 export class NormalMaterial extends BaseMaterial {
-    /**
-     * Base color.
-     */
-    get baseColor(): Color {
-        return this.shaderData.getColor(NormalMaterial._baseColorProp);
-    }
+  /**
+   * Base color.
+   */
+  get baseColor(): Color {
+    return this.shaderData.getColor(NormalMaterial._baseColorProp);
+  }
 
-    set baseColor(value: Color) {
-        const baseColor = this.shaderData.getColor(NormalMaterial._baseColorProp);
-        if (value !== baseColor) {
-            baseColor.copyFrom(value);
-        }
+  set baseColor(value: Color) {
+    const baseColor = this.shaderData.getColor(NormalMaterial._baseColorProp);
+    if (value !== baseColor) {
+      baseColor.copyFrom(value);
     }
+  }
 
-    constructor(engine: Engine) {
-        super(engine, Shader.find("tbnShader"));
-        this.shaderData.setColor(NormalMaterial._baseColorProp, new Color(1, 0, 0, 1));
-        this.shaderData.enableMacro("SHOW_NORMAL");
-    }
+  constructor(engine: Engine) {
+    super(engine, Shader.find("tbnShader"));
+    this.shaderData.setColor(
+      NormalMaterial._baseColorProp,
+      new Color(1, 0, 0, 1)
+    );
+    this.shaderData.enableMacro("SHOW_NORMAL");
+  }
 }
 
 /**
  * Material for normal tangent
  */
 export class TangentMaterial extends BaseMaterial {
-    /**
-     * Base color.
-     */
-    get baseColor(): Color {
-        return this.shaderData.getColor(TangentMaterial._baseColorProp);
-    }
+  /**
+   * Base color.
+   */
+  get baseColor(): Color {
+    return this.shaderData.getColor(TangentMaterial._baseColorProp);
+  }
 
-    set baseColor(value: Color) {
-        const baseColor = this.shaderData.getColor(TangentMaterial._baseColorProp);
-        if (value !== baseColor) {
-            baseColor.copyFrom(value);
-        }
+  set baseColor(value: Color) {
+    const baseColor = this.shaderData.getColor(TangentMaterial._baseColorProp);
+    if (value !== baseColor) {
+      baseColor.copyFrom(value);
     }
+  }
 
-    constructor(engine: Engine) {
-        super(engine, Shader.find("tbnShader"));
-        this.shaderData.setColor(TangentMaterial._baseColorProp, new Color(0, 1, 0, 1));
-        this.shaderData.enableMacro("SHOW_TANGENT");
-    }
+  constructor(engine: Engine) {
+    super(engine, Shader.find("tbnShader"));
+    this.shaderData.setColor(
+      TangentMaterial._baseColorProp,
+      new Color(0, 1, 0, 1)
+    );
+    this.shaderData.enableMacro("SHOW_TANGENT");
+  }
 }
 
 /**
  * Material for normal bi-tangent
  */
 export class BiTangentMaterial extends BaseMaterial {
-    /**
-     * Base color.
-     */
-    get baseColor(): Color {
-        return this.shaderData.getColor(BiTangentMaterial._baseColorProp);
-    }
+  /**
+   * Base color.
+   */
+  get baseColor(): Color {
+    return this.shaderData.getColor(BiTangentMaterial._baseColorProp);
+  }
 
-    set baseColor(value: Color) {
-        const baseColor = this.shaderData.getColor(BiTangentMaterial._baseColorProp);
-        if (value !== baseColor) {
-            baseColor.copyFrom(value);
-        }
+  set baseColor(value: Color) {
+    const baseColor = this.shaderData.getColor(
+      BiTangentMaterial._baseColorProp
+    );
+    if (value !== baseColor) {
+      baseColor.copyFrom(value);
     }
+  }
 
-    constructor(engine: Engine) {
-        super(engine, Shader.find("tbnShader"));
-        this.shaderData.setColor(BiTangentMaterial._baseColorProp, new Color(0, 0, 1, 1));
-        this.shaderData.enableMacro("SHOW_BITANGENT");
-    }
+  constructor(engine: Engine) {
+    super(engine, Shader.find("tbnShader"));
+    this.shaderData.setColor(
+      BiTangentMaterial._baseColorProp,
+      new Color(0, 0, 1, 1)
+    );
+    this.shaderData.enableMacro("SHOW_BITANGENT");
+  }
 }

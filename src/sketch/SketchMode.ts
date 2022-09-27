@@ -1,6 +1,6 @@
 export enum SketchMode {
-    Wireframe,
-    Normal,
-    Tangent,
-    BiTangent
+  Wireframe,
+  Normal,
+  Tangent,
+  BiTangent,
 }

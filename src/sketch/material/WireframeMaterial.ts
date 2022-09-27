@@ -1,7 +1,9 @@
-import {BaseMaterial, Color, Engine, RenderFace, Shader} from "oasis-engine";
-import {geometryTextureDefine, geometryTextureVert} from "./GeometryShader";
+import { BaseMaterial, Color, Engine, RenderFace, Shader } from "oasis-engine";
+import { geometryTextureDefine, geometryTextureVert } from "./GeometryShader";
 
-Shader.create("wireframeShader", `
+Shader.create(
+  "wireframeShader",
+  `
    uniform float u_lineScale;
    uniform mat4 u_VPMat;
    uniform mat4 u_worldMatrix;
@@ -55,7 +57,8 @@ void main() {
     #endif
     gl_Position = u_VPMat * gl_Position; 
 }
-`,`
+`,
+  `
 varying vec3 v_baryCenter;
 
 float edgeFactor(){
@@ -73,27 +76,33 @@ void main() {
         gl_FragColor = vec4(u_baseColor.xyz, (1.0 - edgeFactor()) * 0.3);
     }
 }
-`);
+`
+);
 
 export class WireframeMaterial extends BaseMaterial {
-    /**
-     * Base color.
-     */
-    get baseColor(): Color {
-        return this.shaderData.getColor(WireframeMaterial._baseColorProp);
-    }
+  /**
+   * Base color.
+   */
+  get baseColor(): Color {
+    return this.shaderData.getColor(WireframeMaterial._baseColorProp);
+  }
 
-    set baseColor(value: Color) {
-        const baseColor = this.shaderData.getColor(WireframeMaterial._baseColorProp);
-        if (value !== baseColor) {
-            baseColor.copyFrom(value);
-        }
+  set baseColor(value: Color) {
+    const baseColor = this.shaderData.getColor(
+      WireframeMaterial._baseColorProp
+    );
+    if (value !== baseColor) {
+      baseColor.copyFrom(value);
     }
+  }
 
-    constructor(engine: Engine) {
-        super(engine, Shader.find("wireframeShader"));
-        this.shaderData.setColor(WireframeMaterial._baseColorProp, new Color(0, 0, 0, 1));
-        this.isTransparent = true;
-        this.renderFace = RenderFace.Double;
-    }
+  constructor(engine: Engine) {
+    super(engine, Shader.find("wireframeShader"));
+    this.shaderData.setColor(
+      WireframeMaterial._baseColorProp,
+      new Color(0, 0, 0, 1)
+    );
+    this.isTransparent = true;
+    this.renderFace = RenderFace.Double;
+  }
 }

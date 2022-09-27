@@ -60,7 +60,7 @@ export const geometryTextureDefine = `
         float w = rows[row_index][value_index];
         return vec4(x, y, z, w);
    }
-`
+`;
 
 export const geometryTextureVert = `
         int row = pointIndex * ELEMENT_COUNT / int(u_verticesTextureWidth);
@@ -97,4 +97,4 @@ export const geometryTextureVert = `
 #ifdef O3_HAS_UV
         vec2 TEXCOORD_0 = getVec2(rows, row_index, value_index);
 #endif
-`
+`;
