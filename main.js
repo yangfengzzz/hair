@@ -1,4 +1,4 @@
-import "./src/ViewerApp";
+// import "./src/ViewerApp";
 // import "./src/ViewerTestApp";
 
 /**---------------- Hair App --------------------------------------------------*/
@@ -14,7 +14,7 @@ import "./src/ViewerApp";
 // import "./src/hair-kajiya/no-ibl/AnisoHairGUIApp";
 
 /**---------------- Grid App --------------------------------------------------*/
-// import "./src/grid/GridApp";
+import "./src/grid/GridApp";
 
 /**---------------- Sketch App ------------------------------------------------*/
 // import "./src/sketch/SketchApp"
