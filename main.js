@@ -14,8 +14,8 @@
 // import "./src/hair-kajiya/no-ibl/AnisoHairGUIApp";
 
 /**---------------- Grid App --------------------------------------------------*/
-import "./src/grid/GridApp";
+// import "./src/grid/GridApp";
 
 /**---------------- Sketch App ------------------------------------------------*/
-// import "./src/sketch/SketchApp"
+import "./src/sketch/SketchApp"
 // import "./src/sketch/SketchHairApp"
