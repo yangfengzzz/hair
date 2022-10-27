@@ -10,6 +10,7 @@ import {
 } from "oasis-engine";
 import { SketchRenderer } from "./SketchRenderer";
 import { FramebufferPicker } from "@oasis-engine-toolkit/framebuffer-picker";
+import { SketchMode } from "./SketchMode";
 
 class SelectionInfo {
   mesh: ModelMesh;
@@ -60,6 +61,7 @@ export class SketchSelection extends Script {
     this._framebufferPicker = this.entity.addComponent(FramebufferPicker);
     this.sketch = this.entity.addComponent(SketchRenderer);
     this.sketch.scale = 0.02;
+    this.sketch.setSketchMode(SketchMode.Wireframe, true);
   }
 
   onUpdate(): void {
@@ -86,8 +88,6 @@ export class SketchSelection extends Script {
               sketch.skin = null;
               sketch.shaderData.disableMacro("O3_HAS_SKIN");
               if (renderer instanceof SkinnedMeshRenderer) {
-                // @ts-ignore
-                sketch._hasInitJoints = false;
                 sketch.skin = renderer.skin;
               }
             } else {
