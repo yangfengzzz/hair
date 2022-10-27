@@ -100,10 +100,7 @@ export class NormalMaterial extends BaseMaterial {
 
   constructor(engine: Engine) {
     super(engine, Shader.find("tbnShader"));
-    this.shaderData.setColor(
-      NormalMaterial._baseColorProp,
-      new Color(1, 0, 0, 1)
-    );
+    this.shaderData.setColor(NormalMaterial._baseColorProp, new Color(1, 0, 0, 1));
     this.shaderData.enableMacro("SHOW_NORMAL");
   }
 }
@@ -128,10 +125,7 @@ export class TangentMaterial extends BaseMaterial {
 
   constructor(engine: Engine) {
     super(engine, Shader.find("tbnShader"));
-    this.shaderData.setColor(
-      TangentMaterial._baseColorProp,
-      new Color(0, 1, 0, 1)
-    );
+    this.shaderData.setColor(TangentMaterial._baseColorProp, new Color(0, 1, 0, 1));
     this.shaderData.enableMacro("SHOW_TANGENT");
   }
 }
@@ -148,9 +142,7 @@ export class BiTangentMaterial extends BaseMaterial {
   }
 
   set baseColor(value: Color) {
-    const baseColor = this.shaderData.getColor(
-      BiTangentMaterial._baseColorProp
-    );
+    const baseColor = this.shaderData.getColor(BiTangentMaterial._baseColorProp);
     if (value !== baseColor) {
       baseColor.copyFrom(value);
     }
@@ -158,10 +150,7 @@ export class BiTangentMaterial extends BaseMaterial {
 
   constructor(engine: Engine) {
     super(engine, Shader.find("tbnShader"));
-    this.shaderData.setColor(
-      BiTangentMaterial._baseColorProp,
-      new Color(0, 0, 1, 1)
-    );
+    this.shaderData.setColor(BiTangentMaterial._baseColorProp, new Color(0, 0, 1, 1));
     this.shaderData.enableMacro("SHOW_BITANGENT");
   }
 }

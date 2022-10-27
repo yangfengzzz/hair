@@ -13,15 +13,10 @@ import {
   TextureFormat,
   Transform,
   VertexBufferBinding,
-  VertexElement,
+  VertexElement
 } from "oasis-engine";
 import { SketchMode } from "./SketchMode";
-import {
-  BiTangentMaterial,
-  NormalMaterial,
-  TangentMaterial,
-  WireframeMaterial,
-} from "./material";
+import { BiTangentMaterial, NormalMaterial, TangentMaterial, WireframeMaterial } from "./material";
 
 /**
  * Sketch Renderer
@@ -33,23 +28,13 @@ export class SketchRenderer extends SkinnedMeshRenderer {
   private static _MAX_TEXTURE_ROWS = 512;
   private static _jointIndexBegin = -1;
 
-  private static _verticesSamplerProp =
-    Shader.getPropertyByName("u_verticesSampler");
-  private static _verticesTextureHeightProp = Shader.getPropertyByName(
-    "u_verticesTextureHeight"
-  );
-  private static _verticesTextureWidthProp = Shader.getPropertyByName(
-    "u_verticesTextureWidth"
-  );
+  private static _verticesSamplerProp = Shader.getPropertyByName("u_verticesSampler");
+  private static _verticesTextureHeightProp = Shader.getPropertyByName("u_verticesTextureHeight");
+  private static _verticesTextureWidthProp = Shader.getPropertyByName("u_verticesTextureWidth");
 
-  private static _indicesSamplerProp =
-    Shader.getPropertyByName("u_indicesSampler");
-  private static _indicesTextureHeightProp = Shader.getPropertyByName(
-    "u_indicesTextureHeight"
-  );
-  private static _indicesTextureWidthProp = Shader.getPropertyByName(
-    "u_indicesTextureWidth"
-  );
+  private static _indicesSamplerProp = Shader.getPropertyByName("u_indicesSampler");
+  private static _indicesTextureHeightProp = Shader.getPropertyByName("u_indicesTextureHeight");
+  private static _indicesTextureWidthProp = Shader.getPropertyByName("u_indicesTextureWidth");
 
   private static _lineScaleProp = Shader.getPropertyByName("u_lineScale");
   private static _worldMatrixProp = Shader.getPropertyByName("u_worldMatrix");
@@ -87,10 +72,7 @@ export class SketchRenderer extends SkinnedMeshRenderer {
   set worldTransform(value: Transform) {
     if (value !== this._worldTransform) {
       this._worldTransform = value;
-      this.shaderData.setMatrix(
-        SketchRenderer._worldMatrixProp,
-        value.worldMatrix
-      );
+      this.shaderData.setMatrix(SketchRenderer._worldMatrixProp, value.worldMatrix);
     }
   }
 
@@ -233,10 +215,7 @@ export class SketchRenderer extends SkinnedMeshRenderer {
       const worldNormalMatrix = this._worldNormalMatrix;
       Matrix.invert(worldTransform.worldMatrix, worldNormalMatrix);
       worldNormalMatrix.transpose();
-      this.shaderData.setMatrix(
-        SketchRenderer._worldNormalProp,
-        worldNormalMatrix
-      );
+      this.shaderData.setMatrix(SketchRenderer._worldNormalProp, worldNormalMatrix);
     }
   }
 
@@ -254,16 +233,8 @@ export class SketchRenderer extends SkinnedMeshRenderer {
       case IndexFormat.UInt8: {
         triangleCount = byteLength / 3;
         const width = Math.min(triangleCount, SketchRenderer._MAX_TEXTURE_ROWS);
-        const height = Math.ceil(
-          triangleCount / SketchRenderer._MAX_TEXTURE_ROWS
-        );
-        this._indicesTexture = new Texture2D(
-          this.engine,
-          width,
-          height,
-          TextureFormat.R32G32B32A32,
-          false
-        );
+        const height = Math.ceil(triangleCount / SketchRenderer._MAX_TEXTURE_ROWS);
+        this._indicesTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);
 
         const floatBuffer = new Float32Array(width * height * 4);
         for (let i = 0; i < triangleCount; i++) {
@@ -273,18 +244,9 @@ export class SketchRenderer extends SkinnedMeshRenderer {
           floatBuffer[i * 4 + 3] = 0;
         }
         this._indicesTexture.setPixelBuffer(floatBuffer);
-        this.shaderData.setTexture(
-          SketchRenderer._indicesSamplerProp,
-          this._indicesTexture
-        );
-        this.shaderData.setFloat(
-          SketchRenderer._indicesTextureWidthProp,
-          width
-        );
-        this.shaderData.setFloat(
-          SketchRenderer._indicesTextureHeightProp,
-          height
-        );
+        this.shaderData.setTexture(SketchRenderer._indicesSamplerProp, this._indicesTexture);
+        this.shaderData.setFloat(SketchRenderer._indicesTextureWidthProp, width);
+        this.shaderData.setFloat(SketchRenderer._indicesTextureHeightProp, height);
         break;
       }
       case IndexFormat.UInt16: {
@@ -292,16 +254,8 @@ export class SketchRenderer extends SkinnedMeshRenderer {
 
         triangleCount = byteLength / 6;
         const width = Math.min(triangleCount, SketchRenderer._MAX_TEXTURE_ROWS);
-        const height = Math.ceil(
-          triangleCount / SketchRenderer._MAX_TEXTURE_ROWS
-        );
-        this._indicesTexture = new Texture2D(
-          this.engine,
-          width,
-          height,
-          TextureFormat.R32G32B32A32,
-          false
-        );
+        const height = Math.ceil(triangleCount / SketchRenderer._MAX_TEXTURE_ROWS);
+        this._indicesTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);
 
         const floatBuffer = new Float32Array(width * height * 4);
         for (let i = 0; i < triangleCount; i++) {
@@ -311,18 +265,9 @@ export class SketchRenderer extends SkinnedMeshRenderer {
           floatBuffer[i * 4 + 3] = 0;
         }
         this._indicesTexture.setPixelBuffer(floatBuffer);
-        this.shaderData.setTexture(
-          SketchRenderer._indicesSamplerProp,
-          this._indicesTexture
-        );
-        this.shaderData.setFloat(
-          SketchRenderer._indicesTextureWidthProp,
-          width
-        );
-        this.shaderData.setFloat(
-          SketchRenderer._indicesTextureHeightProp,
-          height
-        );
+        this.shaderData.setTexture(SketchRenderer._indicesSamplerProp, this._indicesTexture);
+        this.shaderData.setFloat(SketchRenderer._indicesTextureWidthProp, width);
+        this.shaderData.setFloat(SketchRenderer._indicesTextureHeightProp, height);
         break;
       }
       case IndexFormat.UInt32: {
@@ -330,16 +275,8 @@ export class SketchRenderer extends SkinnedMeshRenderer {
 
         triangleCount = byteLength / 12;
         const width = Math.min(triangleCount, SketchRenderer._MAX_TEXTURE_ROWS);
-        const height = Math.ceil(
-          triangleCount / SketchRenderer._MAX_TEXTURE_ROWS
-        );
-        this._indicesTexture = new Texture2D(
-          this.engine,
-          width,
-          height,
-          TextureFormat.R32G32B32A32,
-          false
-        );
+        const height = Math.ceil(triangleCount / SketchRenderer._MAX_TEXTURE_ROWS);
+        this._indicesTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);
 
         const floatBuffer = new Float32Array(width * height * 4);
         for (let i = 0; i < triangleCount; i++) {
@@ -349,18 +286,9 @@ export class SketchRenderer extends SkinnedMeshRenderer {
           floatBuffer[i * 4 + 3] = 0;
         }
         this._indicesTexture.setPixelBuffer(floatBuffer);
-        this.shaderData.setTexture(
-          SketchRenderer._indicesSamplerProp,
-          this._indicesTexture
-        );
-        this.shaderData.setFloat(
-          SketchRenderer._indicesTextureWidthProp,
-          width
-        );
-        this.shaderData.setFloat(
-          SketchRenderer._indicesTextureHeightProp,
-          height
-        );
+        this.shaderData.setTexture(SketchRenderer._indicesSamplerProp, this._indicesTexture);
+        this.shaderData.setFloat(SketchRenderer._indicesTextureWidthProp, width);
+        this.shaderData.setFloat(SketchRenderer._indicesTextureHeightProp, height);
         break;
       }
     }
@@ -369,9 +297,7 @@ export class SketchRenderer extends SkinnedMeshRenderer {
 
   private _uploadVerticesBuffer(value: ModelMesh) {
     // @ts-ignore
-    const vertexBufferBinding = <VertexBufferBinding>(
-      value._vertexBufferBindings[0]
-    );
+    const vertexBufferBinding = <VertexBufferBinding>value._vertexBufferBindings[0];
     const vertexCount = value.vertexCount;
     const elementCount = this._updateMeshElement(value);
     const jointIndexBegin = SketchRenderer._jointIndexBegin;
@@ -385,38 +311,27 @@ export class SketchRenderer extends SkinnedMeshRenderer {
     const uint8Buffer = new Uint8Array(buffer.buffer);
 
     const alignElementCount = Math.ceil(newElementCount / 4) * 4;
-    this.shaderData.enableMacro(
-      "ELEMENT_COUNT",
-      (alignElementCount / 4).toString()
-    );
+    this.shaderData.enableMacro("ELEMENT_COUNT", (alignElementCount / 4).toString());
 
-    const width =
-      Math.min(vertexCount, SketchRenderer._MAX_TEXTURE_ROWS) *
-      alignElementCount;
+    const width = Math.min(vertexCount, SketchRenderer._MAX_TEXTURE_ROWS) * alignElementCount;
     const height = Math.ceil(vertexCount / SketchRenderer._MAX_TEXTURE_ROWS);
     const alignBuffer = new Float32Array(width * height);
 
     for (let i = 0; i < vertexCount; i++) {
       for (let j = 0; j < newElementCount; j++) {
         if (jointIndexBegin !== -1 && j === jointIndexBegin) {
-          alignBuffer[i * alignElementCount + j] =
-            uint8Buffer[i * elementCount * 4 + jointIndexBegin * 4];
+          alignBuffer[i * alignElementCount + j] = uint8Buffer[i * elementCount * 4 + jointIndexBegin * 4];
         } else if (jointIndexBegin !== -1 && j === jointIndexBegin + 1) {
-          alignBuffer[i * alignElementCount + j] =
-            uint8Buffer[i * elementCount * 4 + jointIndexBegin * 4 + 1];
+          alignBuffer[i * alignElementCount + j] = uint8Buffer[i * elementCount * 4 + jointIndexBegin * 4 + 1];
         } else if (jointIndexBegin !== -1 && j === jointIndexBegin + 2) {
-          alignBuffer[i * alignElementCount + j] =
-            uint8Buffer[i * elementCount * 4 + jointIndexBegin * 4 + 2];
+          alignBuffer[i * alignElementCount + j] = uint8Buffer[i * elementCount * 4 + jointIndexBegin * 4 + 2];
         } else if (jointIndexBegin !== -1 && j === jointIndexBegin + 3) {
-          alignBuffer[i * alignElementCount + j] =
-            uint8Buffer[i * elementCount * 4 + jointIndexBegin * 4 + 3];
+          alignBuffer[i * alignElementCount + j] = uint8Buffer[i * elementCount * 4 + jointIndexBegin * 4 + 3];
         } else {
           if (jointIndexBegin !== -1 && j > jointIndexBegin + 3) {
-            alignBuffer[i * alignElementCount + j] =
-              buffer[i * elementCount + j - 3];
+            alignBuffer[i * alignElementCount + j] = buffer[i * elementCount + j - 3];
           } else {
-            alignBuffer[i * alignElementCount + j] =
-              buffer[i * elementCount + j];
+            alignBuffer[i * alignElementCount + j] = buffer[i * elementCount + j];
           }
         }
       }
@@ -425,25 +340,12 @@ export class SketchRenderer extends SkinnedMeshRenderer {
     SketchRenderer._jointIndexBegin = -1;
   }
 
-  private _createVerticesTexture(
-    vertexBuffer: ArrayBufferView,
-    width: number,
-    height: number
-  ) {
-    this._verticesTexture = new Texture2D(
-      this.engine,
-      width,
-      height,
-      TextureFormat.R32G32B32A32,
-      false
-    );
+  private _createVerticesTexture(vertexBuffer: ArrayBufferView, width: number, height: number) {
+    this._verticesTexture = new Texture2D(this.engine, width, height, TextureFormat.R32G32B32A32, false);
     this._verticesTexture.filterMode = TextureFilterMode.Point;
     this._verticesTexture.setPixelBuffer(vertexBuffer);
 
-    this.shaderData.setTexture(
-      SketchRenderer._verticesSamplerProp,
-      this._verticesTexture
-    );
+    this.shaderData.setTexture(SketchRenderer._verticesSamplerProp, this._verticesTexture);
     this.shaderData.setFloat(SketchRenderer._verticesTextureWidthProp, width);
     this.shaderData.setFloat(SketchRenderer._verticesTextureHeightProp, height);
   }

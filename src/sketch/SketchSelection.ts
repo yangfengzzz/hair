@@ -6,7 +6,7 @@ import {
   PBRMaterial,
   PointerButton,
   Script,
-  SkinnedMeshRenderer,
+  SkinnedMeshRenderer
 } from "oasis-engine";
 import { SketchRenderer } from "./SketchRenderer";
 import { FramebufferPicker } from "@oasis-engine-toolkit/framebuffer-picker";
@@ -66,43 +66,38 @@ export class SketchSelection extends Script {
     const { _selection: selection, sketch } = this;
     const inputManager = this.engine.inputManager;
     if (inputManager.isPointerDown(PointerButton.Primary)) {
-      const pointerPosition = inputManager.pointerPosition;
-      this._framebufferPicker
-        .pick(pointerPosition.x, pointerPosition.y)
-        .then((renderElement) => {
-          if (renderElement) {
-            if (
-              this.specificEntity !== null &&
-              renderElement.component.entity !== this.specificEntity
-            ) {
-              return;
-            }
-            if (renderElement.mesh instanceof ModelMesh) {
-              if (selection.mesh !== renderElement.mesh) {
-                selection.setOriginState();
-                selection.mesh = renderElement.mesh;
-
-                selection.material = <PBRMaterial>renderElement.material;
-                selection.setSelectedState();
-
-                const renderer = renderElement.component;
-                sketch.targetMesh = renderElement.mesh;
-                sketch.worldTransform = renderer.entity.transform;
-                sketch.skin = null;
-                sketch.shaderData.disableMacro("O3_HAS_SKIN");
-                if (renderer instanceof SkinnedMeshRenderer) {
-                  // @ts-ignore
-                  sketch._hasInitJoints = false;
-                  sketch.skin = renderer.skin;
-                }
-              } else {
-                selection.setSelectedState();
-              }
-            }
-          } else {
-            selection.setOriginState();
+      const pointerPosition = inputManager.pointers[0].position;
+      this._framebufferPicker.pick(pointerPosition.x, pointerPosition.y).then((renderElement) => {
+        if (renderElement) {
+          if (this.specificEntity !== null && renderElement.component.entity !== this.specificEntity) {
+            return;
           }
-        });
+          if (renderElement.mesh instanceof ModelMesh) {
+            if (selection.mesh !== renderElement.mesh) {
+              selection.setOriginState();
+              selection.mesh = renderElement.mesh;
+
+              selection.material = <PBRMaterial>renderElement.material;
+              selection.setSelectedState();
+
+              const renderer = renderElement.component;
+              sketch.targetMesh = renderElement.mesh;
+              sketch.worldTransform = renderer.entity.transform;
+              sketch.skin = null;
+              sketch.shaderData.disableMacro("O3_HAS_SKIN");
+              if (renderer instanceof SkinnedMeshRenderer) {
+                // @ts-ignore
+                sketch._hasInitJoints = false;
+                sketch.skin = renderer.skin;
+              }
+            } else {
+              selection.setSelectedState();
+            }
+          }
+        } else {
+          selection.setOriginState();
+        }
+      });
     }
   }
 }
